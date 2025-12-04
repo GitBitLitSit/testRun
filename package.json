@@ -1,0 +1,25 @@
+{
+  "name": "15palle",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "sst dev",
+    "deploy": "sst deploy"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.159",
+    "@types/node": "^24.10.1",
+    "sst": "^3.17.24",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@types/jsonwebtoken": "^9.0.10",
+    "jsonwebtoken": "^9.0.3",
+    "mongodb": "^6.21.0"
+  }
+}

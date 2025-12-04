@@ -1,0 +1,40 @@
+/// <reference path="./.sst/platform/config.d.ts" />
+
+import { env } from "./.sst/platform/src/components";
+
+export default $config({
+  app(input) {
+    return {
+      name: "billiard-club",
+      home: "aws",
+      providers: {
+        aws: { region: "eu-west-1", profile: process.env.AWS_PROFILE },
+      },
+    };
+  },
+
+  async run() {
+    const api = new sst.aws.ApiGatewayV2("Api")
+
+    api.route("POST /members", {
+      handler: "./src/packages/functions/createMember.handler",
+      environment: {
+        JWT_SECRET_KEY: process.env.JWT_SECRET_KEY!,
+        MONGODB_URI: process.env.MONGODB_URI!,
+        MONGODB_DB_NAME: process.env.MONGODB_DB_NAME!,
+      },
+      architecture: "arm64",
+      runtime: "nodejs22.x",
+    });
+    api.route("POST /admin/login", {
+      handler: "./src/packages/functions/adminLogin.handler",
+      environment: {
+        JWT_SECRET_KEY: process.env.JWT_SECRET_KEY!,
+        ADMIN_USERNAME: process.env.ADMIN_USERNAME!,
+        ADMIN_PASSWORD: process.env.ADMIN_PASSWORD!,
+      },
+      architecture: "arm64",
+      runtime: "nodejs22.x",
+    });
+  }
+});
