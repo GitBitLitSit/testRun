@@ -1,6 +1,7 @@
 import { APIGatewayProxyHandlerV2 } from "aws-lambda";
 import { connectToMongo } from "../../database/mongo";
 import { verifyJWT } from "../../security/jwt";
+import type { Member } from "../types/member";
 
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     const token = event.headers.authorization?.split(" ")[1];
@@ -15,14 +16,16 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     try {
         const decoded = verifyJWT(token);
 
-        const { fullName,  email } = JSON.parse(event.body || "{}");
+        let { fullName,  email } = JSON.parse(event.body || "{}");
+        const trimmedFullName = fullName?.trim() ?? "";
+        const trimmedEmail = email?.trim() ?? "";
 
-        if (!fullName.trim() || !email.trim()) {
+        if (!trimmedFullName || !trimmedEmail) {
             return {
                 statusCode: 400,
                 body: JSON.stringify({ error: "Full name and email are required" }),
             };
-        } else if (email.regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/).test(email) === false) {
+        } else if (trimmedEmail.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/) === null) {
             return {
                 statusCode: 400,
                 body: JSON.stringify({ error: "Invalid email format" }),
@@ -33,9 +36,16 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         const db = await connectToMongo();
         const collection = db.collection("members");
 
+        collection.findOne({ email: trimmedEmail }).then((existingMember) => {
+            return {
+                statusCode: 409,
+                body: JSON.stringify({ error: "Member with this email already exists" }),
+            }
+        });
+
         const newMember: Member = {
-            fullName,
-            email,
+            fullName: trimmedFullName,
+            email: trimmedEmail,
             createdAt: new Date(),
             active: true,
             qrUuid: crypto.randomUUID(),

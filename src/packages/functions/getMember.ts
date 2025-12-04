@@ -1,5 +1,6 @@
 import { APIGatewayProxyHandlerV2 } from "aws-lambda";
 import { connectToMongo } from "../../database/mongo";
+import type { Member } from "../types/member";
 
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     const { fullName,  email } = JSON.parse(event.body || "{}");

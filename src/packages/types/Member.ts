@@ -1,4 +1,4 @@
-type Member = {
+export type Member = {
     fullName: string;
     email: string;
     createdAt: Date;
