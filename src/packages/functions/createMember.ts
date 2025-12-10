@@ -3,12 +3,10 @@ import { connectToMongo } from "../../database/mongo";
 import { verifyJWT } from "../../security/jwt";
 import type { Member } from "../types/member";
 import { sendQrCodeEmail } from "./sendEmail";
+import { MongoServerError } from "mongodb";
 
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
-
-    console.log("test");
     const token = event.headers.authorization?.split(" ")[1];
-
     if(!token) {
         return {
             statusCode: 401,
@@ -17,9 +15,9 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     }
 
     try {
-        const decoded = verifyJWT(token);
+        verifyJWT(token);
 
-        let { firstName, lastName,  email } = JSON.parse(event.body || "{}");
+        let { firstName, lastName, email } = JSON.parse(event.body || "{}");
         const trimmedFirstName = firstName?.trim() ?? "";
         const trimmedLastName = lastName?.trim() ?? "";
         const trimmedEmail = email?.trim() ?? "";
@@ -27,7 +25,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         if (!trimmedFirstName || !trimmedLastName || !trimmedEmail) {
             return {
                 statusCode: 400,
-                body: JSON.stringify({ error: "First name, last name, and email are required" }),
+                body: JSON.stringify({ error: "first name , last name, and email are required" }),
             };
         } else if (trimmedEmail.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/) === null) {
             return {
@@ -36,23 +34,10 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             };
         }
 
-        // Connect to MongoDB
         const db = await connectToMongo();
         const collection = db.collection("members");
 
-        collection.findOne({ email: trimmedEmail }).then((existingMember) => {
-            return {
-                statusCode: 409,
-                body: JSON.stringify({ error: "Member with this email already exists" }),
-            }
-        });
-
         const qrUuid = crypto.randomUUID();
-
-        console.log(process.env.SES_SENDER_EMAIL);
-
-        const { success, data, error } = await sendQrCodeEmail(process.env.SES_SENDER_EMAIL!, trimmedFirstName, trimmedLastName, trimmedEmail, qrUuid);
-
         const newMember: Member = {
             firstName: trimmedFirstName,
             lastName: trimmedLastName,
@@ -60,26 +45,50 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             createdAt: new Date(),
             blocked: false,
             qrUuid: qrUuid,
-            emailValid: success,
+            emailValid: false,
         }
 
         const result = await collection.insertOne(newMember);
 
+        const { success, error } = await sendQrCodeEmail(process.env.SES_SENDER_EMAIL!, trimmedFirstName, trimmedLastName, trimmedEmail, qrUuid);
+
         if (success) {
+            await collection.updateOne(
+                { _id: result.insertedId },
+                { $set: { emailValid: true } }
+            );
+
             return {
                 statusCode: 201,
                 body: JSON.stringify({ message: "Member created and email sent", memberId: result.insertedId }),
-            }
+            };
         } else {
             return {
-                statusCode: 500,
-                body: JSON.stringify({ error: "Member created but failed to send email", details: error, memberId: result.insertedId }),
-            }
+                statusCode: 201,
+                body: JSON.stringify({ message: "Member created but failed to send email", details: error, memberId: result.insertedId }),
+            };
         }
     } catch (error) {
+        // Email already exists
+        if (error instanceof MongoServerError && error.code === 11000) {
+            return {
+                statusCode: 409,
+                body: JSON.stringify({ error: "Member with this email already exists" }),
+            };
+        }
+
+        // JWT verification error
+        if (error instanceof Error && error.message.includes("JWT")) {
+            return {
+                statusCode: 401,
+                body: JSON.stringify({ error: "Unauthorized: Invalid token" })
+            };
+        }
+
+        // Generic error
         return {
-            statusCode: 401,
+            statusCode: 500,
             body: JSON.stringify({ error: error instanceof Error ? error.message : String(error) }),
-        };
+        }
     }
-};
+}
