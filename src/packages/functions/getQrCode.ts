@@ -1,12 +1,32 @@
 import { APIGatewayProxyHandlerV2 } from "aws-lambda";
 import { connectToMongo } from "../../database/mongo";
-import { verifyJWT } from "../../security/jwt";
 import type { Member } from "../types/member";
-import { sendQrCodeEmail } from "./sendEmail";
 
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
+    let { email } = JSON.parse(event.body || "{}");
+    const trimmedEmail = email?.trim() ?? "";
 
-    console.log("test");
+    if (!trimmedEmail) {
+        return {
+            statusCode: 400,
+            body: JSON.stringify({ error: "Email is required" }),
+        };
+    }
+
+    const db = await connectToMongo();
+    const collection = db.collection("members");
+
+    const member = await collection.findOne({ email: trimmedEmail }) as Member | null;
+
+
+}
+
+
+
+import { verifyJWT } from "../../security/jwt";
+
+
+export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     const token = event.headers.authorization?.split(" ")[1];
 
     if(!token) {
@@ -19,15 +39,14 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     try {
         const decoded = verifyJWT(token);
 
-        let { firstName, lastName,  email } = JSON.parse(event.body || "{}");
-        const trimmedFirstName = firstName?.trim() ?? "";
-        const trimmedLastName = lastName?.trim() ?? "";
+        let { fullName,  email } = JSON.parse(event.body || "{}");
+        const trimmedFullName = fullName?.trim() ?? "";
         const trimmedEmail = email?.trim() ?? "";
 
-        if (!trimmedFirstName || !trimmedLastName || !trimmedEmail) {
+        if (!trimmedFullName || !trimmedEmail) {
             return {
                 statusCode: 400,
-                body: JSON.stringify({ error: "First name, last name, and email are required" }),
+                body: JSON.stringify({ error: "Full name and email are required" }),
             };
         } else if (trimmedEmail.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/) === null) {
             return {
@@ -47,35 +66,20 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             }
         });
 
-        const qrUuid = crypto.randomUUID();
-
-        console.log(process.env.SES_SENDER_EMAIL);
-
-        const { success, data, error } = await sendQrCodeEmail(process.env.SES_SENDER_EMAIL!, trimmedFirstName, trimmedLastName, trimmedEmail, qrUuid);
-
         const newMember: Member = {
-            firstName: trimmedFirstName,
-            lastName: trimmedLastName,
+            fullName: trimmedFullName,
             email: trimmedEmail,
             createdAt: new Date(),
-            blocked: false,
-            qrUuid: qrUuid,
-            emailValid: success,
+            active: true,
+            qrUuid: crypto.randomUUID(),
         }
 
         const result = await collection.insertOne(newMember);
 
-        if (success) {
-            return {
-                statusCode: 201,
-                body: JSON.stringify({ message: "Member created and email sent", memberId: result.insertedId }),
-            }
-        } else {
-            return {
-                statusCode: 500,
-                body: JSON.stringify({ error: "Member created but failed to send email", details: error, memberId: result.insertedId }),
-            }
-        }
+        return {
+            statusCode: 201,
+            body: JSON.stringify({ message: "Member created", memberId: result.insertedId }),
+        };
     } catch (error) {
         return {
             statusCode: 401,

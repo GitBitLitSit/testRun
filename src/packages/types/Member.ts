@@ -1,7 +1,9 @@
 export type Member = {
-    fullName: string;
+    firstName: string;
+    lastName: string;
     email: string;
     createdAt: Date;
-    active: boolean;
+    blocked: boolean;
     qrUuid: string;
+    emailValid: boolean;
 }
