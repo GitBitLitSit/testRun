@@ -1,5 +1,5 @@
 import { APIGatewayProxyHandlerV2 } from "aws-lambda";
-import { connectToMongo } from "../../database/mongo";
+import { connectToMongo } from "../../adapters/database";
 
 export const connect: APIGatewayProxyHandlerV2 = async (event) => {
     const connectionId = event.requestContext.accountId;
@@ -11,13 +11,4 @@ export const connect: APIGatewayProxyHandlerV2 = async (event) => {
     });
 
     return { statusCode: 200, body: "Connected" };
-}
-
-export const disconnect: APIGatewayProxyHandlerV2 = async (event) => {
-    const connectionId = event.requestContext.accountId;
-
-    const db = await connectToMongo();
-    await db.collection("connections").deleteOne({ connectionId });
-
-    return { statusCode: 200, body: "Disconnected" };
 }

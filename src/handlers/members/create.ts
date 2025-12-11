@@ -1,9 +1,9 @@
 import { APIGatewayProxyHandlerV2 } from "aws-lambda";
-import { connectToMongo } from "../../database/mongo";
-import { verifyJWT } from "../../security/jwt";
-import type { Member } from "../types/member";
-import { sendQrCodeEmail } from "./sendEmail";
+import { connectToMongo } from "../../adapters/database";
+import { verifyJWT } from "../../lib/jwt";
+import { sendQrCodeEmail } from "../../adapters/email";
 import { MongoServerError } from "mongodb";
+import { Member } from "../../lib/types";
 
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     const token = event.headers.authorization?.split(" ")[1];
@@ -35,7 +35,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         }
 
         const db = await connectToMongo();
-        const collection = db.collection("members");
+        const collection = db.collection<Member>("members");
 
         const qrUuid = crypto.randomUUID();
         const newMember: Member = {

@@ -1,42 +1,14 @@
 import { APIGatewayProxyHandlerV2 } from "aws-lambda";
-import { connectToMongo } from "../../database/mongo";
-import { verifyJWT } from "../../security/jwt";
-import { Member } from "../types/member";
 import { ApiGatewayManagementApiClient, PostToConnectionCommand } from "@aws-sdk/client-apigatewaymanagementapi";
-
-async function broadcastToDashboard(data: any) {
-    const db = await connectToMongo();
-    const connections = await db.collection("connections").find({}).toArray();
-
-    if (connections.length === 0) return;
-
-    const endpoint = process.env.WEBSOCKET_API_URL!.replace("wss://", "https://");
-    const client = new ApiGatewayManagementApiClient({ endpoint });
-
-    const message = JSON.stringify(data);
-
-    const sendPromises = connections.map(async (conn) => {
-        try {
-            await client.send(new PostToConnectionCommand({
-                ConnectionId: conn.connectionId,
-                Data: message
-            }));
-        } catch (error: any) {
-            if (error.statusCode = 410) {
-                await db.collection("connections").deleteOne({ connectionId: conn.connectionId });
-            } else {
-                console.error("WebSocket send error:", error);
-            }
-        }
-    });
-
-    await Promise.all(sendPromises);
-}
+import { connectToMongo } from "../../adapters/database";
+import { verifyJWT } from "../../lib/jwt";
+import { Member, CheckIn } from "../../lib/types";
+import { broadcastToDashboard } from "../../adapters/notification";
 
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 
     let isAuthenticated = false;
-    let authSource = "unknown";
+    let authSource: CheckIn["source"] = "unknown";
 
     // Raspberry Pi login
     const apiKey = event.headers["x-api-key"];
@@ -74,7 +46,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 
         const db = await connectToMongo();
         const membersCollection = db.collection<Member>("members");
-        const checkinsCollection = db.collection("checkins");
+        const checkinsCollection = db.collection<CheckIn>("checkins");
 
         const member = await membersCollection.findOne({ qrUuid: trimmedQrCode });
 
@@ -102,7 +74,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         let warning = null;
 
         if (lastCheckin) {
-            const diffMs = now.getTime() - new Date(lastCheckin.checkinTime).getTime();
+            const diffMs = now.getTime() - new Date(lastCheckin.checkInTime).getTime();
             const diffMinutes = diffMs / 1000 / 60;
 
             if (diffMinutes < COOLDOWN_MINUTES) {
@@ -112,7 +84,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 
         await checkinsCollection.insertOne({
             memberId: member._id,
-            checkinTime: now,
+            checkInTime: now,
             source: authSource,
             passbackWarning: !!warning
         });
