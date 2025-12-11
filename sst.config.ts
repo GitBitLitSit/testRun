@@ -48,6 +48,9 @@ export default $config({
     api.route("POST /qrcode/validate", {
       handler: "./src/packages/functions/validateQrCode.handler",
       environment: {
+        JWT_SECRET_KEY: process.env.JWT_SECRET_KEY!,
+        MONGODB_URI: process.env.MONGODB_URI!,
+        MONGODB_DB_NAME: process.env.MONGODB_DB_NAME!,
         RASPBERRY_PI_API_KEY: process.env.RASPBERRY_PI_API_KEY!,
       },
       architecture: "arm64",
