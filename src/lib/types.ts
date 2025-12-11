@@ -28,4 +28,5 @@ export interface EmailVerification {
     memberId: string;
     verificationCode: string;
     expiresAt: Date;
+    createdAt: Date;
 }

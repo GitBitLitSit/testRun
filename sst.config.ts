@@ -71,6 +71,23 @@ export default $config({
       ]
     });
 
+    api.route("POST /auth/request-code", {
+      handler: "./src/handlers/auth/requestCode.handler",
+      environment: {
+        MONGODB_URI: process.env.MONGODB_URI!,
+        MONGODB_DB_NAME: process.env.MONGODB_DB_NAME!,
+        SES_SENDER_EMAIL: process.env.SES_SENDER_EMAIL!,
+      },
+      architecture: "arm64",
+      runtime: "nodejs22.x",
+      permissions: [
+        {
+          actions: ["ses:SendEmail", "ses:SendRawEmail"],
+          resources: ["*"] 
+        }
+      ]
+    })
+
     const webSocket = new sst.aws.ApiGatewayWebSocket("RealtimeApi");
 
     webSocket.route("$connect", {
