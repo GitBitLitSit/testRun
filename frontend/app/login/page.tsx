@@ -110,7 +110,6 @@ export default function LoginPage() {
       router.push("/owner/dashboard")
     } catch (err) {
       setError(err instanceof Error ? err.message : "Invalid credentials")
-    } finally {
       setIsLoading(false)
     }
   }
