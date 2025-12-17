@@ -46,19 +46,6 @@ export default function HomePage() {
                   Experience the finest billiard club in town. Professional tables, great atmosphere, and a welcoming
                   community await you.
                 </p>
-                <div className="flex flex-col gap-4 sm:flex-row sm:justify-center lg:justify-start">
-                  <Button asChild size="lg" variant="secondary" className="text-base">
-                    <Link href="/register">Join Our Club</Link>
-                  </Button>
-                  <Button
-                    asChild
-                    size="lg"
-                    variant="outline"
-                    className="border-primary-foreground text-base text-primary-foreground hover:bg-primary-foreground hover:text-primary bg-transparent"
-                  >
-                    <Link href="/opening-times">View Hours</Link>
-                  </Button>
-                </div>
               </div>
               <div className="relative h-64 w-full max-w-md lg:h-80">
                 <Image
