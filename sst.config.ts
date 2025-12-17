@@ -40,6 +40,8 @@ export default $config({
         JWT_SECRET_KEY: process.env.JWT_SECRET_KEY!,
         ADMIN_USERNAME: process.env.ADMIN_USERNAME!,
         ADMIN_PASSWORD: process.env.ADMIN_PASSWORD!,
+        MONGODB_URI: process.env.MONGODB_URI!,
+        MONGODB_DB_NAME: process.env.MONGODB_DB_NAME!,
       },
       architecture: "arm64",
       runtime: "nodejs22.x",

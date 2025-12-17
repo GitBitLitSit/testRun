@@ -4,6 +4,7 @@ node_modules/
 
 # Next.js build output
 .next/
+.open-next/
 out/
 
 # Environment Variables (CRITICAL - NEVER commit these)
