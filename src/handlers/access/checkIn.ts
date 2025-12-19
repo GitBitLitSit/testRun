@@ -4,6 +4,38 @@ import { connectToMongo } from "../../adapters/database";
 import { verifyJWT } from "../../lib/jwt";
 import { Member, CheckIn } from "../../lib/types";
 import { broadcastToDashboard } from "../../adapters/notification";
+import { Collection, ObjectId } from "mongodb";
+
+async function recordAndBroadcast(
+    checkinsCollection: Collection<CheckIn>,
+    now: Date,
+    params: {
+        memberId: ObjectId | null;
+        source: CheckIn["source"];
+        warning: string | null;
+        qrUuid?: string;
+        broadcastMember: Member;
+    }
+) {
+    await checkinsCollection.insertOne({
+        memberId: params.memberId as any,
+        checkInTime: now,
+        source: params.source,
+        warning: params.warning,
+        qrUuid: params.qrUuid 
+    } as any);
+
+    try {
+        await broadcastToDashboard({
+            type: "NEW_CHECKIN",
+            member: params.broadcastMember,
+            warning: params.warning,
+            timestamp: now
+        });
+    } catch (wsError) {
+        console.error("Failed to broadcast:", wsError);
+    }
+}
 
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 
@@ -36,6 +68,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 
         let { qrUuid } = JSON.parse(event.body || "{}");
         const trimmedQrCode = qrUuid?.trim() ?? "";
+        const now = new Date();
 
         if (!trimmedQrCode) {
             return {
@@ -51,17 +84,39 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         const member = await membersCollection.findOne({ qrUuid: trimmedQrCode });
 
         if (!member) {
-            return {
-                statusCode: 404,
-                body: JSON.stringify({ success: false, error: "Member not found" }),
-            };
+            const warningMsg = "Access Denied: Invalid QR / Member not found";
+
+            await recordAndBroadcast(checkinsCollection, now, {
+                memberId: null,
+                source: authSource,
+                warning: warningMsg,
+                qrUuid: trimmedQrCode,
+                broadcastMember: {
+                    _id: "unknown",
+                    firstName: "Unknown",
+                    lastName: "Visitor",
+                    email: "Invalid QR",
+                    createdAt: new Date(),
+                    blocked: false,
+                    emailValid: false,
+                    qrUuid: trimmedQrCode
+                }
+            });
+
+            return { statusCode: 404, body: JSON.stringify({ success: false, error: warningMsg }) };
         }
 
         if (member.blocked) {
-            return {
-                statusCode: 403,
-                body: JSON.stringify({ success: false, error: "Member is blocked" }),
-            };
+            const warningMsg = "Access Denied: Member is blocked";
+
+            await recordAndBroadcast(checkinsCollection, now, {
+                memberId: new ObjectId(member._id),
+                source: authSource,
+                warning: warningMsg,
+                broadcastMember: { ...member, _id: member._id }
+            });
+
+            return { statusCode: 403, body: JSON.stringify({ success: false, error: warningMsg }) };
         }
 
         const lastCheckin = await checkinsCollection.findOne(
@@ -69,7 +124,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             { sort: { checkInTime: -1 } }
         );
 
-        const now = new Date();
         const COOLDOWN_MINUTES = 5;
         let warning = null;
 
@@ -82,31 +136,12 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             }
         }
 
-        await checkinsCollection.insertOne({
-            memberId: member._id,
-            checkInTime: now,
+        await recordAndBroadcast(checkinsCollection, now, {
+            memberId: new ObjectId(member._id),
             source: authSource,
-            warning: warning
+            warning: warning,
+            broadcastMember: { ...member, _id: member._id }
         });
-
-        try {
-            await broadcastToDashboard({
-                type: "NEW_CHECKIN",
-                member: {
-                    id: member._id,
-                    firstName: member.firstName,
-                    lastName: member.lastName,
-                    email: member.email,
-                    createdAt: member.createdAt,
-                    blocked: member.blocked,
-                    emailValid: member.emailValid
-                },
-                warning: warning,
-                timestamp: now
-            });
-        } catch (wsError) {
-            console.error("Failed to broadcast to dashboard:", wsError);
-        }
 
         return {
             statusCode: 200,
