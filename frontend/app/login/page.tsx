@@ -28,6 +28,12 @@ export default function LoginPage() {
   const [ownerUsername, setOwnerUsername] = useState("")
   const [ownerPassword, setOwnerPassword] = useState("")
 
+  // NEW: Handler to clean up state when switching tabs
+  const handleTabChange = () => {
+    setError(null)
+    setIsLoading(false)
+  }
+
   const handleCustomerEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -140,7 +146,8 @@ export default function LoginPage() {
                 <CardDescription>Choose your account type to continue</CardDescription>
               </CardHeader>
               <CardContent>
-                <Tabs defaultValue="customer" className="w-full">
+                {/* FIX: Added onValueChange to clear errors when switching tabs */}
+                <Tabs defaultValue="customer" className="w-full" onValueChange={handleTabChange}>
                   <TabsList className="grid w-full grid-cols-2 mb-6">
                     <TabsTrigger value="customer">Customer</TabsTrigger>
                     <TabsTrigger value="owner">Owner</TabsTrigger>
