@@ -69,6 +69,17 @@ export default $config({
       runtime: "nodejs22.x",
     })
 
+    api.route("DELETE /members/{id}", {
+      handler: "./src/handlers/members/delete.handler",
+      environment: {
+        JWT_SECRET_KEY: process.env.JWT_SECRET_KEY!,
+        MONGODB_URI: process.env.MONGODB_URI!,
+        MONGODB_DB_NAME: process.env.MONGODB_DB_NAME!,
+      },
+      architecture: "arm64",
+      runtime: "nodejs22.x",
+    })
+
     api.route("POST /members/reset-qrcode", {
       handler: "./src/handlers/members/resetQrCode.handler",
       environment: {

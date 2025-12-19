@@ -30,6 +30,14 @@ export async function createMember(data: { firstName: string; lastName: string; 
   return handleResponse(res)
 }
 
+export async function deleteMember(memberId: string) {
+  const res = await fetch(`${API_URL}/members/${memberId}`, {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+  })
+  return handleResponse(res)
+}
+
 export async function getMembers(page = 1, search = "", blocked = false, limit = "20") {
   const params = new URLSearchParams({
     page: page.toString(),

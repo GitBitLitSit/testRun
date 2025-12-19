@@ -20,7 +20,8 @@ import {
 } from "@/components/ui/dialog"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Label } from "@/components/ui/label"
-import { getMembers, createMember, resetQrCode, getCheckIns, updateMember } from "@/lib/api"
+import { Switch } from "@/components/ui/switch"
+import { getMembers, createMember, resetQrCode, getCheckIns, updateMember, deleteMember } from "@/lib/api"
 import { useRealtimeCheckIns } from "@/hooks/use-realtime"
 import type { Member, CheckInEvent } from "@/lib/types"
 import {
@@ -35,9 +36,9 @@ import {
   ChevronRight,
   AlertCircle,
   Pencil,
+  Trash2,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { Switch } from "@/components/ui/switch"
 
 export default function OwnerDashboard() {
   const router = useRouter()
@@ -110,11 +111,14 @@ export default function OwnerDashboard() {
     blocked: false 
   })
 
+  // Delete State
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [memberToDelete, setMemberToDelete] = useState<Member | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
   const [stats, setStats] = useState({ total: 0, blocked: 0, active: 0 })
 
-  // --- NEU: CLEANUP EFFECT ---
-  // Dieser Effect feuert immer, wenn der Dialog geschlossen wird (createDialogOpen wird false).
-  // Er setzt das Formular UND die Fehlermeldung zurück.
+  // --- CLEANUP EFFECT ---
   useEffect(() => {
     if (!createDialogOpen) {
       setCreateError(null)
@@ -217,7 +221,6 @@ export default function OwnerDashboard() {
       await createMember(newMemberForm)
       toast({ title: "Member created", description: "New member has been added successfully." })
       setCreateDialogOpen(false)
-      // Reset wird jetzt vom useEffect erledigt
       setMembersPage(1)
       loadMembers()
     } catch (error) {
@@ -228,7 +231,6 @@ export default function OwnerDashboard() {
     }
   }
 
-  // Handle Edit Click
   const handleEditClick = (member: Member) => {
     setEditMemberForm({
       id: member._id,
@@ -240,7 +242,6 @@ export default function OwnerDashboard() {
     setEditDialogOpen(true)
   }
 
-  // Handle Update Logic
   const handleUpdateMember = async () => {
      if (!editMemberForm.firstName || !editMemberForm.lastName || !editMemberForm.email) {
       toast({ title: "Validation error", description: "All fields are required", variant: "destructive" })
@@ -261,6 +262,28 @@ export default function OwnerDashboard() {
       toast({ title: "Error", description: "Failed to update member", variant: "destructive" })
     } finally {
       setIsUpdating(false)
+    }
+  }
+
+  const handleDeleteClick = (member: Member) => {
+    setMemberToDelete(member)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!memberToDelete) return
+
+    setIsDeleting(true)
+    try {
+      await deleteMember(memberToDelete._id)
+      toast({ title: "Member deleted", description: `${memberToDelete.firstName} has been removed.` })
+      setDeleteDialogOpen(false)
+      setMemberToDelete(null)
+      loadMembers()
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to delete member", variant: "destructive" })
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -479,14 +502,17 @@ export default function OwnerDashboard() {
                               </TableCell>
                               <TableCell className="text-right">
                                 <div className="flex justify-end gap-2">
+                                  {/* View Button */}
                                   <Button variant="ghost" size="icon" onClick={() => handleViewMember(member)}>
                                     <Eye className="h-4 w-4" />
                                   </Button>
-                                  <Button variant="ghost" size="icon" onClick={() => handlePrintQR(member)}>
-                                    <Printer className="h-4 w-4" />
-                                  </Button>
+                                  {/* Edit Button */}
                                   <Button variant="ghost" size="icon" onClick={() => handleEditClick(member)}>
                                     <Pencil className="h-4 w-4" />
+                                  </Button>
+                                  {/* Delete Button (Modified) */}
+                                  <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(member)}>
+                                    <Trash2 className="h-4 w-4 text-red-500" />
                                   </Button>
                                 </div>
                               </TableCell>
@@ -753,6 +779,31 @@ export default function OwnerDashboard() {
             </Button>
             <Button onClick={handleUpdateMember} disabled={isUpdating}>
               {isUpdating ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* NEW: Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Member</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete <strong>{memberToDelete?.firstName} {memberToDelete?.lastName}</strong>? 
+              This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteConfirm} 
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Deleting..." : "Delete Member"}
             </Button>
           </DialogFooter>
         </DialogContent>
