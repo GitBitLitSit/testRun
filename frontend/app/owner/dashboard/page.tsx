@@ -39,8 +39,10 @@ import {
   Trash2,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useTranslation } from "react-i18next"
 
 export default function OwnerDashboard() {
+  const { t } = useTranslation()
   const router = useRouter()
   const { toast } = useToast()
 
@@ -140,12 +142,15 @@ export default function OwnerDashboard() {
     if (activeTabRef.current !== "checkins") {
       setUnreadCheckInsCount((prev) => prev + 1)
       toast({
-        title: event.warning ? "⚠️ Passback Warning" : "✓ New Check-in",
-        description: `${event.member.firstName} ${event.member.lastName} checked in`,
+        title: event.warning ? t("dashboard.realtime.passbackWarning") : t("dashboard.realtime.newCheckin"),
+        description: t("dashboard.realtime.memberCheckedIn", {
+          firstName: event.member.firstName,
+          lastName: event.member.lastName,
+        }),
         variant: event.warning ? "destructive" : "default",
       })
     }
-  }, [toast])
+  }, [toast, t])
 
   const { isConnected, error: wsError } = useRealtimeCheckIns(handleNewCheckIn)
 
@@ -166,7 +171,7 @@ export default function OwnerDashboard() {
       })
     } catch (error) {
       console.error(error)
-      toast({ title: "Error", description: "Failed to load members", variant: "destructive" })
+      toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedLoadMembers"), variant: "destructive" })
     } finally {
       setIsMembersLoading(false)
     }
@@ -188,7 +193,7 @@ export default function OwnerDashboard() {
       setTotalCheckInsPages(result.pagination?.totalPages || 1)
     } catch (error) {
       console.error(error)
-      toast({ title: "Error", description: "Failed to load check-ins", variant: "destructive" })
+      toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedLoadCheckins"), variant: "destructive" })
     } finally {
       setIsCheckInsLoading(false)
     }
@@ -212,19 +217,19 @@ export default function OwnerDashboard() {
     setCreateError(null)
 
     if (!newMemberForm.firstName || !newMemberForm.lastName || !newMemberForm.email) {
-      setCreateError("All fields are required")
+      setCreateError(t("dashboard.toasts.allFieldsRequired"))
       return
     }
 
     setIsCreating(true)
     try {
       await createMember(newMemberForm)
-      toast({ title: "Member created", description: "New member has been added successfully." })
+      toast({ title: t("dashboard.toasts.memberCreatedTitle"), description: t("dashboard.toasts.memberCreatedDesc") })
       setCreateDialogOpen(false)
       setMembersPage(1)
       loadMembers()
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to create member"
+      const errorMessage = error instanceof Error ? error.message : t("dashboard.toasts.errorTitle")
       setCreateError(errorMessage) 
     } finally {
       setIsCreating(false)
@@ -244,7 +249,7 @@ export default function OwnerDashboard() {
 
   const handleUpdateMember = async () => {
      if (!editMemberForm.firstName || !editMemberForm.lastName || !editMemberForm.email) {
-      toast({ title: "Validation error", description: "All fields are required", variant: "destructive" })
+      toast({ title: t("dashboard.toasts.validationErrorTitle"), description: t("dashboard.toasts.allFieldsRequired"), variant: "destructive" })
       return
     }
     setIsUpdating(true)
@@ -255,11 +260,11 @@ export default function OwnerDashboard() {
         email: editMemberForm.email,
         blocked: editMemberForm.blocked
       })
-      toast({ title: "Member updated", description: "Member details have been updated." })
+      toast({ title: t("dashboard.toasts.memberUpdatedTitle"), description: t("dashboard.toasts.memberUpdatedDesc") })
       setEditDialogOpen(false)
       loadMembers()
     } catch (error) {
-      toast({ title: "Error", description: "Failed to update member", variant: "destructive" })
+      toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedUpdateMember"), variant: "destructive" })
     } finally {
       setIsUpdating(false)
     }
@@ -276,12 +281,15 @@ export default function OwnerDashboard() {
     setIsDeleting(true)
     try {
       await deleteMember(memberToDelete._id)
-      toast({ title: "Member deleted", description: `${memberToDelete.firstName} has been removed.` })
+      toast({
+        title: t("dashboard.toasts.memberDeletedTitle"),
+        description: t("dashboard.toasts.memberDeletedDesc", { name: memberToDelete.firstName }),
+      })
       setDeleteDialogOpen(false)
       setMemberToDelete(null)
       loadMembers()
     } catch (error) {
-      toast({ title: "Error", description: "Failed to delete member", variant: "destructive" })
+      toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedDeleteMember"), variant: "destructive" })
     } finally {
       setIsDeleting(false)
     }
@@ -290,10 +298,10 @@ export default function OwnerDashboard() {
   const handleResetQrCode = async (memberId: string) => {
     try {
       await resetQrCode(memberId)
-      toast({ title: "QR Code reset", description: "Member QR code has been regenerated." })
+      toast({ title: t("dashboard.toasts.qrResetTitle"), description: t("dashboard.toasts.qrResetDesc") })
       loadMembers()
     } catch (error) {
-      toast({ title: "Error", description: "Failed to reset QR code", variant: "destructive" })
+      toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedResetQr"), variant: "destructive" })
     }
   }
 
@@ -309,9 +317,9 @@ export default function OwnerDashboard() {
       a.download = `members-${new Date().toISOString().split("T")[0]}.csv`
       a.click()
       window.URL.revokeObjectURL(url)
-      toast({ title: "Export complete", description: "Members data has been exported to CSV." })
+      toast({ title: t("dashboard.toasts.exportCompleteTitle"), description: t("dashboard.toasts.exportCompleteDesc") })
     } catch (error) {
-      toast({ title: "Error", description: "Failed to export CSV", variant: "destructive" })
+      toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedExport"), variant: "destructive" })
     }
   }
 
@@ -333,13 +341,13 @@ export default function OwnerDashboard() {
             imported++
           }
         }
-        toast({ title: "Import complete", description: `Imported ${imported} members.` })
+        toast({ title: t("dashboard.toasts.importCompleteTitle"), description: t("dashboard.toasts.importCompleteDesc", { count: imported }) })
         setImportDialogOpen(false)
         setCsvFile(null)
         setMembersPage(1)
         loadMembers()
       } catch (error) {
-        toast({ title: "Error", description: "Failed to import CSV", variant: "destructive" })
+        toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedImport"), variant: "destructive" })
       }
     }
     reader.readAsText(csvFile)
@@ -371,10 +379,10 @@ export default function OwnerDashboard() {
         <div className="container mx-auto px-4">
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="mb-2 text-3xl font-bold">Owner Dashboard</h1>
-              <p className="text-muted-foreground">Manage club members</p>
-              {wsError && <p className="text-sm text-destructive mt-1">WebSocket: {wsError}</p>}
-              {isConnected && <p className="text-sm text-green-600 mt-1">✓ Real-time updates connected</p>}
+              <h1 className="mb-2 text-3xl font-bold">{t("dashboard.title")}</h1>
+              <p className="text-muted-foreground">{t("dashboard.subtitle")}</p>
+              {wsError && <p className="text-sm text-destructive mt-1">{t("dashboard.websocketPrefix")} {wsError}</p>}
+              {isConnected && <p className="text-sm text-green-600 mt-1">{t("dashboard.realtimeConnected")}</p>}
             </div>
           </div>
 
@@ -382,7 +390,7 @@ export default function OwnerDashboard() {
           <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <Card className="border-primary/20">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Members</CardTitle>
+                <CardTitle className="text-sm font-medium">{t("dashboard.stats.totalMembers")}</CardTitle>
                 <Users className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
@@ -391,7 +399,7 @@ export default function OwnerDashboard() {
             </Card>
             <Card className="border-green-200">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active</CardTitle>
+                <CardTitle className="text-sm font-medium">{t("dashboard.stats.active")}</CardTitle>
                 <Users className="h-4 w-4 text-green-600" />
               </CardHeader>
               <CardContent>
@@ -400,7 +408,7 @@ export default function OwnerDashboard() {
             </Card>
             <Card className="border-red-200 sm:col-span-2 lg:col-span-1">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Blocked</CardTitle>
+                <CardTitle className="text-sm font-medium">{t("dashboard.stats.blocked")}</CardTitle>
                 <Users className="h-4 w-4 text-red-600" />
               </CardHeader>
               <CardContent>
@@ -411,9 +419,9 @@ export default function OwnerDashboard() {
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="members">Members</TabsTrigger>
+              <TabsTrigger value="members">{t("dashboard.tabs.members")}</TabsTrigger>
               <TabsTrigger value="checkins">
-                Recent Check-ins
+                {t("dashboard.tabs.checkins")}
                 {unreadCheckInsCount > 0 && (
                   <Badge className="ml-2 bg-red-500 text-white hover:bg-red-600">{unreadCheckInsCount}</Badge>
                 )}
@@ -426,18 +434,18 @@ export default function OwnerDashboard() {
                 <CardHeader>
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <CardTitle>Members Management</CardTitle>
-                      <CardDescription>View and manage all club members</CardDescription>
+                      <CardTitle>{t("dashboard.members.title")}</CardTitle>
+                      <CardDescription>{t("dashboard.members.description")}</CardDescription>
                     </div>
                     <div className="flex flex-col gap-2 sm:flex-row">
                       <Button onClick={() => setCreateDialogOpen(true)} size="sm">
-                        <UserPlus className="mr-2 h-4 w-4" /> Add Member
+                        <UserPlus className="mr-2 h-4 w-4" /> {t("dashboard.members.addMember")}
                       </Button>
                       <Button variant="outline" size="sm" onClick={handleExportCSV}>
-                        <Download className="mr-2 h-4 w-4" /> Export
+                        <Download className="mr-2 h-4 w-4" /> {t("dashboard.members.export")}
                       </Button>
                       <Button variant="outline" size="sm" onClick={() => setImportDialogOpen(true)}>
-                        <Upload className="mr-2 h-4 w-4" /> Import
+                        <Upload className="mr-2 h-4 w-4" /> {t("dashboard.members.import")}
                       </Button>
                     </div>
                   </div>
@@ -448,25 +456,25 @@ export default function OwnerDashboard() {
                   <div className="space-y-4">
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
-                        <Label htmlFor="search">Search</Label>
+                        <Label htmlFor="search">{t("dashboard.members.searchLabel")}</Label>
                         <Input
                           id="search"
-                          placeholder="Search by name or email..."
+                          placeholder={t("dashboard.members.searchPlaceholder")}
                           value={searchQuery}
                           onChange={(e) => { setSearchQuery(e.target.value); setMembersPage(1) }}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="status">Status</Label>
+                        <Label htmlFor="status">{t("dashboard.members.statusLabel")}</Label>
                         <select
                           id="status"
                           value={blockedFilter}
                           onChange={(e) => { setBlockedFilter(e.target.value as any); setMembersPage(1) }}
                           className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                         >
-                          <option value="all">All Members</option>
-                          <option value="active">Active</option>
-                          <option value="blocked">Blocked</option>
+                          <option value="all">{t("dashboard.members.statusAll")}</option>
+                          <option value="active">{t("dashboard.members.statusActive")}</option>
+                          <option value="blocked">{t("dashboard.members.statusBlocked")}</option>
                         </select>
                       </div>
                     </div>
@@ -475,18 +483,18 @@ export default function OwnerDashboard() {
                   {/* Members Table */}
                   {isMembersLoading ? (
                     <div className="flex items-center justify-center py-12">
-                      <div className="text-muted-foreground">Loading members...</div>
+                      <div className="text-muted-foreground">{t("dashboard.members.loading")}</div>
                     </div>
                   ) : (
                     <div className="overflow-x-auto rounded-md border">
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Name</TableHead>
-                            <TableHead className="hidden sm:table-cell">Email</TableHead>
-                            <TableHead className="hidden md:table-cell">Created</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+                            <TableHead>{t("dashboard.members.table.name")}</TableHead>
+                            <TableHead className="hidden sm:table-cell">{t("dashboard.members.table.email")}</TableHead>
+                            <TableHead className="hidden md:table-cell">{t("dashboard.members.table.created")}</TableHead>
+                            <TableHead>{t("dashboard.members.table.status")}</TableHead>
+                            <TableHead className="text-right">{t("dashboard.members.table.actions")}</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -496,9 +504,9 @@ export default function OwnerDashboard() {
                               <TableCell className="hidden sm:table-cell">{member.email}</TableCell>
                               <TableCell className="hidden md:table-cell">{new Date(member.createdAt).toLocaleDateString()}</TableCell>
                               <TableCell>
-                                {member.blocked ? <Badge variant="destructive">Blocked</Badge> : 
-                                 member.emailValid ? <Badge className="bg-green-600">Active</Badge> : 
-                                 <Badge variant="secondary">Pending</Badge>}
+                                {member.blocked ? <Badge variant="destructive">{t("dashboard.members.statusBadges.blocked")}</Badge> : 
+                                 member.emailValid ? <Badge className="bg-green-600">{t("dashboard.members.statusBadges.active")}</Badge> : 
+                                 <Badge variant="secondary">{t("dashboard.members.statusBadges.pending")}</Badge>}
                               </TableCell>
                               <TableCell className="text-right">
                                 <div className="flex justify-end gap-2">
@@ -519,7 +527,7 @@ export default function OwnerDashboard() {
                             </TableRow>
                           ))}
                           {membersData.length === 0 && (
-                            <TableRow><TableCell colSpan={5} className="text-center py-8">No members found</TableCell></TableRow>
+                            <TableRow><TableCell colSpan={5} className="text-center py-8">{t("dashboard.members.noMembers")}</TableCell></TableRow>
                           )}
                         </TableBody>
                       </Table>
@@ -530,7 +538,7 @@ export default function OwnerDashboard() {
                   {totalMembersPages > 1 && (
                     <div className="flex items-center justify-between">
                       <p className="text-sm text-muted-foreground">
-                        Page {membersPage} of {totalMembersPages} ({totalMembers} members)
+                        {t("dashboard.members.pagination", { page: membersPage, totalPages: totalMembersPages, total: totalMembers })}
                       </p>
                       <div className="flex gap-2">
                         <Button variant="outline" size="sm" onClick={() => setMembersPage(p => Math.max(1, p - 1))} disabled={membersPage === 1}>
@@ -551,19 +559,19 @@ export default function OwnerDashboard() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                   <div>
-                    <CardTitle>Recent Check-ins</CardTitle>
-                    <CardDescription>Real-time log of member access</CardDescription>
+                    <CardTitle>{t("dashboard.checkins.title")}</CardTitle>
+                    <CardDescription>{t("dashboard.checkins.description")}</CardDescription>
                   </div>
                 </CardHeader>
                 <CardContent>
                   {isCheckInsLoading ? (
                     <div className="flex items-center justify-center py-12">
-                      <div className="text-muted-foreground">Loading check-ins...</div>
+                      <div className="text-muted-foreground">{t("dashboard.checkins.loading")}</div>
                     </div>
                   ) : checkInsData.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 text-center">
                       <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
-                      <p className="text-muted-foreground">No recent check-ins found</p>
+                      <p className="text-muted-foreground">{t("dashboard.checkins.none")}</p>
                     </div>
                   ) : (
                     <div className="space-y-4">
@@ -586,10 +594,10 @@ export default function OwnerDashboard() {
                               </div>
                               <div>
                                 <p className="font-semibold">
-                                  {checkIn.member ? `${checkIn.member.firstName} ${checkIn.member.lastName}` : "Unknown Member"}
+                                  {checkIn.member ? `${checkIn.member.firstName} ${checkIn.member.lastName}` : t("dashboard.checkins.unknownMember")}
                                 </p>
                                 <p className="text-sm text-muted-foreground">
-                                  {checkIn.member?.email || "No email"}
+                                  {checkIn.member?.email || t("dashboard.checkins.noEmail")}
                                 </p>
                                 {warningMessage && (
                                   <p className="text-sm text-red-600 font-medium mt-1">{warningMessage}</p>
@@ -612,7 +620,7 @@ export default function OwnerDashboard() {
 
                   <div className="mt-6 flex items-center justify-between">
                     <p className="text-sm text-muted-foreground">
-                      Page {checkInsPage} of {totalCheckInsPages} ({totalCheckIns} check ins)
+                      {t("dashboard.checkins.pagination", { page: checkInsPage, totalPages: totalCheckInsPages, total: totalCheckIns })}
                     </p>
                     <div className="flex gap-2">
                         <Button 
@@ -646,12 +654,12 @@ export default function OwnerDashboard() {
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create New Member</DialogTitle>
-            <DialogDescription>Add a new member to the club</DialogDescription>
+            <DialogTitle>{t("dashboard.dialogs.createTitle")}</DialogTitle>
+            <DialogDescription>{t("dashboard.dialogs.createDescription")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="new-firstName">First Name</Label>
+              <Label htmlFor="new-firstName">{t("dashboard.dialogs.firstName")}</Label>
               <Input
                 id="new-firstName"
                 value={newMemberForm.firstName}
@@ -660,7 +668,7 @@ export default function OwnerDashboard() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="new-lastName">Last Name</Label>
+              <Label htmlFor="new-lastName">{t("dashboard.dialogs.lastName")}</Label>
               <Input
                 id="new-lastName"
                 value={newMemberForm.lastName}
@@ -669,7 +677,7 @@ export default function OwnerDashboard() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="new-email">Email</Label>
+              <Label htmlFor="new-email">{t("dashboard.dialogs.email")}</Label>
               <Input
                 id="new-email"
                 type="email"
@@ -687,7 +695,7 @@ export default function OwnerDashboard() {
                 onCheckedChange={(checked) => setNewMemberForm({...newMemberForm, sendEmail: checked})}
               />
               <Label htmlFor="send-email" className="font-normal cursor-pointer">
-                Send email with QR-code
+                {t("dashboard.dialogs.sendEmailWithQr")}
               </Label>
             </div>
 
@@ -703,9 +711,9 @@ export default function OwnerDashboard() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
-              Cancel
+              {t("common.cancel")}
             </Button>
-            <Button onClick={handleCreateMember} disabled={isCreating}>{isCreating ? "Creating..." : "Create Member"}</Button>
+            <Button onClick={handleCreateMember} disabled={isCreating}>{isCreating ? t("dashboard.dialogs.creating") : t("dashboard.dialogs.createCta")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -714,12 +722,12 @@ export default function OwnerDashboard() {
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Member</DialogTitle>
-            <DialogDescription>Update member details and status</DialogDescription>
+            <DialogTitle>{t("dashboard.dialogs.editTitle")}</DialogTitle>
+            <DialogDescription>{t("dashboard.dialogs.editDescription")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-firstName">First Name</Label>
+              <Label htmlFor="edit-firstName">{t("dashboard.dialogs.firstName")}</Label>
               <Input
                 id="edit-firstName"
                 value={editMemberForm.firstName}
@@ -727,7 +735,7 @@ export default function OwnerDashboard() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-lastName">Last Name</Label>
+              <Label htmlFor="edit-lastName">{t("dashboard.dialogs.lastName")}</Label>
               <Input
                 id="edit-lastName"
                 value={editMemberForm.lastName}
@@ -735,7 +743,7 @@ export default function OwnerDashboard() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="edit-email">Email</Label>
+              <Label htmlFor="edit-email">{t("dashboard.dialogs.email")}</Label>
               <Input
                 id="edit-email"
                 value={editMemberForm.email}
@@ -745,7 +753,7 @@ export default function OwnerDashboard() {
             
             {/* Status Radio Buttons */}
             <div className="space-y-3 pt-2">
-              <Label>Status</Label>
+              <Label>{t("dashboard.dialogs.status")}</Label>
               <div className="flex gap-6">
                 <div className="flex items-center space-x-2">
                   <input
@@ -756,7 +764,7 @@ export default function OwnerDashboard() {
                     checked={!editMemberForm.blocked}
                     onChange={() => setEditMemberForm({ ...editMemberForm, blocked: false })}
                   />
-                  <Label htmlFor="status-active" className="font-normal cursor-pointer">Active</Label>
+                  <Label htmlFor="status-active" className="font-normal cursor-pointer">{t("dashboard.dialogs.active")}</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <input
@@ -767,7 +775,7 @@ export default function OwnerDashboard() {
                     checked={editMemberForm.blocked}
                     onChange={() => setEditMemberForm({ ...editMemberForm, blocked: true })}
                   />
-                  <Label htmlFor="status-blocked" className="font-normal cursor-pointer text-red-600">Blocked</Label>
+                  <Label htmlFor="status-blocked" className="font-normal cursor-pointer text-red-600">{t("dashboard.dialogs.blocked")}</Label>
                 </div>
               </div>
             </div>
@@ -775,10 +783,10 @@ export default function OwnerDashboard() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button onClick={handleUpdateMember} disabled={isUpdating}>
-              {isUpdating ? "Saving..." : "Save Changes"}
+              {isUpdating ? t("dashboard.dialogs.saving") : t("dashboard.dialogs.save")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -788,22 +796,21 @@ export default function OwnerDashboard() {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Member</DialogTitle>
+            <DialogTitle>{t("dashboard.dialogs.deleteTitle")}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete <strong>{memberToDelete?.firstName} {memberToDelete?.lastName}</strong>? 
-              This action cannot be undone.
+              {t("dashboard.dialogs.deleteDescription", { name: `${memberToDelete?.firstName || ""} ${memberToDelete?.lastName || ""}`.trim() })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button 
               variant="destructive" 
               onClick={handleDeleteConfirm} 
               disabled={isDeleting}
             >
-              {isDeleting ? "Deleting..." : "Delete Member"}
+              {isDeleting ? t("dashboard.dialogs.deleting") : t("dashboard.dialogs.deleteCta")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -813,15 +820,15 @@ export default function OwnerDashboard() {
       <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Import Members from CSV</DialogTitle>
-            <DialogDescription>Upload a CSV file with columns: firstName, lastName, email</DialogDescription>
+            <DialogTitle>{t("dashboard.dialogs.importTitle")}</DialogTitle>
+            <DialogDescription>{t("dashboard.dialogs.importDescription")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <Input type="file" accept=".csv" onChange={(e) => setCsvFile(e.target.files?.[0] || null)} />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setImportDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleImportCSV} disabled={!csvFile}>Import</Button>
+            <Button variant="outline" onClick={() => setImportDialogOpen(false)}>{t("common.cancel")}</Button>
+            <Button onClick={handleImportCSV} disabled={!csvFile}>{t("dashboard.dialogs.importCta")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -830,34 +837,34 @@ export default function OwnerDashboard() {
       <Sheet open={detailsDrawerOpen} onOpenChange={setDetailsDrawerOpen}>
         <SheetContent className="w-full sm:max-w-md overflow-y-auto p-6">
           <SheetHeader>
-            <SheetTitle>Member Details</SheetTitle>
-            <SheetDescription>View and manage member information</SheetDescription>
+            <SheetTitle>{t("dashboard.dialogs.detailsTitle")}</SheetTitle>
+            <SheetDescription>{t("dashboard.dialogs.detailsDescription")}</SheetDescription>
           </SheetHeader>
           {selectedMember && (
             <div className="mt-6 space-y-6">
               <div className="space-y-4">
                 <Card className="px-4 py-3">
-                  <h3 className="mb-3 text-sm font-semibold">Personal Information</h3>
+                  <h3 className="mb-3 text-sm font-semibold">{t("dashboard.dialogs.personalInfo")}</h3>
                   <div className="space-y-2 text-sm">
-                    <div className="flex justify-between"><span className="text-muted-foreground">Name:</span><span className="font-medium">{selectedMember.firstName} {selectedMember.lastName}</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground">Email:</span><span className="font-medium">{selectedMember.email}</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground">ID:</span><span className="font-mono text-xs">{selectedMember._id}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.dialogs.nameLabel")}</span><span className="font-medium">{selectedMember.firstName} {selectedMember.lastName}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.dialogs.emailLabel")}</span><span className="font-medium">{selectedMember.email}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">{t("dashboard.dialogs.idLabel")}</span><span className="font-mono text-xs">{selectedMember._id}</span></div>
                   </div>
                 </Card>
                 <Card className="px-4 py-3">
-                  <h3 className="mb-3 text-sm font-semibold">QR Code</h3>
+                  <h3 className="mb-3 text-sm font-semibold">{t("dashboard.dialogs.qrCode")}</h3>
                   <div className="flex justify-center py-4">
                     <img
                       src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(selectedMember.qrUuid)}`}
-                      alt="Member QR Code"
+                      alt={t("dashboard.dialogs.qrCode")}
                       className="rounded-lg border-2 border-primary"
                     />
                   </div>
                 </Card>
               </div>
               <div className="flex flex-col gap-2">
-                <Button onClick={() => handlePrintQR(selectedMember)} className="w-full"><Printer className="mr-2 h-4 w-4" /> Print QR</Button>
-                <Button variant="outline" onClick={() => handleResetQrCode(selectedMember._id)} className="w-full"><RotateCcw className="mr-2 h-4 w-4" /> Reset QR</Button>
+                <Button onClick={() => handlePrintQR(selectedMember)} className="w-full"><Printer className="mr-2 h-4 w-4" /> {t("dashboard.dialogs.printQr")}</Button>
+                <Button variant="outline" onClick={() => handleResetQrCode(selectedMember._id)} className="w-full"><RotateCcw className="mr-2 h-4 w-4" /> {t("dashboard.dialogs.resetQr")}</Button>
               </div>
             </div>
           )}
