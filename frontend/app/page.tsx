@@ -8,8 +8,10 @@ import { MapPin, Phone, Mail, Users, Trophy, Clock, ChevronLeft, ChevronRight } 
 import Link from "next/link"
 import Image from "next/image"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 
 export default function HomePage() {
+  const { t } = useTranslation()
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
   const images = [
@@ -40,11 +42,10 @@ export default function HomePage() {
             <div className="flex flex-col items-center gap-8 lg:flex-row lg:justify-between">
               <div className="max-w-2xl text-center lg:text-left">
                 <h1 className="mb-4 text-4xl font-bold leading-tight md:text-5xl lg:text-6xl">
-                  Welcome to <span className="text-secondary">15 Palle</span>
+                  {t("home.heroTitle", { club: "15 Palle" })}
                 </h1>
                 <p className="mb-8 text-lg leading-relaxed text-primary-foreground/90 md:text-xl">
-                  Experience the finest billiard club in town. Professional tables, great atmosphere, and a welcoming
-                  community await you.
+                  {t("home.heroSubtitle")}
                 </p>
               </div>
               <div className="relative h-64 w-full max-w-md lg:h-80">
@@ -63,16 +64,16 @@ export default function HomePage() {
         {/* Features Section */}
         <section className="py-16">
           <div className="container mx-auto px-4">
-            <h2 className="mb-12 text-center text-3xl font-bold text-foreground md:text-4xl">Why Choose 15 Palle?</h2>
+            <h2 className="mb-12 text-center text-3xl font-bold text-foreground md:text-4xl">{t("home.whyChoose")}</h2>
             <div className="grid gap-8 md:grid-cols-3">
               <Card className="border-primary/20">
                 <CardContent className="pt-6">
                   <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
                     <Trophy className="h-6 w-6 text-primary" />
                   </div>
-                  <h3 className="mb-2 text-xl font-semibold">Professional Tables</h3>
+                  <h3 className="mb-2 text-xl font-semibold">{t("home.features.professionalTablesTitle")}</h3>
                   <p className="text-muted-foreground">
-                    Top-quality billiard tables maintained to professional standards for the best playing experience.
+                    {t("home.features.professionalTablesText")}
                   </p>
                 </CardContent>
               </Card>
@@ -82,9 +83,9 @@ export default function HomePage() {
                   <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-secondary/10">
                     <Users className="h-6 w-6 text-secondary" />
                   </div>
-                  <h3 className="mb-2 text-xl font-semibold">Friendly Community</h3>
+                  <h3 className="mb-2 text-xl font-semibold">{t("home.features.friendlyCommunityTitle")}</h3>
                   <p className="text-muted-foreground">
-                    Join a welcoming community of billiard enthusiasts. From beginners to pros, everyone is welcome.
+                    {t("home.features.friendlyCommunityText")}
                   </p>
                 </CardContent>
               </Card>
@@ -94,9 +95,9 @@ export default function HomePage() {
                   <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-accent/10">
                     <Clock className="h-6 w-6 text-accent" />
                   </div>
-                  <h3 className="mb-2 text-xl font-semibold">Extended Hours</h3>
+                  <h3 className="mb-2 text-xl font-semibold">{t("home.features.extendedHoursTitle")}</h3>
                   <p className="text-muted-foreground">
-                    Open late every day of the week. Perfect for after-work games or weekend tournaments.
+                    {t("home.features.extendedHoursText")}
                   </p>
                 </CardContent>
               </Card>
@@ -107,7 +108,7 @@ export default function HomePage() {
         {/* Gallery Section */}
         <section className="bg-muted/50 py-16">
           <div className="container mx-auto px-4">
-            <h2 className="mb-12 text-center text-3xl font-bold text-foreground md:text-4xl">Our Club</h2>
+            <h2 className="mb-12 text-center text-3xl font-bold text-foreground md:text-4xl">{t("home.ourClub")}</h2>
 
             <div className="block lg:hidden">
               <div className="relative mx-auto max-w-lg">
@@ -164,51 +165,51 @@ export default function HomePage() {
         {/* Contact Section */}
         <section className="py-16">
           <div className="container mx-auto px-4">
-            <h2 className="mb-12 text-center text-3xl font-bold text-foreground md:text-4xl">Visit Us</h2>
+            <h2 className="mb-12 text-center text-3xl font-bold text-foreground md:text-4xl">{t("home.visitUs")}</h2>
             <div className="mx-auto max-w-3xl">
               <Card className="border-primary/20">
                 <CardContent className="p-6 md:p-8">
                   <div className="grid gap-6 md:grid-cols-2">
                     <div>
-                      <h3 className="mb-4 text-xl font-semibold text-primary">Contact Information</h3>
+                      <h3 className="mb-4 text-xl font-semibold text-primary">{t("home.contactInformation")}</h3>
                       <div className="space-y-4">
                         <div className="flex items-start gap-3">
                           <MapPin className="mt-1 h-5 w-5 flex-shrink-0 text-primary" />
                           <div>
-                            <p className="font-medium">Address</p>
+                            <p className="font-medium">{t("home.address")}</p>
                             <p className="text-sm text-muted-foreground">Via Bruno Buozzi, 12, 39100 Bolzano BZ</p>
                           </div>
                         </div>
                         <div className="flex items-start gap-3">
                           <Phone className="mt-1 h-5 w-5 flex-shrink-0 text-primary" />
                           <div>
-                            <p className="font-medium">Phone</p>
+                            <p className="font-medium">{t("home.phone")}</p>
                             <p className="text-sm text-muted-foreground">392 810 0919</p>
                           </div>
                         </div>
                         <div className="flex items-start gap-3">
                           <Mail className="mt-1 h-5 w-5 flex-shrink-0 text-primary" />
                           <div>
-                            <p className="font-medium">Email</p>
+                            <p className="font-medium">{t("home.email")}</p>
                             <p className="text-sm text-muted-foreground">info@15palle.it</p>
                           </div>
                         </div>
                       </div>
                     </div>
                     <div>
-                      <h3 className="mb-4 text-xl font-semibold text-primary">Opening Hours</h3>
+                      <h3 className="mb-4 text-xl font-semibold text-primary">{t("home.openingHours")}</h3>
                       <div className="space-y-2 text-sm">
                         <div className="flex flex-col gap-1 sm:flex-row sm:justify-between">
-                          <span className="text-muted-foreground">Monday - Saturday</span>
+                          <span className="text-muted-foreground">{t("home.mondaySaturday")}</span>
                           <span className="font-medium">2:30 PM - 1:00 AM</span>
                         </div>
                         <div className="flex flex-col gap-1 sm:flex-row sm:justify-between">
-                          <span className="text-muted-foreground">Sunday</span>
+                          <span className="text-muted-foreground">{t("home.sunday")}</span>
                           <span className="font-medium">2:30 PM - 12:00 AM</span>
                         </div>
                       </div>
                       <Button asChild className="mt-6 w-full" variant="default">
-                        <Link href="/opening-times">View Full Schedule</Link>
+                        <Link href="/opening-times">{t("home.viewFullSchedule")}</Link>
                       </Button>
                     </div>
                   </div>

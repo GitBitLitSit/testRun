@@ -1,6 +1,10 @@
+"use client"
+
 import { MapPin, Phone, Mail, Clock } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 export function Footer() {
+  const { t } = useTranslation()
   return (
     <footer className="border-t border-border bg-muted/50">
       <div className="container mx-auto px-4 py-12">
@@ -8,12 +12,12 @@ export function Footer() {
           <div>
             <h3 className="mb-4 text-lg font-semibold text-primary">15 Palle</h3>
             <p className="text-sm text-muted-foreground">
-              Your premier billiard club and bar. Experience the perfect combination of sport and entertainment.
+              {t("footer.tagline")}
             </p>
           </div>
 
           <div>
-            <h3 className="mb-4 text-lg font-semibold">Contact</h3>
+            <h3 className="mb-4 text-lg font-semibold">{t("footer.contact")}</h3>
             <div className="space-y-3 text-sm">
               <div className="flex items-start gap-2">
                 <MapPin className="mt-0.5 h-4 w-4 text-primary" />
@@ -31,7 +35,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="mb-4 text-lg font-semibold">Opening Hours</h3>
+            <h3 className="mb-4 text-lg font-semibold">{t("footer.openingHours")}</h3>
             <div className="space-y-2 text-sm">
               <div className="flex items-start gap-2">
                 <Clock className="mt-0.5 h-4 w-4 text-primary" />
@@ -44,26 +48,28 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="mb-4 text-lg font-semibold">Quick Links</h3>
+            <h3 className="mb-4 text-lg font-semibold">{t("footer.quickLinks")}</h3>
             <div className="space-y-2 text-sm">
               <a href="/" className="block text-muted-foreground transition-colors hover:text-primary">
-                Home
+                {t("footer.home")}
               </a>
               <a href="/opening-times" className="block text-muted-foreground transition-colors hover:text-primary">
-                Opening Times
+                {t("footer.openingTimes")}
               </a>
               <a href="/contact" className="block text-muted-foreground transition-colors hover:text-primary">
-                Contact
+                {t("footer.contactLink")}
               </a>
               <a href="/register" className="block text-muted-foreground transition-colors hover:text-primary">
-                Register
+                {t("footer.register")}
               </a>
             </div>
           </div>
         </div>
 
         <div className="mt-8 border-t border-border pt-8 text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} 15 Palle. All rights reserved.</p>
+          <p>
+            &copy; {new Date().getFullYear()} 15 Palle. {t("footer.rights")}
+          </p>
         </div>
       </div>
     </footer>

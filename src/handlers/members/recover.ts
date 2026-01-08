@@ -3,6 +3,7 @@ import { connectToMongo } from "../../adapters/database";
 import { Member, EmailVerification } from "../../lib/types";
 import { sendQrCodeEmail } from "../../adapters/email";
 import QRCode from "qrcode";
+import { errorResponse, messageResponse } from "../../lib/http";
 
 
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
@@ -15,10 +16,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         const method = (deliveryMethod === "email") ? "email" : "display";
 
         if (!trimmedEmail || !trimmedVerificationCode) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ error: "EMAIL_AND_CONFIRMATION_CODE" }),
-            };
+            return errorResponse(event, 400, "EMAIL_AND_CONFIRMATION_CODE");
         }
 
         const db = await connectToMongo();
@@ -27,10 +25,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         const memberRecord = await memberCollection.findOne({ email: trimmedEmail });
 
         if (!memberRecord) {
-            return {
-                statusCode: 404,
-                body: JSON.stringify({ error: "MEMBER_NOT_FOUND" }),
-            }
+            return errorResponse(event, 404, "MEMBER_NOT_FOUND");
         }
 
         const emailVerificationCollection = db.collection<EmailVerification>("emailVerifications");
@@ -38,20 +33,11 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         const emailVerificationRecord = await emailVerificationCollection.findOne({ memberId: memberRecord._id, verificationCode: trimmedVerificationCode });
 
         if (!emailVerificationRecord) {
-            return {
-                statusCode: 403,
-                body: JSON.stringify({ error: "INVALID_EMAIL_OR_CODE" }),
-            }
+            return errorResponse(event, 403, "INVALID_EMAIL_OR_CODE");
         } else if (new Date(emailVerificationRecord.expiresAt) < new Date()) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ error: "CODE_EXPIRED" }),
-            }
+            return errorResponse(event, 400, "CODE_EXPIRED");
         } else if (emailVerificationRecord.verificationCode !== trimmedVerificationCode) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ error: "INVALID_CODE" }),
-            }
+            return errorResponse(event, 400, "INVALID_CODE");
         }
 
         await memberCollection.updateOne(
@@ -61,29 +47,18 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 
         await emailVerificationCollection.deleteOne({ _id: emailVerificationRecord._id });
 
-        let responseBody = {};
-    
         if (method === "email") {
             await sendQrCodeEmail(process.env.SES_SENDER_EMAIL!, memberRecord.firstName, memberRecord.lastName, memberRecord.email, memberRecord.qrUuid);
-            responseBody = { success: true, message: "QR_CODE_SEND_TO_EMAIL" };
+            return messageResponse(event, 200, "QR_CODE_SEND_TO_EMAIL", undefined, { success: true });
         } else {
             const qrImage = await QRCode.toDataURL(memberRecord.qrUuid);
-            responseBody = {
+            return messageResponse(event, 200, "CODE_VERIFIED_SUCCESSFULLY", undefined, {
                 success: true,
-                message: "CODE_VERIFIED_SUCCESSFULLY",
                 qrImage: qrImage,
                 member: memberRecord
-            }
+            });
         }
-
-        return {
-            statusCode: 200,
-            body: JSON.stringify(responseBody),
-        };
     } catch (error) {
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ error: "INTERNAL_SERVER_ERROR" }),
-        };
+        return errorResponse(event, 500, "INTERNAL_SERVER_ERROR");
     }
 }

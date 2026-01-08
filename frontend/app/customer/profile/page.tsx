@@ -10,8 +10,10 @@ import { useRouter } from "next/navigation"
 import { User, Mail, Calendar, Maximize2, Minimize2, Download, Wallet } from "lucide-react"
 import { QRCodeSVG } from "qrcode.react" // Wir bleiben bei SVG für scharfe Anzeige
 import type { Member } from "@/lib/types"
+import { useTranslation } from "react-i18next"
 
 export default function CustomerProfilePage() {
+  const { t } = useTranslation()
   const router = useRouter()
   const [member, setMember] = useState<Member | null>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
@@ -77,7 +79,7 @@ export default function CustomerProfilePage() {
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading profile...</p>
+          <p className="text-muted-foreground">{t("profile.loading")}</p>
         </div>
       </div>
     )
@@ -92,8 +94,8 @@ export default function CustomerProfilePage() {
           <div className="mx-auto max-w-4xl">
             <div className="mb-8 flex items-center justify-between">
               <div>
-                <h1 className="mb-2 text-3xl font-bold">My Profile</h1>
-                <p className="text-muted-foreground">Your membership information</p>
+                <h1 className="mb-2 text-3xl font-bold">{t("profile.title")}</h1>
+                <p className="text-muted-foreground">{t("profile.subtitle")}</p>
               </div>
             </div>
 
@@ -101,12 +103,12 @@ export default function CustomerProfilePage() {
               {/* Profile Information */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Personal Information</CardTitle>
-                  <CardDescription>Your account details</CardDescription>
+                  <CardTitle>{t("profile.personalInfo")}</CardTitle>
+                  <CardDescription>{t("profile.accountDetails")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">First Name</p>
+                    <p className="text-xs text-muted-foreground">{t("profile.firstName")}</p>
                     <div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2">
                       <User className="h-4 w-4 text-muted-foreground" />
                       <span>{member.firstName}</span>
@@ -114,7 +116,7 @@ export default function CustomerProfilePage() {
                   </div>
 
                   <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">Last Name</p>
+                    <p className="text-xs text-muted-foreground">{t("profile.lastName")}</p>
                     <div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2">
                       <User className="h-4 w-4 text-muted-foreground" />
                       <span>{member.lastName}</span>
@@ -122,7 +124,7 @@ export default function CustomerProfilePage() {
                   </div>
 
                   <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">Email</p>
+                    <p className="text-xs text-muted-foreground">{t("profile.email")}</p>
                     <div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2">
                       <Mail className="h-4 w-4 text-muted-foreground" />
                       <span className="break-all">{member.email}</span>
@@ -130,7 +132,7 @@ export default function CustomerProfilePage() {
                   </div>
 
                   <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">Member Since</p>
+                    <p className="text-xs text-muted-foreground">{t("profile.memberSince")}</p>
                     <div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       <span>{new Date(member.createdAt).toLocaleDateString()}</span>
@@ -138,13 +140,13 @@ export default function CustomerProfilePage() {
                   </div>
 
                   <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">Status</p>
+                    <p className="text-xs text-muted-foreground">{t("profile.status")}</p>
                     {member.blocked ? (
-                      <Badge variant="destructive">Account Blocked</Badge>
+                      <Badge variant="destructive">{t("profile.accountBlocked")}</Badge>
                     ) : member.emailValid ? (
-                      <Badge className="bg-green-600 hover:bg-green-700">Active Member</Badge>
+                      <Badge className="bg-green-600 hover:bg-green-700">{t("profile.activeMember")}</Badge>
                     ) : (
-                      <Badge variant="secondary">Pending Verification</Badge>
+                      <Badge variant="secondary">{t("profile.pendingVerification")}</Badge>
                     )}
                   </div>
                 </CardContent>
@@ -155,8 +157,8 @@ export default function CustomerProfilePage() {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div>
-                      <CardTitle>Your QR Code</CardTitle>
-                      <CardDescription>Present this to scan at the club</CardDescription>
+                      <CardTitle>{t("profile.yourQrCode")}</CardTitle>
+                      <CardDescription>{t("profile.presentToScan")}</CardDescription>
                     </div>
                     <Button
                       variant="ghost"
@@ -200,12 +202,12 @@ export default function CustomerProfilePage() {
                         <div className="grid gap-3 w-full max-w-xs mx-auto">
                             <Button className="w-full" variant="outline" onClick={handleDownloadQR}>
                                 <Download className="mr-2 h-4 w-4" />
-                                Save as Image
+                                {t("profile.saveAsImage")}
                             </Button>
                             
                             <Button className="w-full bg-black text-white hover:bg-gray-800" onClick={handleGoogleWallet}>
                                 <Wallet className="mr-2 h-4 w-4" />
-                                Add to Google Wallet
+                                {t("profile.addToGoogleWallet")}
                             </Button>
                         </div>
                     )}
@@ -213,11 +215,11 @@ export default function CustomerProfilePage() {
                     <div>
                       {member.blocked ? (
                         <Badge variant="destructive" className="text-lg px-4 py-2">
-                          ⚠ Account Blocked
+                          ⚠ {t("profile.accountBlocked")}
                         </Badge>
                       ) : (
                         <Badge className="bg-green-600 hover:bg-green-700 text-lg px-4 py-2">
-                          ✓ Active Member
+                          ✓ {t("profile.activeMember")}
                         </Badge>
                       )}
                     </div>

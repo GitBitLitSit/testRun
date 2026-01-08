@@ -3,24 +3,19 @@ import { connectToMongo } from "../../adapters/database";
 import { Member, EmailVerification } from "../../lib/types";
 import { sendVerificationEmail } from "../../adapters/email";
 import { APIGatewayProxyHandlerV2 } from "aws-lambda";
+import { errorResponse, messageResponse } from "../../lib/http";
 
 const ses = new SESClient({ region: "eu-west-1" });
 
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
-    const SAFE_RESPONSE = {
-        statusCode: 200,
-        body: JSON.stringify({ message: "IF_ACCOUNT_EXISTS" }),
-    };
+    const SAFE_RESPONSE = messageResponse(event, 200, "IF_ACCOUNT_EXISTS");
 
     try {
         let { email } = JSON.parse(event.body || "{}");
         const trimmedEmail = email?.trim() ?? "";
 
         if (!trimmedEmail) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ error: "EMAIL_REQUIRED" }),
-            };
+            return errorResponse(event, 400, "EMAIL_REQUIRED");
         }
 
         const db = await connectToMongo();
@@ -65,9 +60,6 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 
     } catch (error) {
         console.error("Request Code Error:", error);
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ error: "INTERNAL_SERVER_ERROR" }),
-        };
+        return errorResponse(event, 500, "INTERNAL_SERVER_ERROR");
     }
 };

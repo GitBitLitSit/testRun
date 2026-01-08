@@ -1,12 +1,14 @@
 import { APIGatewayProxyHandlerV2 } from "aws-lambda";
 import { verifyJWT } from "../../lib/jwt";
 import { connectToMongo } from "../../adapters/database";
+import { AppError } from "../../lib/appError";
+import { errorResponse, json } from "../../lib/http";
 
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     const token = event.headers.authorization?.split(" ")[1];
 
     if (!token) {
-        return { statusCode: 401, body: JSON.stringify({ error: "NO_TOKEN_PROVIDED" })};
+        return errorResponse(event, 401, "NO_TOKEN_PROVIDED");
     }
 
     try {
@@ -57,9 +59,9 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             }),
         };
     } catch (error) {
-        return {
-            statusCode: error instanceof Error && error.message.includes("JWT") ? 401 : 500,
-            body: JSON.stringify({ error: "INTERNAL_SERVER_ERROR" })
-        };
+        if (error instanceof AppError && error.code === "INVALID_TOKEN") {
+            return errorResponse(event, 401, "INVALID_TOKEN");
+        }
+        return errorResponse(event, 500, "INTERNAL_SERVER_ERROR");
     }
 }

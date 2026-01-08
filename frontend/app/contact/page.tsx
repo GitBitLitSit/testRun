@@ -1,3 +1,5 @@
+"use client"
+
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
@@ -6,8 +8,10 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { MapPin, Phone, Mail, Clock, Send } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 export default function ContactPage() {
+  const { t } = useTranslation()
   return (
     <div className="flex min-h-screen flex-col">
       <Navigation />
@@ -17,9 +21,9 @@ export default function ContactPage() {
         <section className="bg-primary py-20 text-primary-foreground">
           <div className="container mx-auto px-4">
             <div className="mx-auto max-w-3xl text-center">
-              <h1 className="mb-4 text-4xl font-bold leading-tight md:text-5xl lg:text-6xl">Get in Touch</h1>
+              <h1 className="mb-4 text-4xl font-bold leading-tight md:text-5xl lg:text-6xl">{t("contactPage.title")}</h1>
               <p className="text-lg leading-relaxed text-primary-foreground/90 md:text-xl">
-                Have questions or want to book a table? We'd love to hear from you. Reach out and let's connect.
+                {t("contactPage.subtitle")}
               </p>
             </div>
           </div>
@@ -31,18 +35,18 @@ export default function ContactPage() {
             <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-2">
               <Card className="border-primary/20">
                 <CardContent className="p-6 md:p-8">
-                  <h2 className="mb-6 text-2xl font-bold text-primary">Send us a Message</h2>
+                  <h2 className="mb-6 text-2xl font-bold text-primary">{t("contactPage.sendMessage")}</h2>
                   <form className="space-y-6">
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
                         <Label htmlFor="firstName" className="text-sm font-medium">
-                          First Name
+                          {t("contactPage.firstName")}
                         </Label>
                         <Input id="firstName" placeholder="John" required className="h-11" />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="lastName" className="text-sm font-medium">
-                          Last Name
+                          {t("contactPage.lastName")}
                         </Label>
                         <Input id="lastName" placeholder="Doe" required className="h-11" />
                       </div>
@@ -50,25 +54,25 @@ export default function ContactPage() {
 
                     <div className="space-y-2">
                       <Label htmlFor="email" className="text-sm font-medium">
-                        Email
+                        {t("contactPage.email")}
                       </Label>
                       <Input id="email" type="email" placeholder="john@example.com" required className="h-11" />
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="phone" className="text-sm font-medium">
-                        Phone (Optional)
+                        {t("contactPage.phoneOptional")}
                       </Label>
                       <Input id="phone" type="tel" placeholder="+39 06 1234 5678" className="h-11" />
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="message" className="text-sm font-medium">
-                        Message
+                        {t("contactPage.message")}
                       </Label>
                       <Textarea
                         id="message"
-                        placeholder="Tell us how we can help you..."
+                        placeholder={t("contactPage.messagePlaceholder")}
                         className="min-h-32 resize-none"
                         required
                       />
@@ -76,7 +80,7 @@ export default function ContactPage() {
 
                     <Button type="submit" className="w-full h-11" size="lg">
                       <Send className="mr-2 h-4 w-4" />
-                      Send Message
+                      {t("contactPage.send")}
                     </Button>
                   </form>
                 </CardContent>
@@ -86,14 +90,14 @@ export default function ContactPage() {
               <div className="space-y-6 md:space-y-8">
                 <Card className="border-primary/20">
                   <CardContent className="p-6 md:p-8">
-                    <h2 className="mb-6 text-2xl font-bold text-primary">Contact Information</h2>
+                    <h2 className="mb-6 text-2xl font-bold text-primary">{t("contactPage.contactInformation")}</h2>
                     <div className="space-y-6">
                       <div className="flex items-start gap-4">
                         <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10">
                           <MapPin className="h-6 w-6 text-primary" />
                         </div>
                         <div>
-                          <h3 className="mb-1 font-semibold">Address</h3>
+                          <h3 className="mb-1 font-semibold">{t("contactPage.address")}</h3>
                           <p className="text-sm text-muted-foreground">
                             Via Bruno Buozzi, 12
                             <br />
@@ -107,7 +111,7 @@ export default function ContactPage() {
                           <Phone className="h-6 w-6 text-primary" />
                         </div>
                         <div>
-                          <h3 className="mb-1 font-semibold">Phone</h3>
+                          <h3 className="mb-1 font-semibold">{t("contactPage.phone")}</h3>
                           <p className="text-sm text-muted-foreground">392 810 0919</p>
                         </div>
                       </div>
@@ -117,7 +121,7 @@ export default function ContactPage() {
                           <Mail className="h-6 w-6 text-primary" />
                         </div>
                         <div>
-                          <h3 className="mb-1 font-semibold">Email</h3>
+                          <h3 className="mb-1 font-semibold">{t("contactPage.email")}</h3>
                           <p className="text-sm text-muted-foreground">info@15palle.it</p>
                         </div>
                       </div>
@@ -127,7 +131,7 @@ export default function ContactPage() {
                           <Clock className="h-6 w-6 text-primary" />
                         </div>
                         <div>
-                          <h3 className="mb-1 font-semibold">Opening Hours</h3>
+                          <h3 className="mb-1 font-semibold">{t("contactPage.openingHours")}</h3>
                           <div className="space-y-1 text-sm text-muted-foreground">
                             <p>Monday - Saturday: 2:30 PM - 1:00 AM</p>
                             <p>Sunday: 2:30 PM - 12:00 AM</p>
@@ -140,16 +144,15 @@ export default function ContactPage() {
 
                 <Card className="border-secondary/20 bg-secondary/5">
                   <CardContent className="p-6 md:p-8">
-                    <h3 className="mb-3 text-lg font-semibold text-secondary">Visit Our Club</h3>
+                    <h3 className="mb-3 text-lg font-semibold text-secondary">{t("contactPage.visitClubTitle")}</h3>
                     <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
-                      Drop by anytime during our opening hours. No appointment needed for casual play. For group
-                      bookings or events, please contact us in advance.
+                      {t("contactPage.visitClubText")}
                     </p>
                     <Button
                       variant="outline"
                       className="w-full h-11 bg-transparent border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground"
                     >
-                      View on Map
+                      {t("contactPage.viewOnMap")}
                     </Button>
                   </CardContent>
                 </Card>
@@ -162,34 +165,31 @@ export default function ContactPage() {
         <section className="bg-muted/30 py-16">
           <div className="container mx-auto px-4">
             <div className="mx-auto max-w-3xl">
-              <h2 className="mb-12 text-center text-3xl font-bold">Frequently Asked Questions</h2>
+              <h2 className="mb-12 text-center text-3xl font-bold">{t("contactPage.faqTitle")}</h2>
               <div className="space-y-4 md:space-y-6">
                 <Card className="border-primary/20">
                   <CardContent className="p-6">
-                    <h3 className="mb-2 font-semibold text-primary">Do I need to book in advance?</h3>
+                    <h3 className="mb-2 font-semibold text-primary">{t("contactPage.faq1Q")}</h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      Walk-ins are welcome! However, we recommend booking for groups of 4+ or during peak hours
-                      (Friday-Saturday evenings) to guarantee table availability.
+                      {t("contactPage.faq1A")}
                     </p>
                   </CardContent>
                 </Card>
 
                 <Card className="border-secondary/20">
                   <CardContent className="p-6">
-                    <h3 className="mb-2 font-semibold text-secondary">What are your rates?</h3>
+                    <h3 className="mb-2 font-semibold text-secondary">{t("contactPage.faq2Q")}</h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      Our hourly rates vary by time and day. Contact us for current pricing or visit during our opening
-                      hours. Members enjoy special discounted rates.
+                      {t("contactPage.faq2A")}
                     </p>
                   </CardContent>
                 </Card>
 
                 <Card className="border-accent/20">
                   <CardContent className="p-6">
-                    <h3 className="mb-2 font-semibold text-accent">Can I host a private event?</h3>
+                    <h3 className="mb-2 font-semibold text-accent">{t("contactPage.faq3Q")}</h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      We offer private bookings for birthdays, corporate events, and tournaments. Get in touch to
-                      discuss your requirements and we'll create a custom package for you.
+                      {t("contactPage.faq3A")}
                     </p>
                   </CardContent>
                 </Card>

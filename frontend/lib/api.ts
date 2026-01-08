@@ -1,3 +1,5 @@
+import i18n, { getApiLanguage } from "@/lib/i18n"
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 if (!API_URL) {
@@ -8,6 +10,7 @@ function getAuthHeaders() {
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
   return {
     "Content-Type": "application/json",
+    "Accept-Language": getApiLanguage(),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   }
 }
@@ -15,7 +18,7 @@ function getAuthHeaders() {
 export async function loginAdmin(credentials: { username: string; password: string }) {
   const res = await fetch(`${API_URL}/admin/login`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "Accept-Language": getApiLanguage() },
     body: JSON.stringify(credentials),
   })
   return handleResponse(res)
@@ -65,7 +68,7 @@ export async function resetQrCode(memberId: string) {
 export async function requestVerificationCode(email: string) {
   const res = await fetch(`${API_URL}/auth/request-verification`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "Accept-Language": getApiLanguage() },
     body: JSON.stringify({ email }),
   })
   return handleResponse(res)
@@ -78,7 +81,7 @@ export async function verifyAndRecover(data: {
 }) {
   const res = await fetch(`${API_URL}/members/recover`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "Accept-Language": getApiLanguage() },
     body: JSON.stringify(data),
   })
   return handleResponse(res)
@@ -105,7 +108,10 @@ export async function updateMember(id: string, data: {firstName: string, lastNam
 async function handleResponse(res: Response) {
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}))
-    throw new Error(errorData.error || `HTTP Error: ${res.status}`)
+    const localized =
+      errorData.message ||
+      (errorData.error ? i18n.t(`errors.${String(errorData.error)}`, errorData.params || {}) : null)
+    throw new Error(localized || errorData.error || `HTTP Error: ${res.status}`)
   }
 
   return res.json()

@@ -7,13 +7,17 @@ import { Button } from "@/components/ui/button"
 import { Menu, LogOut } from "lucide-react"
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
+import { useTranslation } from "react-i18next"
+import i18n, { getStoredLanguage, setStoredLanguage, type SupportedLanguage } from "@/lib/i18n"
 
 export function Navigation() {
+  const { t } = useTranslation()
   const pathname = usePathname()
   const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userType, setUserType] = useState<"customer" | "owner" | null>(null)
+  const [language, setLanguage] = useState<SupportedLanguage>("it")
 
   useEffect(() => {
     const token = localStorage.getItem("token")
@@ -31,6 +35,12 @@ export function Navigation() {
     }
   }, [pathname])
 
+  useEffect(() => {
+    const stored = getStoredLanguage()
+    const initial = (stored || (i18n.language as any) || "it") as SupportedLanguage
+    setLanguage(initial)
+  }, [])
+
   const handleLogout = () => {
     localStorage.removeItem("token")
     localStorage.removeItem("currentMember")
@@ -39,23 +49,28 @@ export function Navigation() {
     router.push("/")
   }
 
+  const handleLanguageChange = (next: SupportedLanguage) => {
+    setLanguage(next)
+    setStoredLanguage(next)
+  }
+
   const getNavItems = () => {
     const baseItems = [
-      { href: "/", label: "Home" },
-      { href: "/opening-times", label: "Opening Times" },
-      { href: "/contact", label: "Contact" },
+      { href: "/", label: t("nav.home") },
+      { href: "/opening-times", label: t("nav.openingTimes") },
+      { href: "/contact", label: t("nav.contact") },
     ]
 
     if (!isLoggedIn) {
-      return [...baseItems, { href: "/login", label: "Login" }]
+      return [...baseItems, { href: "/login", label: t("nav.login") }]
     }
 
     if (userType === "customer") {
-      return [...baseItems, { href: "/customer/profile", label: "My Profile" }]
+      return [...baseItems, { href: "/customer/profile", label: t("nav.myProfile") }]
     }
 
     if (userType === "owner") {
-      return [...baseItems, { href: "/owner/dashboard", label: "Dashboard" }]
+      return [...baseItems, { href: "/owner/dashboard", label: t("nav.dashboard") }]
     }
 
     return baseItems
@@ -86,10 +101,25 @@ export function Navigation() {
                 {item.label}
               </Link>
             ))}
+
+            <label className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span className="sr-only">{t("nav.language")}</span>
+              <select
+                value={language}
+                onChange={(e) => handleLanguageChange(e.target.value as SupportedLanguage)}
+                className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+                aria-label={t("nav.language")}
+              >
+                <option value="it">IT</option>
+                <option value="en">EN</option>
+                <option value="de">DE</option>
+              </select>
+            </label>
+
             {isLoggedIn && (
               <Button variant="ghost" size="sm" onClick={handleLogout} className="gap-2">
                 <LogOut className="h-4 w-4" />
-                Logout
+                {t("nav.logout")}
               </Button>
             )}
           </div>
@@ -97,7 +127,7 @@ export function Navigation() {
           {/* Mobile Menu Button */}
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
             <Menu className="h-5 w-5" />
-            <span className="sr-only">Toggle menu</span>
+            <span className="sr-only">{t("nav.toggleMenu")}</span>
           </Button>
         </div>
 
@@ -118,10 +148,25 @@ export function Navigation() {
                   {item.label}
                 </Link>
               ))}
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">{t("nav.language")}</span>
+                <select
+                  value={language}
+                  onChange={(e) => handleLanguageChange(e.target.value as SupportedLanguage)}
+                  className="h-9 flex-1 rounded-md border border-input bg-background px-2 text-sm"
+                  aria-label={t("nav.language")}
+                >
+                  <option value="it">IT</option>
+                  <option value="en">EN</option>
+                  <option value="de">DE</option>
+                </select>
+              </div>
+
               {isLoggedIn && (
                 <Button variant="ghost" size="sm" onClick={handleLogout} className="gap-2 justify-start">
                   <LogOut className="h-4 w-4" />
-                  Logout
+                  {t("nav.logout")}
                 </Button>
               )}
             </div>

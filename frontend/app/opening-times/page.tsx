@@ -1,17 +1,21 @@
+"use client"
+
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Clock, Calendar, Info } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 export default function OpeningTimesPage() {
+  const { t } = useTranslation()
   const schedule = [
-    { day: "Monday", hours: "2:30 PM - 1:00 AM", special: false },
-    { day: "Tuesday", hours: "2:30 PM - 1:00 AM", special: false },
-    { day: "Wednesday", hours: "2:30 PM - 1:00 AM", special: false },
-    { day: "Thursday", hours: "2:30 PM - 1:00 AM", special: false },
-    { day: "Friday", hours: "2:30 PM - 1:00 AM", special: false },
-    { day: "Saturday", hours: "2:30 PM - 1:00 AM", special: false },
-    { day: "Sunday", hours: "2:30 PM - 12:00 AM", special: true },
+    { day: t("openingTimes.days.monday"), hours: "2:30 PM - 1:00 AM", special: false },
+    { day: t("openingTimes.days.tuesday"), hours: "2:30 PM - 1:00 AM", special: false },
+    { day: t("openingTimes.days.wednesday"), hours: "2:30 PM - 1:00 AM", special: false },
+    { day: t("openingTimes.days.thursday"), hours: "2:30 PM - 1:00 AM", special: false },
+    { day: t("openingTimes.days.friday"), hours: "2:30 PM - 1:00 AM", special: false },
+    { day: t("openingTimes.days.saturday"), hours: "2:30 PM - 1:00 AM", special: false },
+    { day: t("openingTimes.days.sunday"), hours: "2:30 PM - 12:00 AM", special: true },
   ]
 
   return (
@@ -24,9 +28,9 @@ export default function OpeningTimesPage() {
           <div className="container mx-auto px-4">
             <div className="mx-auto max-w-3xl text-center">
               <Clock className="mx-auto mb-4 h-16 w-16" />
-              <h1 className="mb-4 text-4xl font-bold md:text-5xl">Opening Times</h1>
+              <h1 className="mb-4 text-4xl font-bold md:text-5xl">{t("openingTimes.title")}</h1>
               <p className="text-lg leading-relaxed text-primary-foreground/90">
-                We're open every day of the week. Come visit us and enjoy a great game of billiards!
+                {t("openingTimes.subtitle")}
               </p>
             </div>
           </div>
@@ -40,9 +44,9 @@ export default function OpeningTimesPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-2xl">
                     <Calendar className="h-6 w-6 text-primary" />
-                    Weekly Schedule
+                    {t("openingTimes.weeklySchedule")}
                   </CardTitle>
-                  <CardDescription>Our regular opening hours throughout the week</CardDescription>
+                  <CardDescription>{t("openingTimes.weeklyScheduleDesc")}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -70,13 +74,12 @@ export default function OpeningTimesPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <Info className="h-5 w-5 text-primary" />
-                      Special Events
+                    {t("openingTimes.specialEvents")}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm leading-relaxed text-muted-foreground">
-                      We host special tournaments and events throughout the month. Extended hours may apply during
-                      special events. Follow us on social media or contact us for upcoming events.
+                    {t("openingTimes.specialEventsText")}
                     </p>
                   </CardContent>
                 </Card>
@@ -85,13 +88,12 @@ export default function OpeningTimesPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <Clock className="h-5 w-5 text-accent" />
-                      Last Entry
+                    {t("openingTimes.lastEntry")}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm leading-relaxed text-muted-foreground">
-                      Last entry is 30 minutes before closing time. We recommend arriving early on weekends as tables
-                      can fill up quickly. Reservations are available for groups of 4 or more.
+                    {t("openingTimes.lastEntryText")}
                     </p>
                   </CardContent>
                 </Card>
@@ -103,11 +105,9 @@ export default function OpeningTimesPage() {
                   <div className="flex items-start gap-4">
                     <Info className="mt-1 h-6 w-6 flex-shrink-0 text-secondary" />
                     <div>
-                      <h3 className="mb-2 text-lg font-semibold">Holiday Hours</h3>
+                      <h3 className="mb-2 text-lg font-semibold">{t("openingTimes.holidayHours")}</h3>
                       <p className="text-sm leading-relaxed text-muted-foreground">
-                        Please note that our opening hours may vary during public holidays. We'll announce any changes
-                        on our website and social media channels at least one week in advance. For specific holiday
-                        hours, please contact us directly.
+                        {t("openingTimes.holidayHoursText")}
                       </p>
                     </div>
                   </div>

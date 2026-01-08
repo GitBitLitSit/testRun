@@ -5,6 +5,8 @@ import { verifyJWT } from "../../lib/jwt";
 import { Member, CheckIn } from "../../lib/types";
 import { broadcastToDashboard } from "../../adapters/notification";
 import { Collection, ObjectId } from "mongodb";
+import { AppError } from "../../lib/appError";
+import { errorResponse, messageResponse } from "../../lib/http";
 
 async function recordAndBroadcast(
     checkinsCollection: Collection<CheckIn>,
@@ -60,10 +62,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         }
 
         if (!isAuthenticated) {
-            return {
-                statusCode: 401,
-                body: JSON.stringify({ success: false, error: "NO_VALID_CREDENTIALS" }),
-            };
+            return errorResponse(event, 401, "NO_VALID_CREDENTIALS", undefined, { success: false });
         }
 
         let { qrUuid } = JSON.parse(event.body || "{}");
@@ -71,10 +70,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         const now = new Date();
 
         if (!trimmedQrCode) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ error: "QRUUID_REQUIRED" }),
-            };
+            return errorResponse(event, 400, "QRUUID_REQUIRED");
         }
 
         const db = await connectToMongo();
@@ -103,7 +99,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
                 }
             });
 
-            return { statusCode: 404, body: JSON.stringify({ success: false, error: warningMsg }) };
+            return errorResponse(event, 404, "MEMBER_NOT_FOUND", undefined, { success: false });
         }
 
         if (member.blocked) {
@@ -116,7 +112,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
                 broadcastMember: { ...member, _id: member._id }
             });
 
-            return { statusCode: 403, body: JSON.stringify({ success: false, error: warningMsg }) };
+            return errorResponse(event, 403, "MEMBER_BLOCKED", undefined, { success: false });
         }
 
         const lastCheckin = await checkinsCollection.findOne(
@@ -143,29 +139,21 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             broadcastMember: { ...member, _id: member._id }
         });
 
-        return {
-            statusCode: 200,
-            body: JSON.stringify({ 
-                success: true, 
-                message: "ACCESS_GRANTED",
-                warning: warning,
-                member: {
-                    firstName: member.firstName,
-                    lastName: member.lastName,
-                    email: member.email,
-                    emailValid: member.emailValid,
-                    id: member._id 
-                }
-            })
-        };
+        return messageResponse(event, 200, "ACCESS_GRANTED", undefined, {
+            success: true,
+            warning: warning,
+            member: {
+                firstName: member.firstName,
+                lastName: member.lastName,
+                email: member.email,
+                emailValid: member.emailValid,
+                id: member._id
+            }
+        });
     } catch (error) {
-        const isJwtError = error instanceof Error && error.message.includes("JWT");
-        return {
-            statusCode: isJwtError ? 401 : 500,
-            body: JSON.stringify({ 
-                success: false, 
-                error: isJwtError ? "INVALID_TOKEN" : "INTERNAL_SERVER_ERROR" 
-            })
-        };
+        if (error instanceof AppError && error.code === "INVALID_TOKEN") {
+            return errorResponse(event, 401, "INVALID_TOKEN", undefined, { success: false });
+        }
+        return errorResponse(event, 500, "INTERNAL_SERVER_ERROR", undefined, { success: false });
     }
 };

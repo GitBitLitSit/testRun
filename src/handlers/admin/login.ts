@@ -2,6 +2,7 @@ import { APIGatewayProxyHandlerV2 } from "aws-lambda";
 import { generateJWT } from "../../lib/jwt";
 import { connectToMongo } from "../../adapters/database";
 import bcrypt from "bcryptjs";
+import { errorResponse, messageResponse } from "../../lib/http";
 
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     const { username, password } = JSON.parse(event.body || "{}");
@@ -9,7 +10,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     const ip = event.requestContext.http.sourceIp;
 
     if (!username || !password) {
-        return { statusCode: 400, body: JSON.stringify({ error: "MISSING_CREDENTIALS" }) };
+        return errorResponse(event, 400, "MISSING_CREDENTIALS");
     }
 
     const db = await connectToMongo();
@@ -23,13 +24,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     if (ipRecord && ipRecord.lockUntil && ipRecord.lockUntil > new Date()) {
         const minutesLeft = Math.ceil((ipRecord.lockUntil.getTime() - new Date().getTime()) / 60000);
 
-        return { 
-            statusCode: 429, 
-            body: JSON.stringify({ 
-                error: "TOO_MANY_ATTEMPTS",
-                params: { minutes: minutesLeft}
-             })
-        };
+        return errorResponse(event, 429, "TOO_MANY_ATTEMPTS", { minutes: minutesLeft }, { params: { minutes: minutesLeft } });
     }
 
     const adminCount = await adminsCollection.countDocuments();
@@ -61,7 +56,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             { upsert: true }
         );
 
-        return { statusCode: 401, body: JSON.stringify({ error: "INVALID_CREDENTIALS" }) };
+        return errorResponse(event, 401, "INVALID_CREDENTIALS");
     }
 
     if (!admin) {
@@ -81,8 +76,5 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 
     const token = generateJWT(username);
 
-    return {
-        statusCode: 200,
-        body: JSON.stringify({ message: "LOGIN_SUCCESSFUL", token }),
-    }
+    return messageResponse(event, 200, "LOGIN_SUCCESSFUL", undefined, { token });
 };
