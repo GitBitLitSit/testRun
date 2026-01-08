@@ -271,7 +271,10 @@ const resources = {
           passbackWarning: "⚠️ Avviso passback",
           newCheckin: "✓ Nuovo check-in",
           memberCheckedIn: "{{firstName}} {{lastName}} ha effettuato il check-in",
-          connectionError: "Errore di connessione",
+        },
+        realtimeErrors: {
+          CONNECTION_ERROR: "Errore di connessione",
+          MISSING_WEBSOCKET_URL: "URL WebSocket mancante",
         },
       },
       errors: {
@@ -567,7 +570,10 @@ const resources = {
           passbackWarning: "⚠️ Passback Warning",
           newCheckin: "✓ New Check-in",
           memberCheckedIn: "{{firstName}} {{lastName}} checked in",
-          connectionError: "Connection Error",
+        },
+        realtimeErrors: {
+          CONNECTION_ERROR: "Connection Error",
+          MISSING_WEBSOCKET_URL: "Missing WebSocket URL",
         },
       },
       errors: {
@@ -860,7 +866,10 @@ const resources = {
           passbackWarning: "⚠️ Passback-Warnung",
           newCheckin: "✓ Neuer Check-in",
           memberCheckedIn: "{{firstName}} {{lastName}} hat eingecheckt",
-          connectionError: "Verbindungsfehler",
+        },
+        realtimeErrors: {
+          CONNECTION_ERROR: "Verbindungsfehler",
+          MISSING_WEBSOCKET_URL: "WebSocket-URL fehlt",
         },
       },
       errors: {

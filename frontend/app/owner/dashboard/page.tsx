@@ -381,7 +381,12 @@ export default function OwnerDashboard() {
             <div>
               <h1 className="mb-2 text-3xl font-bold">{t("dashboard.title")}</h1>
               <p className="text-muted-foreground">{t("dashboard.subtitle")}</p>
-              {wsError && <p className="text-sm text-destructive mt-1">{t("dashboard.websocketPrefix")} {wsError}</p>}
+              {wsError && (
+                <p className="text-sm text-destructive mt-1">
+                  {t("dashboard.websocketPrefix")}{" "}
+                  {t(`dashboard.realtimeErrors.${wsError}` as any, { defaultValue: wsError })}
+                </p>
+              )}
               {isConnected && <p className="text-sm text-green-600 mt-1">{t("dashboard.realtimeConnected")}</p>}
             </div>
           </div>

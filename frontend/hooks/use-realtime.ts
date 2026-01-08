@@ -13,6 +13,7 @@ export function useRealtimeCheckIns(onCheckIn: (event: CheckInEvent) => void) {
 
     if (!wsUrl) {
       console.error("WebSocket URL is missing")
+      setError("MISSING_WEBSOCKET_URL")
       return
     }
 
@@ -44,7 +45,7 @@ export function useRealtimeCheckIns(onCheckIn: (event: CheckInEvent) => void) {
       // Only log error if the socket is actually trying to stay open
       if (ws.readyState !== WebSocket.CLOSED && ws.readyState !== WebSocket.CLOSING) {
           console.error("WebSocket Error:", e);
-          setError("Connection Error");
+          setError("CONNECTION_ERROR");
       }
     }
 
