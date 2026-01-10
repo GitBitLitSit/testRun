@@ -19,7 +19,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         let { firstName, lastName, email, sendEmail } = JSON.parse(event.body || "{}");
         const trimmedFirstName = firstName?.trim() ?? "";
         const trimmedLastName = lastName?.trim() ?? "";
-        const trimmedEmail = email?.trim() ?? "";
+        const trimmedEmail = (email?.trim() ?? "").toLowerCase();
 
         if (!trimmedFirstName || !trimmedLastName || !trimmedEmail || typeof sendEmail !== "boolean") {
             return errorResponse(event, 400, "MEMBER_REQUIRED");

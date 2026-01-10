@@ -28,6 +28,8 @@ const resources = {
         MISSING_CREDENTIALS: "Nome utente e password sono obbligatori.",
         INVALID_CREDENTIALS: "Credenziali non valide.",
         TOO_MANY_ATTEMPTS: "Troppi tentativi. Riprova tra {{minutes}} minuti.",
+        CSV_REQUIRED: "File CSV mancante.",
+        CSV_INVALID: "Formato CSV non valido.",
       },
       messages: {
         IF_ACCOUNT_EXISTS: "Se l'account esiste, invieremo un codice di verifica.",
@@ -66,6 +68,8 @@ const resources = {
         MISSING_CREDENTIALS: "Username and password are required.",
         INVALID_CREDENTIALS: "Invalid credentials.",
         TOO_MANY_ATTEMPTS: "Too many attempts. Try again in {{minutes}} minutes.",
+        CSV_REQUIRED: "Missing CSV file.",
+        CSV_INVALID: "Invalid CSV format.",
       },
       messages: {
         IF_ACCOUNT_EXISTS: "If the account exists, we will send a verification code.",
@@ -104,6 +108,8 @@ const resources = {
         MISSING_CREDENTIALS: "Benutzername und Passwort sind erforderlich.",
         INVALID_CREDENTIALS: "Ungültige Zugangsdaten.",
         TOO_MANY_ATTEMPTS: "Zu viele Versuche. Bitte in {{minutes}} Minuten erneut versuchen.",
+        CSV_REQUIRED: "CSV-Datei fehlt.",
+        CSV_INVALID: "Ungültiges CSV-Format.",
       },
       messages: {
         IF_ACCOUNT_EXISTS: "Wenn das Konto existiert, senden wir einen Bestätigungscode.",

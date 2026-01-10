@@ -58,6 +58,28 @@ export default $config({
       ]
     });
 
+    api.route("GET /members/export", {
+      handler: "./src/handlers/members/exportCsv.handler",
+      environment: {
+        JWT_SECRET_KEY: process.env.JWT_SECRET_KEY!,
+        MONGODB_URI: process.env.MONGODB_URI!,
+        MONGODB_DB_NAME: process.env.MONGODB_DB_NAME!,
+      },
+      architecture: "arm64",
+      runtime: "nodejs22.x",
+    });
+
+    api.route("POST /members/import", {
+      handler: "./src/handlers/members/importCsv.handler",
+      environment: {
+        JWT_SECRET_KEY: process.env.JWT_SECRET_KEY!,
+        MONGODB_URI: process.env.MONGODB_URI!,
+        MONGODB_DB_NAME: process.env.MONGODB_DB_NAME!,
+      },
+      architecture: "arm64",
+      runtime: "nodejs22.x",
+    });
+
     api.route("PUT /members/{id}", {
       handler: "./src/handlers/members/update.handler",
       environment: {
