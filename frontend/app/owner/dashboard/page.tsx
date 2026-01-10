@@ -21,7 +21,16 @@ import {
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { getMembers, createMember, resetQrCode, getCheckIns, updateMember, deleteMember } from "@/lib/api"
+import {
+  getMembers,
+  createMember,
+  resetQrCode,
+  getCheckIns,
+  updateMember,
+  deleteMember,
+  exportMembersCsv,
+  importMembersCsv,
+} from "@/lib/api"
 import { useRealtimeCheckIns } from "@/hooks/use-realtime"
 import type { Member, CheckInEvent } from "@/lib/types"
 import {
@@ -305,12 +314,9 @@ export default function OwnerDashboard() {
     }
   }
 
-  const handleExportCSV = () => {
+  const handleExportCSV = async () => {
     try {
-      const headers = ["firstName", "lastName", "email", "blocked", "emailValid", "createdAt"]
-      const rows = membersData.map((m) => [m.firstName, m.lastName, m.email, m.blocked, m.emailValid, m.createdAt])
-      const csv = [headers, ...rows].map((row) => row.map((cell) => `"${cell}"`).join(",")).join("\n")
-      const blob = new Blob([csv], { type: "text/csv" })
+      const blob = await exportMembersCsv()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
@@ -325,32 +331,18 @@ export default function OwnerDashboard() {
 
   const handleImportCSV = async () => {
     if (!csvFile) return
-    const reader = new FileReader()
-    reader.onload = async (e) => {
-      try {
-        const content = e.target?.result as string
-        const lines = content.trim().split("\n")
-        const headers = lines[0].split(",").map((h) => h.trim().toLowerCase())
-        let imported = 0
-        for (let i = 1; i < lines.length; i++) {
-          const values = lines[i].split(",").map((v) => v.trim().replace(/^"|"$/g, ""))
-          const row: Record<string, string> = {}
-          headers.forEach((header, index) => { row[header] = values[index] || "" })
-          if (row.firstname && row.lastname && row.email) {
-            await createMember({ firstName: row.firstname, lastName: row.lastname, email: row.email })
-            imported++
-          }
-        }
-        toast({ title: t("dashboard.toasts.importCompleteTitle"), description: t("dashboard.toasts.importCompleteDesc", { count: imported }) })
-        setImportDialogOpen(false)
-        setCsvFile(null)
-        setMembersPage(1)
-        loadMembers()
-      } catch (error) {
-        toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedImport"), variant: "destructive" })
-      }
+    try {
+      const content = await csvFile.text()
+      const result = await importMembersCsv(content)
+      const imported = result?.inserted ?? 0
+      toast({ title: t("dashboard.toasts.importCompleteTitle"), description: t("dashboard.toasts.importCompleteDesc", { count: imported }) })
+      setImportDialogOpen(false)
+      setCsvFile(null)
+      setMembersPage(1)
+      loadMembers()
+    } catch (error) {
+      toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedImport"), variant: "destructive" })
     }
-    reader.readAsText(csvFile)
   }
 
   const handleViewMember = (member: Member) => { setSelectedMember(member); setDetailsDrawerOpen(true) }

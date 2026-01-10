@@ -15,6 +15,14 @@ function getAuthHeaders() {
   }
 }
 
+function getAuthHeadersWithoutContentType() {
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
+  return {
+    "Accept-Language": getApiLanguage(),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  }
+}
+
 export async function loginAdmin(credentials: { username: string; password: string }) {
   const res = await fetch(`${API_URL}/admin/login`, {
     method: "POST",
@@ -29,6 +37,29 @@ export async function createMember(data: { firstName: string; lastName: string; 
     method: "POST",
     headers: getAuthHeaders(),
     body: JSON.stringify(data),
+  })
+  return handleResponse(res)
+}
+
+export async function exportMembersCsv(): Promise<Blob> {
+  const res = await fetch(`${API_URL}/members/export`, {
+    method: "GET",
+    headers: getAuthHeadersWithoutContentType(),
+  })
+  if (!res.ok) {
+    await handleResponse(res)
+  }
+  return res.blob()
+}
+
+export async function importMembersCsv(csvText: string) {
+  const res = await fetch(`${API_URL}/members/import`, {
+    method: "POST",
+    headers: {
+      ...getAuthHeadersWithoutContentType(),
+      "Content-Type": "text/csv",
+    },
+    body: csvText,
   })
   return handleResponse(res)
 }
