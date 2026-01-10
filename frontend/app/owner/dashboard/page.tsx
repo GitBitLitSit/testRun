@@ -29,7 +29,7 @@ import {
   updateMember,
   deleteMember,
   exportMembersCsv,
-  importMembersCsv,
+  importMembersBatch,
 } from "@/lib/api"
 import { useRealtimeCheckIns } from "@/hooks/use-realtime"
 import type { Member, CheckInEvent } from "@/lib/types"
@@ -333,8 +333,41 @@ export default function OwnerDashboard() {
     if (!csvFile) return
     try {
       const content = await csvFile.text()
-      const result = await importMembersCsv(content)
-      const imported = result?.inserted ?? 0
+      const lines = content.trim().split("\n")
+      const headers = lines[0]?.split(",").map((h) => h.trim().toLowerCase()) || []
+
+      const batchSize = 500
+      let imported = 0
+
+      let batch: Array<{ firstName: string; lastName: string; email: string }> = []
+
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(",").map((v) => v.trim().replace(/^"|"$/g, ""))
+        const row: Record<string, string> = {}
+        headers.forEach((header, index) => {
+          row[header] = values[index] || ""
+        })
+
+        const firstName = row.firstname || row.firstName || ""
+        const lastName = row.lastname || row.lastName || ""
+        const email = row.email || ""
+
+        if (firstName && lastName && email) {
+          batch.push({ firstName, lastName, email })
+        }
+
+        if (batch.length >= batchSize) {
+          const result = await importMembersBatch(batch)
+          imported += result?.inserted ?? 0
+          batch = []
+        }
+      }
+
+      if (batch.length > 0) {
+        const result = await importMembersBatch(batch)
+        imported += result?.inserted ?? 0
+      }
+
       toast({ title: t("dashboard.toasts.importCompleteTitle"), description: t("dashboard.toasts.importCompleteDesc", { count: imported }) })
       setImportDialogOpen(false)
       setCsvFile(null)

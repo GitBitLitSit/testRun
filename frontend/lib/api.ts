@@ -64,6 +64,22 @@ export async function importMembersCsv(csvText: string) {
   return handleResponse(res)
 }
 
+export async function importMembersBatch(members: Array<{
+  firstName: string
+  lastName: string
+  email: string
+  blocked?: boolean
+  emailValid?: boolean
+  createdAt?: string
+}>) {
+  const res = await fetch(`${API_URL}/members/import/batch`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ members }),
+  })
+  return handleResponse(res)
+}
+
 export async function deleteMember(memberId: string) {
   const res = await fetch(`${API_URL}/members/${memberId}`, {
     method: "DELETE",
