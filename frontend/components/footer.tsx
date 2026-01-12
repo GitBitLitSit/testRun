@@ -59,9 +59,6 @@ export function Footer() {
               <a href="/contact" className="block text-muted-foreground transition-colors hover:text-primary">
                 {t("footer.contactLink")}
               </a>
-              <a href="/register" className="block text-muted-foreground transition-colors hover:text-primary">
-                {t("footer.register")}
-              </a>
             </div>
           </div>
         </div>
