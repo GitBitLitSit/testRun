@@ -9,6 +9,7 @@ import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { useTranslation } from "react-i18next"
 import i18n, { getStoredLanguage, setStoredLanguage, type SupportedLanguage } from "@/lib/i18n"
+import LanguageSelector from "./LanguageSelector"
 
 export function Navigation() {
   const { t } = useTranslation()
@@ -102,26 +103,23 @@ export function Navigation() {
               </Link>
             ))}
 
-            <label className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span className="sr-only">{t("nav.language")}</span>
-              <select
-                value={language}
-                onChange={(e) => handleLanguageChange(e.target.value as SupportedLanguage)}
-                className="h-9 rounded-md border border-input bg-background px-2 text-sm"
-                aria-label={t("nav.language")}
-              >
-                <option value="it">IT</option>
-                <option value="en">EN</option>
-                <option value="de">DE</option>
-              </select>
-            </label>
-
             {isLoggedIn && (
-              <Button variant="ghost" size="sm" onClick={handleLogout} className="gap-2">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleLogout} 
+                // UPDATED: Added red text and hover classes
+                className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
                 <LogOut className="h-4 w-4" />
-                {t("nav.logout")}
               </Button>
             )}
+            
+            <LanguageSelector
+              language={language}
+              onLanguageChange={(newLang) => handleLanguageChange(newLang as SupportedLanguage)}
+            />
+            
           </div>
 
           {/* Mobile Menu Button */}
@@ -151,20 +149,20 @@ export function Navigation() {
 
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">{t("nav.language")}</span>
-                <select
-                  value={language}
-                  onChange={(e) => handleLanguageChange(e.target.value as SupportedLanguage)}
-                  className="h-9 flex-1 rounded-md border border-input bg-background px-2 text-sm"
-                  aria-label={t("nav.language")}
-                >
-                  <option value="it">IT</option>
-                  <option value="en">EN</option>
-                  <option value="de">DE</option>
-                </select>
+                <LanguageSelector
+                  language={language}
+                  onLanguageChange={(newLang) => handleLanguageChange(newLang as SupportedLanguage)}
+                />
               </div>
 
               {isLoggedIn && (
-                <Button variant="ghost" size="sm" onClick={handleLogout} className="gap-2 justify-start">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleLogout} 
+                  // UPDATED: Added red text and hover classes for mobile too
+                  className="gap-2 justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
                   <LogOut className="h-4 w-4" />
                   {t("nav.logout")}
                 </Button>
