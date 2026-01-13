@@ -37,52 +37,70 @@ export function BilliardBall({ number, children, title, className, delay }: Bill
   return (
     <div
       className={cn(
-        "group relative flex flex-col items-center opacity-0 animate-slide-up",
-        "bg-gradient-to-b from-[#1a1f2e] to-[#0f1218] rounded-3xl p-8 pb-10",
-        "border border-white/10 hover:border-primary/30 transition-all duration-500",
-        "shadow-xl hover:shadow-2xl hover:shadow-primary/10",
+        "group relative overflow-hidden rounded-3xl p-8 opacity-0 animate-slide-up",
+        "border border-white/10 bg-white/[0.04] backdrop-blur",
+        "shadow-2xl shadow-black/20 transition-all duration-500",
+        "hover:-translate-y-1 hover:bg-white/[0.06]",
         delay,
         className,
       )}
     >
-      {/* Ball */}
-      <div className="relative mb-6">
-        <div
-          className={cn(
-            "w-40 h-40 md:w-48 md:h-48 rounded-full flex items-center justify-center relative",
-            "transform transition-all duration-500 group-hover:scale-105 group-hover:-translate-y-2",
-          )}
-          style={{
-            boxShadow: `0 15px 30px rgba(0,0,0,0.4), inset 0 -15px 30px rgba(0,0,0,0.3), inset 0 15px 30px rgba(255,255,255,0.12)`,
-            background: isStripe
-              ? `linear-gradient(to bottom, white 0%, white 25%, ${ballConfig.solidColor} 25%, ${ballConfig.solidColor} 75%, white 75%, white 100%)`
-              : ballConfig.solidColor,
-          }}
-        >
-          {/* Number circle */}
+      {/* Ambient glow */}
+      <div
+        className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full blur-3xl opacity-60 transition-opacity duration-500 group-hover:opacity-90"
+        style={{ background: `radial-gradient(circle at 30% 30%, ${ballConfig.solidColor}33, transparent 60%)` }}
+      />
+
+      {/* Ball (decorative, integrated) */}
+      <div className="pointer-events-none absolute -right-10 -top-10 md:-right-12 md:-top-12">
+        <div className="relative">
           <div
-            className="relative z-10 w-14 h-14 md:w-16 md:h-16 rounded-full bg-white flex items-center justify-center shadow-lg border border-gray-200"
-            style={{ boxShadow: "0 4px 15px rgba(0,0,0,0.2), inset 0 2px 4px rgba(255,255,255,0.9)" }}
+            className={cn(
+              "w-44 h-44 md:w-52 md:h-52 rounded-full flex items-center justify-center relative",
+              "transform transition-transform duration-500 group-hover:scale-[1.03]",
+            )}
+            style={{
+              boxShadow:
+                "0 18px 36px rgba(0,0,0,0.45), inset 0 -18px 34px rgba(0,0,0,0.35), inset 0 18px 32px rgba(255,255,255,0.10)",
+              background: isStripe
+                ? `linear-gradient(to bottom, #ffffff 0%, #ffffff 26%, ${ballConfig.solidColor} 26%, ${ballConfig.solidColor} 74%, #ffffff 74%, #ffffff 100%)`
+                : `radial-gradient(circle at 30% 30%, #ffffff20, transparent 38%), ${ballConfig.solidColor}`,
+            }}
           >
-            <span className="text-2xl md:text-3xl font-bold text-gray-900">{number}</span>
+            {/* Gloss sweep */}
+            <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.35),transparent_45%)]" />
+            <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_70%_80%,rgba(255,255,255,0.10),transparent_50%)]" />
+
+            {/* Number circle */}
+            <div
+              className="relative z-10 w-14 h-14 md:w-16 md:h-16 rounded-full bg-white flex items-center justify-center border border-gray-200"
+              style={{
+                boxShadow: "0 8px 22px rgba(0,0,0,0.25), inset 0 2px 6px rgba(255,255,255,0.95)",
+              }}
+            >
+              <span className="text-2xl md:text-3xl font-bold text-gray-900">{number}</span>
+            </div>
+
+            {/* Micro highlights */}
+            <div className="absolute top-6 left-8 w-10 h-10 rounded-full bg-white/25 blur-md" />
+            <div className="absolute top-10 left-12 w-3 h-3 rounded-full bg-white/80" />
           </div>
 
-          {/* Main shine - subtle */}
-          <div className="absolute top-4 left-6 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/35 blur-md z-20" />
-          <div className="absolute top-6 left-8 w-5 h-5 md:w-6 md:h-6 rounded-full bg-white/60 z-20" />
-          <div className="absolute top-8 left-10 w-2 h-2 md:w-3 md:h-3 rounded-full bg-white z-20" />
-
-          {/* Secondary shine - very subtle */}
-          <div className="absolute bottom-6 right-6 w-6 h-6 md:w-8 md:h-8 rounded-full bg-white/10 blur-sm z-20" />
+          {/* Ring highlight */}
+          <div
+            className="absolute inset-0 rounded-full ring-1 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+            style={{ boxShadow: `0 0 0 1px ${ballConfig.solidColor}33, 0 0 30px ${ballConfig.solidColor}22` }}
+          />
         </div>
       </div>
 
       {/* Content */}
-      <div className="text-center max-w-xs px-2">
-        <h3 className="text-xl md:text-2xl font-bold text-white mb-3 group-hover:text-primary transition-colors">
+      <div className="relative max-w-sm pr-16 md:pr-24">
+        <p className="text-xs uppercase tracking-wider text-white/50">Ball {number}</p>
+        <h3 className="mt-2 text-xl md:text-2xl font-bold text-white tracking-tight group-hover:text-primary transition-colors">
           {title}
         </h3>
-        <p className="text-white/60 text-sm md:text-base leading-relaxed">{children}</p>
+        <p className="mt-4 text-white/60 text-sm md:text-base leading-relaxed">{children}</p>
       </div>
     </div>
   )

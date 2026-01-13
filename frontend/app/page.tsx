@@ -2,8 +2,9 @@
 
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
+import { BilliardBall } from "@/components/billiard-ball"
 import { Button } from "@/components/ui/button"
-import { Clock, ChevronDown, ArrowRight, MapPin, MoonStar, Navigation2, Phone, Sparkles, Trophy, Users } from "lucide-react"
+import { Clock, ChevronDown, ArrowRight, MapPin, Navigation2, Phone, Sparkles } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { useEffect, useState } from "react"
@@ -166,50 +167,17 @@ export default function HomePage() {
               </div>
 
               <div className="grid md:grid-cols-3 gap-6 md:gap-8">
-                <div className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] backdrop-blur p-8 shadow-2xl shadow-black/20 transition-all duration-500 hover:-translate-y-1 hover:border-primary/30 hover:bg-white/[0.06]">
-                  <div className="absolute -top-20 -right-20 h-48 w-48 rounded-full bg-primary/20 blur-2xl transition-opacity group-hover:opacity-100 opacity-60" />
-                  <div className="relative">
-                    <div className="flex items-center gap-3">
-                      <div className="h-11 w-11 rounded-2xl bg-primary/20 ring-1 ring-primary/30 flex items-center justify-center">
-                        <Trophy className="h-5 w-5 text-primary" />
-                      </div>
-                      <h3 className="text-xl font-bold text-white tracking-tight">Pro tables</h3>
-                    </div>
-                    <p className="mt-4 text-white/60 leading-relaxed">
-                      Championship-grade tables maintained to perfection — consistent roll, clean rails, and great lighting.
-                    </p>
-                  </div>
-                </div>
+                <BilliardBall number={9} title="Pro tables" delay="animation-delay-200">
+                  Championship-grade tables maintained to perfection — consistent roll, clean rails, and great lighting.
+                </BilliardBall>
 
-                <div className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] backdrop-blur p-8 shadow-2xl shadow-black/20 transition-all duration-500 hover:-translate-y-1 hover:border-secondary/30 hover:bg-white/[0.06]">
-                  <div className="absolute -bottom-24 -left-24 h-56 w-56 rounded-full bg-secondary/15 blur-2xl transition-opacity group-hover:opacity-100 opacity-70" />
-                  <div className="relative">
-                    <div className="flex items-center gap-3">
-                      <div className="h-11 w-11 rounded-2xl bg-secondary/20 ring-1 ring-secondary/30 flex items-center justify-center">
-                        <Users className="h-5 w-5 text-secondary" />
-                      </div>
-                      <h3 className="text-xl font-bold text-white tracking-tight">Great vibes</h3>
-                    </div>
-                    <p className="mt-4 text-white/60 leading-relaxed">
-                      A welcoming room where beginners and regulars play side by side — relaxed, respectful, and social.
-                    </p>
-                  </div>
-                </div>
+                <BilliardBall number={11} title="Great vibes" delay="animation-delay-400">
+                  A welcoming room where beginners and regulars play side by side — relaxed, respectful, and social.
+                </BilliardBall>
 
-                <div className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] backdrop-blur p-8 shadow-2xl shadow-black/20 transition-all duration-500 hover:-translate-y-1 hover:border-accent/30 hover:bg-white/[0.06]">
-                  <div className="absolute -top-24 -left-24 h-56 w-56 rounded-full bg-accent/15 blur-2xl transition-opacity group-hover:opacity-100 opacity-70" />
-                  <div className="relative">
-                    <div className="flex items-center gap-3">
-                      <div className="h-11 w-11 rounded-2xl bg-accent/20 ring-1 ring-accent/30 flex items-center justify-center">
-                        <MoonStar className="h-5 w-5 text-accent" />
-                      </div>
-                      <h3 className="text-xl font-bold text-white tracking-tight">Late nights</h3>
-                    </div>
-                    <p className="mt-4 text-white/60 leading-relaxed">
-                      Open until 1 AM — perfect for after-work sets, weekend hangouts, and tournament nights.
-                    </p>
-                  </div>
-                </div>
+                <BilliardBall number={6} title="Late nights" delay="animation-delay-600">
+                  Open until 1 AM — perfect for after-work sets, weekend hangouts, and tournament nights.
+                </BilliardBall>
               </div>
             </div>
           </div>
