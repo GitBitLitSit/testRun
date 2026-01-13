@@ -39,8 +39,9 @@ export function BilliardBall({ number, children, title, className, delay }: Bill
       className={cn(
         "group relative w-full max-w-sm mx-auto opacity-0 animate-slide-up",
         "aspect-square rounded-full overflow-hidden",
-        "border border-border bg-card shadow-xl shadow-black/20",
-        "transition-transform duration-300 hover:-translate-y-1",
+        "border border-border bg-card shadow-2xl shadow-black/30",
+        "transform-gpu transition-transform duration-500",
+        "hover:-translate-y-2 hover:rotate-[0.75deg]",
         delay,
         className,
       )}
@@ -62,24 +63,29 @@ export function BilliardBall({ number, children, title, className, delay }: Bill
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(255,255,255,0.12),transparent_55%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_55%_65%,transparent_35%,rgba(0,0,0,0.55)_100%)]" />
 
+        {/* Moving shine sweep */}
+        <div className="pointer-events-none absolute -inset-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 motion-reduce:hidden">
+          <div className="absolute left-1/2 top-[-30%] h-[160%] w-16 -translate-x-1/2 bg-gradient-to-b from-transparent via-white/35 to-transparent blur-[1px] animate-shine-sweep" />
+        </div>
+
         {/* Subtle color ring highlight */}
         <div
           className="absolute inset-0 rounded-full ring-1"
           style={{
-            boxShadow: `inset 0 0 0 1px ${ballConfig.solidColor}22, 0 12px 38px rgba(0,0,0,0.35)`,
+            boxShadow: `inset 0 0 0 1px ${ballConfig.solidColor}26, 0 18px 60px rgba(0,0,0,0.45)`,
           }}
         />
 
         {/* Number circle */}
         <div className="absolute left-1/2 top-7 -translate-x-1/2">
-          <div className="h-14 w-14 rounded-full bg-white/95 ring-1 ring-black/10 shadow-lg shadow-black/20 flex items-center justify-center">
+          <div className="h-14 w-14 rounded-full bg-white/95 ring-1 ring-black/10 shadow-xl shadow-black/25 flex items-center justify-center">
             <span className="text-2xl font-black text-gray-900">{number}</span>
           </div>
         </div>
 
         {/* Text overlay (keeps readability) */}
         <div className="relative z-10 h-full w-full flex items-center justify-center p-7 md:p-8">
-          <div className="w-full rounded-2xl bg-black/35 backdrop-blur-sm ring-1 ring-white/10 px-5 py-5 md:px-6 md:py-6 text-center">
+          <div className="w-full rounded-2xl bg-black/35 backdrop-blur-md ring-1 ring-white/10 px-5 py-5 md:px-6 md:py-6 text-center">
             <h3 className="text-lg md:text-xl font-black tracking-tight text-white">{title}</h3>
             <p className="mt-2 text-sm md:text-base leading-relaxed text-white/85">{children}</p>
           </div>
