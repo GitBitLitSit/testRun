@@ -148,41 +148,64 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Features Section - Clean cards design */}
-        <section id="features" className="py-24 md:py-32 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-background via-[#0a0d12] to-background" />
-          <div className="absolute inset-0 [background:radial-gradient(1200px_circle_at_20%_10%,rgba(47,105,159,0.22),transparent_55%),radial-gradient(900px_circle_at_80%_50%,rgba(64,194,108,0.14),transparent_60%)]" />
-          <div className="absolute inset-0 opacity-[0.06] [background-image:linear-gradient(to_right,white_1px,transparent_1px),linear-gradient(to_bottom,white_1px,transparent_1px)] [background-size:64px_64px]" />
+        {/* Features Section - premium / fancy */}
+        <section id="features" className="relative overflow-hidden py-24 md:py-32 border-t border-border">
+          {/* Felt + spotlight background */}
+          <div className="absolute inset-0 bg-gradient-to-b from-background via-[#0a1014] to-background" />
+          <div className="absolute inset-0 [background:radial-gradient(1000px_circle_at_50%_0%,rgba(61,139,95,0.22),transparent_60%),radial-gradient(900px_circle_at_15%_55%,rgba(47,105,159,0.22),transparent_60%),radial-gradient(900px_circle_at_85%_55%,rgba(245,215,66,0.12),transparent_60%)]" />
+          <div className="absolute inset-0 opacity-[0.06] [background-image:linear-gradient(to_right,white_1px,transparent_1px),linear-gradient(to_bottom,white_1px,transparent_1px)] [background-size:72px_72px]" />
+
+          {/* Floating bokeh accents */}
+          <div className="pointer-events-none absolute -left-24 top-24 h-72 w-72 rounded-full bg-primary/20 blur-3xl animate-drift motion-reduce:animate-none" />
+          <div className="pointer-events-none absolute -right-24 bottom-10 h-80 w-80 rounded-full bg-secondary/14 blur-3xl animate-drift motion-reduce:animate-none [animation-delay:1.8s]" />
+          <div className="pointer-events-none absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/12 blur-3xl animate-drift motion-reduce:animate-none [animation-delay:0.8s]" />
 
           <div className="container mx-auto px-4 relative z-10">
-            <div className="text-center mb-16 md:mb-20">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-white/70 backdrop-blur">
+            <div className="text-center mb-14 md:mb-18">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm text-white/70 backdrop-blur">
                 <Sparkles className="h-4 w-4 text-secondary" />
                 <span>{t("home.heroDescription.line2", { city })}</span>
               </div>
-              <h2 className="mt-6 text-3xl md:text-5xl font-black text-white mb-4 tracking-tight">{t("home.whyChoose")}</h2>
-              <p className="text-white/60 text-lg max-w-2xl mx-auto leading-relaxed">
+
+              <h2 className="mt-7 text-3xl md:text-6xl font-black tracking-tight">
+                <span className="bg-gradient-to-r from-secondary via-primary to-accent bg-clip-text text-transparent">
+                  {t("home.whyChoose")}
+                </span>
+              </h2>
+
+              <div className="mt-4 flex items-center justify-center gap-3">
+                <span className="h-px w-10 bg-gradient-to-r from-transparent via-white/35 to-transparent" />
+                <span className="h-px w-20 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+              </div>
+
+              <p className="mt-5 text-white/65 text-lg max-w-2xl mx-auto leading-relaxed">
                 {t("home.whyChooseSubtitle")}
               </p>
             </div>
 
             <div className="max-w-6xl mx-auto">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur px-5 py-4">
-                  <p className="text-sm text-white/60">{t("home.stats.openLateLabel")}</p>
-                  <p className="mt-1 text-xl font-semibold text-white">{t("home.stats.openLateValue")}</p>
+                <div className="rounded-2xl p-[1px] bg-gradient-to-r from-primary/40 via-secondary/25 to-accent/35">
+                  <div className="rounded-2xl bg-black/25 backdrop-blur-md px-5 py-4 ring-1 ring-white/10">
+                    <p className="text-sm text-white/60">{t("home.stats.openLateLabel")}</p>
+                    <p className="mt-1 text-xl font-semibold text-white">{t("home.stats.openLateValue")}</p>
+                  </div>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur px-5 py-4">
-                  <p className="text-sm text-white/60">{t("home.stats.locationLabel")}</p>
-                  <p className="mt-1 text-xl font-semibold text-white">{t("home.stats.locationValue", { city })}</p>
+                <div className="rounded-2xl p-[1px] bg-gradient-to-r from-accent/35 via-primary/30 to-secondary/25">
+                  <div className="rounded-2xl bg-black/25 backdrop-blur-md px-5 py-4 ring-1 ring-white/10">
+                    <p className="text-sm text-white/60">{t("home.stats.locationLabel")}</p>
+                    <p className="mt-1 text-xl font-semibold text-white">{t("home.stats.locationValue", { city })}</p>
+                  </div>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur px-5 py-4">
-                  <p className="text-sm text-white/60">{t("home.stats.atmosphereLabel")}</p>
-                  <p className="mt-1 text-xl font-semibold text-white">{t("home.stats.atmosphereValue")}</p>
+                <div className="rounded-2xl p-[1px] bg-gradient-to-r from-secondary/30 via-accent/25 to-primary/35">
+                  <div className="rounded-2xl bg-black/25 backdrop-blur-md px-5 py-4 ring-1 ring-white/10">
+                    <p className="text-sm text-white/60">{t("home.stats.atmosphereLabel")}</p>
+                    <p className="mt-1 text-xl font-semibold text-white">{t("home.stats.atmosphereValue")}</p>
+                  </div>
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-3 gap-6 md:gap-8">
+              <div className="grid md:grid-cols-3 gap-8 md:gap-10 place-items-center">
                 <BilliardBall number={9} title={t("home.features.professionalTablesTitle")} delay="animation-delay-200">
                   {t("home.features.professionalTablesText")}
                 </BilliardBall>

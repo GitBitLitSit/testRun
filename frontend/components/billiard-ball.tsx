@@ -37,69 +37,59 @@ export function BilliardBall({ number, children, title, className, delay }: Bill
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-3xl p-8 opacity-0 animate-slide-up",
-        "border border-white/10 bg-white/[0.04] backdrop-blur",
-        "shadow-2xl shadow-black/20 transition-all duration-500",
-        "hover:-translate-y-1 hover:bg-white/[0.06]",
+        "group relative w-full max-w-sm mx-auto opacity-0 animate-slide-up",
+        "aspect-square rounded-full overflow-hidden",
+        "border border-border bg-card shadow-2xl shadow-black/30",
+        "transform-gpu transition-transform duration-500",
+        "hover:-translate-y-2 hover:rotate-[0.75deg]",
         delay,
         className,
       )}
     >
-      {/* Ambient glow */}
-      <div
-        className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full blur-3xl opacity-60 transition-opacity duration-500 group-hover:opacity-90"
-        style={{ background: `radial-gradient(circle at 30% 30%, ${ballConfig.solidColor}33, transparent 60%)` }}
-      />
+      {/* Animated ball surface */}
+      <div className={cn("relative h-full w-full animate-float motion-reduce:animate-none", delay)}>
+        {/* Base color / stripe */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: isStripe
+              ? `linear-gradient(to bottom, #f8fafc 0%, #f8fafc 26%, ${ballConfig.solidColor} 26%, ${ballConfig.solidColor} 74%, #f8fafc 74%, #f8fafc 100%)`
+              : ballConfig.solidColor,
+          }}
+        />
 
-      {/* Ball (decorative, integrated) */}
-      <div className="pointer-events-none absolute -right-10 -top-10 md:-right-12 md:-top-12">
-        <div className="relative">
-          <div
-            className={cn(
-              "w-44 h-44 md:w-52 md:h-52 rounded-full flex items-center justify-center relative",
-              "transform transition-transform duration-500 group-hover:scale-[1.03]",
-            )}
-            style={{
-              boxShadow:
-                "0 18px 36px rgba(0,0,0,0.45), inset 0 -18px 34px rgba(0,0,0,0.35), inset 0 18px 32px rgba(255,255,255,0.10)",
-              background: isStripe
-                ? `linear-gradient(to bottom, #ffffff 0%, #ffffff 26%, ${ballConfig.solidColor} 26%, ${ballConfig.solidColor} 74%, #ffffff 74%, #ffffff 100%)`
-                : `radial-gradient(circle at 30% 30%, #ffffff20, transparent 38%), ${ballConfig.solidColor}`,
-            }}
-          >
-            {/* Gloss sweep */}
-            <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.35),transparent_45%)]" />
-            <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_70%_80%,rgba(255,255,255,0.10),transparent_50%)]" />
+        {/* Lighting + gloss */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_22%,rgba(255,255,255,0.55),transparent_45%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(255,255,255,0.12),transparent_55%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_55%_65%,transparent_35%,rgba(0,0,0,0.55)_100%)]" />
 
-            {/* Number circle */}
-            <div
-              className="relative z-10 w-14 h-14 md:w-16 md:h-16 rounded-full bg-white flex items-center justify-center border border-gray-200"
-              style={{
-                boxShadow: "0 8px 22px rgba(0,0,0,0.25), inset 0 2px 6px rgba(255,255,255,0.95)",
-              }}
-            >
-              <span className="text-2xl md:text-3xl font-bold text-gray-900">{number}</span>
-            </div>
-
-            {/* Micro highlights */}
-            <div className="absolute top-6 left-8 w-10 h-10 rounded-full bg-white/25 blur-md" />
-            <div className="absolute top-10 left-12 w-3 h-3 rounded-full bg-white/80" />
-          </div>
-
-          {/* Ring highlight */}
-          <div
-            className="absolute inset-0 rounded-full ring-1 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-            style={{ boxShadow: `0 0 0 1px ${ballConfig.solidColor}33, 0 0 30px ${ballConfig.solidColor}22` }}
-          />
+        {/* Moving shine sweep */}
+        <div className="pointer-events-none absolute -inset-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 motion-reduce:hidden">
+          <div className="absolute left-1/2 top-[-30%] h-[160%] w-16 -translate-x-1/2 bg-gradient-to-b from-transparent via-white/35 to-transparent blur-[1px] animate-shine-sweep" />
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="relative max-w-sm pr-16 md:pr-24">
-        <h3 className="mt-2 text-xl md:text-2xl font-bold text-white tracking-tight group-hover:text-primary transition-colors">
-          {title}
-        </h3>
-        <p className="mt-4 text-white/60 text-sm md:text-base leading-relaxed">{children}</p>
+        {/* Subtle color ring highlight */}
+        <div
+          className="absolute inset-0 rounded-full ring-1"
+          style={{
+            boxShadow: `inset 0 0 0 1px ${ballConfig.solidColor}26, 0 18px 60px rgba(0,0,0,0.45)`,
+          }}
+        />
+
+        {/* Number circle */}
+        <div className="absolute left-1/2 top-7 -translate-x-1/2">
+          <div className="h-14 w-14 rounded-full bg-white/95 ring-1 ring-black/10 shadow-xl shadow-black/25 flex items-center justify-center">
+            <span className="text-2xl font-black text-gray-900">{number}</span>
+          </div>
+        </div>
+
+        {/* Text overlay (keeps readability) */}
+        <div className="relative z-10 h-full w-full flex items-center justify-center p-7 md:p-8">
+          <div className="w-full rounded-2xl bg-black/35 backdrop-blur-md ring-1 ring-white/10 px-5 py-5 md:px-6 md:py-6 text-center">
+            <h3 className="text-lg md:text-xl font-black tracking-tight text-white">{title}</h3>
+            <p className="mt-2 text-sm md:text-base leading-relaxed text-white/85">{children}</p>
+          </div>
+        </div>
       </div>
     </div>
   )
