@@ -158,8 +158,15 @@ export async function updateMember(
 }
 
 async function handleResponse(res: Response) {
+  type ErrorData = {
+    messageText?: string
+    message?: string
+    error?: unknown
+    params?: Record<string, unknown>
+  }
+
   if (!res.ok) {
-    const errorData = await res.json().catch(() => ({} as any))
+    const errorData: ErrorData = await res.json().catch(() => ({}))
     const localized =
       errorData.messageText ||
       errorData.message ||

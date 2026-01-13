@@ -1,6 +1,7 @@
 "use client"
 
 import Image from "next/image"
+import Link from "next/link"
 import { MapPin, Phone, Clock } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
@@ -66,12 +67,12 @@ export function Footer() {
               {t("footer.quickLinks")}
             </h3>
             <div className="space-y-2 text-sm">
-              <a href="/" className="block text-muted-foreground transition-colors hover:text-primary">
+              <Link href="/" className="block text-muted-foreground transition-colors hover:text-primary">
                 {t("footer.home")}
-              </a>
-              <a href="/login" className="block text-muted-foreground transition-colors hover:text-primary">
+              </Link>
+              <Link href="/login" className="block text-muted-foreground transition-colors hover:text-primary">
                 {t("nav.login")}
-              </a>
+              </Link>
             </div>
           </div>
         </div>

@@ -1,4 +1,4 @@
-import i18n from "i18next"
+import i18n, { type Resource } from "i18next"
 import { initReactI18next } from "react-i18next"
 
 export const SUPPORTED_LANGUAGES = ["it", "en", "de"] as const
@@ -909,7 +909,7 @@ const resources = {
 
 if (!i18n.isInitialized) {
   i18n.use(initReactI18next).init({
-    resources: resources as any,
+    resources: resources as unknown as Resource,
     fallbackLng: "it",
     lng: "it",
     interpolation: { escapeValue: false },

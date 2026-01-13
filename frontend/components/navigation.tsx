@@ -8,7 +8,7 @@ import { Menu, X, LogOut } from "lucide-react"
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { useTranslation } from "react-i18next"
-import i18n, { getStoredLanguage, setStoredLanguage, type SupportedLanguage } from "@/lib/i18n"
+import i18n, { getStoredLanguage, normalizeLanguage, setStoredLanguage, type SupportedLanguage } from "@/lib/i18n"
 import LanguageSelector from "@/components/LanguageSelector"
 
 export function Navigation() {
@@ -39,7 +39,7 @@ export function Navigation() {
 
   useEffect(() => {
     const stored = getStoredLanguage()
-    const initial = (stored || (i18n.language as any) || "it") as SupportedLanguage
+    const initial = stored || normalizeLanguage(i18n.language)
     setLanguage(initial)
   }, [])
 
