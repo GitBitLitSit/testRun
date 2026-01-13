@@ -148,37 +148,35 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Features Section - Clean cards design */}
-        <section id="features" className="py-24 md:py-32 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-background via-[#0a0d12] to-background" />
-          <div className="absolute inset-0 [background:radial-gradient(1200px_circle_at_20%_10%,rgba(47,105,159,0.22),transparent_55%),radial-gradient(900px_circle_at_80%_50%,rgba(64,194,108,0.14),transparent_60%)]" />
-          <div className="absolute inset-0 opacity-[0.06] [background-image:linear-gradient(to_right,white_1px,transparent_1px),linear-gradient(to_bottom,white_1px,transparent_1px)] [background-size:64px_64px]" />
-
-          <div className="container mx-auto px-4 relative z-10">
-            <div className="text-center mb-16 md:mb-20">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-white/70 backdrop-blur">
+        {/* Features Section - simpler / less "fancy" */}
+        <section id="features" className="py-20 md:py-28 border-t border-border bg-background">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12 md:mb-16">
+              <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm text-muted-foreground">
                 <Sparkles className="h-4 w-4 text-secondary" />
                 <span>{t("home.heroDescription.line2", { city })}</span>
               </div>
-              <h2 className="mt-6 text-3xl md:text-5xl font-black text-white mb-4 tracking-tight">{t("home.whyChoose")}</h2>
-              <p className="text-white/60 text-lg max-w-2xl mx-auto leading-relaxed">
+              <h2 className="mt-6 text-3xl md:text-5xl font-black text-foreground mb-4 tracking-tight">
+                {t("home.whyChoose")}
+              </h2>
+              <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
                 {t("home.whyChooseSubtitle")}
               </p>
             </div>
 
             <div className="max-w-6xl mx-auto">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur px-5 py-4">
-                  <p className="text-sm text-white/60">{t("home.stats.openLateLabel")}</p>
-                  <p className="mt-1 text-xl font-semibold text-white">{t("home.stats.openLateValue")}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                <div className="rounded-2xl border border-border bg-card px-5 py-4">
+                  <p className="text-sm text-muted-foreground">{t("home.stats.openLateLabel")}</p>
+                  <p className="mt-1 text-xl font-semibold text-foreground">{t("home.stats.openLateValue")}</p>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur px-5 py-4">
-                  <p className="text-sm text-white/60">{t("home.stats.locationLabel")}</p>
-                  <p className="mt-1 text-xl font-semibold text-white">{t("home.stats.locationValue", { city })}</p>
+                <div className="rounded-2xl border border-border bg-card px-5 py-4">
+                  <p className="text-sm text-muted-foreground">{t("home.stats.locationLabel")}</p>
+                  <p className="mt-1 text-xl font-semibold text-foreground">{t("home.stats.locationValue", { city })}</p>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur px-5 py-4">
-                  <p className="text-sm text-white/60">{t("home.stats.atmosphereLabel")}</p>
-                  <p className="mt-1 text-xl font-semibold text-white">{t("home.stats.atmosphereValue")}</p>
+                <div className="rounded-2xl border border-border bg-card px-5 py-4">
+                  <p className="text-sm text-muted-foreground">{t("home.stats.atmosphereLabel")}</p>
+                  <p className="mt-1 text-xl font-semibold text-foreground">{t("home.stats.atmosphereValue")}</p>
                 </div>
               </div>
 
