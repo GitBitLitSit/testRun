@@ -33,8 +33,53 @@ const resources = {
       },
       common: {
         cancel: "Annulla",
+        city: {
+          bolzano: "Bolzano",
+        },
       },
       home: {
+        headline: {
+          line1: "Dove ogni",
+          line2: "colpo conta",
+        },
+        heroDescription: {
+          line1: "Tavoli professionali. Drink freschi. Ottima compagnia.",
+          line2: "Il club di biliardo di riferimento a {{city}} dal primo giorno.",
+        },
+        ctaMemberLogin: "Login membri",
+        badges: {
+          openUntil: "Aperti fino all'1",
+        },
+        whyChooseSubtitle:
+          "Uno spazio curato per chi vuole giocare bene e passare una bella serata — con attrezzatura professionale, atmosfera calda e orari lunghi.",
+        stats: {
+          openLateLabel: "Aperti fino a tardi",
+          openLateValue: "Fino all'1:00",
+          locationLabel: "Posizione",
+          locationValue: "Centro {{city}}",
+          atmosphereLabel: "Atmosfera",
+          atmosphereValue: "Accogliente + concentrata",
+        },
+        galleryTitle: "L'esperienza",
+        galleryLabels: {
+          championshipTables: "Tavoli da campionato",
+          bar: "Il bar",
+          gameTime: "È ora di giocare",
+          lounge: "Lounge",
+          premiumGear: "Attrezzatura premium",
+        },
+        contact: {
+          pill: "Facile da raggiungere • Parcheggio vicino",
+          title: "Trovaci",
+          subtitle: "Nel cuore di {{city}} — passa per una partita veloce o resta tutta la sera.",
+          addressLabel: "Indirizzo",
+          phoneLabel: "Telefono",
+          hoursLabel: "Orari",
+          directionsCta: "Indicazioni",
+          callCta: "Chiamaci",
+          hoursMonSat: "Lun-Sab: 14:30 - 1:00",
+          hoursSun: "Domenica: 14:30 - 24:00",
+        },
         heroTitle: "Benvenuto da {{club}}",
         heroSubtitle:
           "Vivi il miglior club di biliardo in città. Tavoli professionali, grande atmosfera e una community accogliente.",
@@ -333,8 +378,53 @@ const resources = {
       },
       common: {
         cancel: "Cancel",
+        city: {
+          bolzano: "Bolzano",
+        },
       },
       home: {
+        headline: {
+          line1: "Where Every",
+          line2: "Shot Counts",
+        },
+        heroDescription: {
+          line1: "Professional tables. Cold drinks. Great company.",
+          line2: "{{city}}'s premier billiard club since day one.",
+        },
+        ctaMemberLogin: "Member Login",
+        badges: {
+          openUntil: "Open until 1 AM",
+        },
+        whyChooseSubtitle:
+          "A polished space built for serious play and easy nights out — with pro equipment, warm atmosphere, and late hours.",
+        stats: {
+          openLateLabel: "Open late",
+          openLateValue: "Until 1:00 AM",
+          locationLabel: "Location",
+          locationValue: "{{city}} center",
+          atmosphereLabel: "Atmosphere",
+          atmosphereValue: "Friendly + focused",
+        },
+        galleryTitle: "The Experience",
+        galleryLabels: {
+          championshipTables: "Championship Tables",
+          bar: "The Bar",
+          gameTime: "Game Time",
+          lounge: "Lounge",
+          premiumGear: "Premium Gear",
+        },
+        contact: {
+          pill: "Easy to reach • Parking nearby",
+          title: "Find Us",
+          subtitle: "Located in the heart of {{city}} — drop by for a quick game or stay for the night.",
+          addressLabel: "Address",
+          phoneLabel: "Phone",
+          hoursLabel: "Hours",
+          directionsCta: "Get directions",
+          callCta: "Call us",
+          hoursMonSat: "Mon-Sat: 2:30 PM - 1:00 AM",
+          hoursSun: "Sunday: 2:30 PM - 12:00 AM",
+        },
         heroTitle: "Welcome to {{club}}",
         heroSubtitle:
           "Experience the finest billiard club in town. Professional tables, great atmosphere, and a welcoming community await you.",
@@ -633,8 +723,53 @@ const resources = {
       },
       common: {
         cancel: "Abbrechen",
+        city: {
+          bolzano: "Bozen",
+        },
       },
       home: {
+        headline: {
+          line1: "Wo jeder",
+          line2: "Stoß zählt",
+        },
+        heroDescription: {
+          line1: "Professionelle Tische. Kalte Drinks. Gute Gesellschaft.",
+          line2: "{{city}}s Billardclub Nr. 1 – von Anfang an.",
+        },
+        ctaMemberLogin: "Mitglieder-Login",
+        badges: {
+          openUntil: "Geöffnet bis 1 Uhr",
+        },
+        whyChooseSubtitle:
+          "Ein gepflegter Ort für konzentriertes Spiel und entspannte Abende — mit Profi-Equipment, warmer Atmosphäre und langen Öffnungszeiten.",
+        stats: {
+          openLateLabel: "Lange geöffnet",
+          openLateValue: "Bis 1:00 Uhr",
+          locationLabel: "Lage",
+          locationValue: "{{city}} Zentrum",
+          atmosphereLabel: "Atmosphäre",
+          atmosphereValue: "Freundlich + fokussiert",
+        },
+        galleryTitle: "Das Erlebnis",
+        galleryLabels: {
+          championshipTables: "Turnier-Tische",
+          bar: "Die Bar",
+          gameTime: "Spielzeit",
+          lounge: "Lounge",
+          premiumGear: "Premium Equipment",
+        },
+        contact: {
+          pill: "Gut erreichbar • Parkplätze in der Nähe",
+          title: "So findest du uns",
+          subtitle: "Mitten in {{city}} — komm für eine schnelle Runde vorbei oder bleib den ganzen Abend.",
+          addressLabel: "Adresse",
+          phoneLabel: "Telefon",
+          hoursLabel: "Öffnungszeiten",
+          directionsCta: "Route",
+          callCta: "Anrufen",
+          hoursMonSat: "Mo-Sa: 14:30 - 1:00",
+          hoursSun: "Sonntag: 14:30 - 24:00",
+        },
         heroTitle: "Willkommen bei {{club}}",
         heroSubtitle:
           "Erlebe den besten Billardclub der Stadt. Professionelle Tische, tolle Atmosphäre und eine freundliche Community.",

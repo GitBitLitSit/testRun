@@ -7,6 +7,10 @@ import { useTranslation } from "react-i18next"
 
 export function Footer() {
   const { t } = useTranslation()
+  const city = t("common.city.bolzano")
+  const phoneDisplay = "392 810 0919"
+  const phoneTel = "+393928100919"
+  const mapsPageHref = "/maps"
   return (
     <footer className="border-t border-border bg-card/50">
       <div className="container mx-auto px-4 py-12">
@@ -36,11 +40,23 @@ export function Footer() {
             <div className="space-y-3 text-sm">
               <div className="flex items-start gap-3">
                 <MapPin className="mt-0.5 h-4 w-4 text-primary flex-shrink-0" />
-                <span className="text-muted-foreground">Via Bruno Buozzi, 12, 39100 Bolzano BZ</span>
+                <Link
+                  href={mapsPageHref}
+                  className="text-muted-foreground transition-colors hover:text-primary"
+                  aria-label={t("home.contact.directionsCta")}
+                >
+                  Via Bruno Buozzi, 12, 39100 {city} BZ
+                </Link>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="h-4 w-4 text-primary flex-shrink-0" />
-                <span className="text-muted-foreground">392 810 0919</span>
+                <a
+                  href={`tel:${phoneTel}`}
+                  className="text-muted-foreground transition-colors hover:text-primary"
+                  aria-label={t("home.contact.callCta")}
+                >
+                  {phoneDisplay}
+                </a>
               </div>
             </div>
           </div>

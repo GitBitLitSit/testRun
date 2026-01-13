@@ -8,8 +8,10 @@ import { Clock, ChevronDown, ArrowRight, MapPin, Navigation2, Phone, Sparkles } 
 import Link from "next/link"
 import Image from "next/image"
 import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 export default function HomePage() {
+  const { t } = useTranslation()
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
   const images = [
@@ -29,6 +31,15 @@ export default function HomePage() {
   const scrollToFeatures = () => {
     document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })
   }
+
+  const city = t("common.city.bolzano")
+  const phoneDisplay = "392 810 0919"
+  const phoneTel = "+393928100919"
+  const mapsPageHref = "/maps"
+  const mapsQuery = "Via Bruno Buozzi, 12, 39100 Bolzano BZ"
+  const mapsHref = `https://www.google.com/maps?q=${encodeURIComponent(mapsQuery)}`
+  const mapsEmbedSrc = `https://www.google.com/maps?q=${encodeURIComponent(mapsQuery)}&output=embed`
+  const addressLine = `Via Bruno Buozzi, 12, 39100 ${city} BZ`
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -66,15 +77,15 @@ export default function HomePage() {
               </div>
 
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-black mb-6 leading-tight">
-                <span className="text-foreground">Where Every</span>
+                <span className="text-foreground">{t("home.headline.line1")}</span>
                 <br />
-                <span className="text-primary">Shot Counts</span>
+                <span className="text-primary">{t("home.headline.line2")}</span>
               </h1>
 
               <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
-                Professional tables. Cold drinks. Great company.
+                {t("home.heroDescription.line1")}
                 <br className="hidden md:block" />
-                Bolzano&apos;s premier billiard club since day one.
+                {t("home.heroDescription.line2", { city })}
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
@@ -84,7 +95,7 @@ export default function HomePage() {
                   className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 py-6 rounded-full"
                 >
                   <Link href="/login" className="gap-2">
-                    Member Login
+                    {t("home.ctaMemberLogin")}
                     <ArrowRight className="h-5 w-5" />
                   </Link>
                 </Button>
@@ -93,16 +104,24 @@ export default function HomePage() {
               <div className="flex flex-wrap justify-center gap-4 md:gap-8 text-sm mb-24">
                 <div className="flex items-center gap-2 bg-card/50 backdrop-blur-sm px-4 py-2 rounded-full">
                   <Clock className="h-4 w-4 text-primary" />
-                  <span className="text-foreground">Open until 1 AM</span>
+                  <span className="text-foreground">{t("home.badges.openUntil")}</span>
                 </div>
-                <div className="flex items-center gap-2 bg-card/50 backdrop-blur-sm px-4 py-2 rounded-full">
+                <Link
+                  href={mapsPageHref}
+                  className="flex items-center gap-2 bg-card/50 backdrop-blur-sm px-4 py-2 rounded-full hover:bg-card/70 transition-colors"
+                  aria-label={t("home.contact.directionsCta")}
+                >
                   <MapPin className="h-4 w-4 text-primary" />
-                  <span className="text-foreground">Bolzano</span>
-                </div>
-                <div className="flex items-center gap-2 bg-card/50 backdrop-blur-sm px-4 py-2 rounded-full">
+                  <span className="text-foreground">{city}</span>
+                </Link>
+                <a
+                  href={`tel:${phoneTel}`}
+                  className="flex items-center gap-2 bg-card/50 backdrop-blur-sm px-4 py-2 rounded-full hover:bg-card/70 transition-colors"
+                  aria-label={t("home.contact.callCta")}
+                >
                   <Phone className="h-4 w-4 text-primary" />
-                  <span className="text-foreground">392 810 0919</span>
-                </div>
+                  <span className="text-foreground">{phoneDisplay}</span>
+                </a>
               </div>
             </div>
 
@@ -139,44 +158,41 @@ export default function HomePage() {
             <div className="text-center mb-16 md:mb-20">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-white/70 backdrop-blur">
                 <Sparkles className="h-4 w-4 text-secondary" />
-                <span>Bolzano&apos;s premier billiard club</span>
+                <span>{t("home.heroDescription.line2", { city })}</span>
               </div>
-              <h2 className="mt-6 text-3xl md:text-5xl font-black text-white mb-4 tracking-tight">
-                Why <span className="text-primary">15 Palle</span>?
-              </h2>
+              <h2 className="mt-6 text-3xl md:text-5xl font-black text-white mb-4 tracking-tight">{t("home.whyChoose")}</h2>
               <p className="text-white/60 text-lg max-w-2xl mx-auto leading-relaxed">
-                A polished space built for serious play and easy nights out — with pro equipment, warm atmosphere, and late
-                hours.
+                {t("home.whyChooseSubtitle")}
               </p>
             </div>
 
             <div className="max-w-6xl mx-auto">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
                 <div className="rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur px-5 py-4">
-                  <p className="text-sm text-white/60">Open late</p>
-                  <p className="mt-1 text-xl font-semibold text-white">Until 1:00 AM</p>
+                  <p className="text-sm text-white/60">{t("home.stats.openLateLabel")}</p>
+                  <p className="mt-1 text-xl font-semibold text-white">{t("home.stats.openLateValue")}</p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur px-5 py-4">
-                  <p className="text-sm text-white/60">Location</p>
-                  <p className="mt-1 text-xl font-semibold text-white">Bolzano center</p>
+                  <p className="text-sm text-white/60">{t("home.stats.locationLabel")}</p>
+                  <p className="mt-1 text-xl font-semibold text-white">{t("home.stats.locationValue", { city })}</p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur px-5 py-4">
-                  <p className="text-sm text-white/60">Atmosphere</p>
-                  <p className="mt-1 text-xl font-semibold text-white">Friendly + focused</p>
+                  <p className="text-sm text-white/60">{t("home.stats.atmosphereLabel")}</p>
+                  <p className="mt-1 text-xl font-semibold text-white">{t("home.stats.atmosphereValue")}</p>
                 </div>
               </div>
 
               <div className="grid md:grid-cols-3 gap-6 md:gap-8">
-                <BilliardBall number={9} title="Pro tables" delay="animation-delay-200">
-                  Championship-grade tables maintained to perfection — consistent roll, clean rails, and great lighting.
+                <BilliardBall number={9} title={t("home.features.professionalTablesTitle")} delay="animation-delay-200">
+                  {t("home.features.professionalTablesText")}
                 </BilliardBall>
 
-                <BilliardBall number={11} title="Great vibes" delay="animation-delay-400">
-                  A welcoming room where beginners and regulars play side by side — relaxed, respectful, and social.
+                <BilliardBall number={11} title={t("home.features.friendlyCommunityTitle")} delay="animation-delay-400">
+                  {t("home.features.friendlyCommunityText")}
                 </BilliardBall>
 
-                <BilliardBall number={6} title="Late nights" delay="animation-delay-600">
-                  Open until 1 AM — perfect for after-work sets, weekend hangouts, and tournament nights.
+                <BilliardBall number={6} title={t("home.features.extendedHoursTitle")} delay="animation-delay-600">
+                  {t("home.features.extendedHoursText")}
                 </BilliardBall>
               </div>
             </div>
@@ -187,64 +203,62 @@ export default function HomePage() {
         <section className="py-16 md:py-24 bg-card/30">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-black text-foreground mb-4">
-                The <span className="text-primary">Experience</span>
-              </h2>
+              <h2 className="text-3xl md:text-4xl font-black text-foreground mb-4">{t("home.galleryTitle")}</h2>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 max-w-6xl mx-auto">
               <div className="col-span-2 row-span-2 relative aspect-square overflow-hidden rounded-2xl group">
                 <img
                   src="/professional-billiard-table-in-modern-club.jpg"
-                  alt="Professional table"
+                  alt={t("home.galleryLabels.championshipTables")}
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
-                  <span className="text-foreground font-semibold text-lg">Championship Tables</span>
+                  <span className="text-foreground font-semibold text-lg">{t("home.galleryLabels.championshipTables")}</span>
                 </div>
               </div>
 
               <div className="relative aspect-square overflow-hidden rounded-2xl group">
                 <img
                   src="/billiard-club-bar-area-with-drinks.jpg"
-                  alt="Bar area"
+                  alt={t("home.galleryLabels.bar")}
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                  <span className="text-foreground font-medium">The Bar</span>
+                  <span className="text-foreground font-medium">{t("home.galleryLabels.bar")}</span>
                 </div>
               </div>
 
               <div className="relative aspect-square overflow-hidden rounded-2xl group">
                 <img
                   src="/people-playing-billiards-in-club.jpg"
-                  alt="Players"
+                  alt={t("home.galleryLabels.gameTime")}
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                  <span className="text-foreground font-medium">Game Time</span>
+                  <span className="text-foreground font-medium">{t("home.galleryLabels.gameTime")}</span>
                 </div>
               </div>
 
               <div className="relative aspect-square overflow-hidden rounded-2xl group">
                 <img
                   src="/billiard-club-lounge-seating-area.jpg"
-                  alt="Lounge"
+                  alt={t("home.galleryLabels.lounge")}
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                  <span className="text-foreground font-medium">Lounge</span>
+                  <span className="text-foreground font-medium">{t("home.galleryLabels.lounge")}</span>
                 </div>
               </div>
 
               <div className="relative aspect-square overflow-hidden rounded-2xl group">
                 <img
                   src="/billiard-balls-on-table-close-up.jpg"
-                  alt="Equipment"
+                  alt={t("home.galleryLabels.premiumGear")}
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                  <span className="text-foreground font-medium">Premium Gear</span>
+                  <span className="text-foreground font-medium">{t("home.galleryLabels.premiumGear")}</span>
                 </div>
               </div>
             </div>
@@ -260,14 +274,14 @@ export default function HomePage() {
                 <div className="rounded-3xl border border-border bg-card/70 backdrop-blur p-8 md:p-10 shadow-2xl shadow-black/10">
                   <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/40 px-4 py-2 text-sm text-muted-foreground">
                     <MapPin className="h-4 w-4 text-primary" />
-                    <span>Easy to reach • Parking nearby</span>
+                    <span>{t("home.contact.pill")}</span>
                   </div>
 
                   <h2 className="mt-6 text-3xl md:text-4xl font-black text-foreground tracking-tight">
-                    Find <span className="text-primary">Us</span>
+                    {t("home.contact.title")}
                   </h2>
                   <p className="mt-3 text-muted-foreground leading-relaxed">
-                    Located in the heart of Bolzano — drop by for a quick game or stay for the night.
+                    {t("home.contact.subtitle", { city })}
                   </p>
 
                   <div className="mt-8 grid gap-4">
@@ -277,8 +291,8 @@ export default function HomePage() {
                           <MapPin className="h-5 w-5 text-primary" />
                         </div>
                         <div>
-                          <p className="font-semibold text-foreground">Address</p>
-                          <p className="text-muted-foreground text-sm">Via Bruno Buozzi, 12, 39100 Bolzano BZ</p>
+                          <p className="font-semibold text-foreground">{t("home.contact.addressLabel")}</p>
+                          <p className="text-muted-foreground text-sm">{addressLine}</p>
                         </div>
                       </div>
                     </div>
@@ -289,7 +303,7 @@ export default function HomePage() {
                           <Phone className="h-5 w-5 text-secondary" />
                         </div>
                         <div>
-                          <p className="font-semibold text-foreground">Phone</p>
+                          <p className="font-semibold text-foreground">{t("home.contact.phoneLabel")}</p>
                           <a className="text-muted-foreground text-sm hover:text-foreground transition-colors" href="tel:+393928100919">
                             +39 392 810 0919
                           </a>
@@ -303,9 +317,9 @@ export default function HomePage() {
                           <Clock className="h-5 w-5 text-accent" />
                         </div>
                         <div>
-                          <p className="font-semibold text-foreground">Hours</p>
-                          <p className="text-muted-foreground text-sm">Mon-Sat: 2:30 PM - 1:00 AM</p>
-                          <p className="text-muted-foreground text-sm">Sunday: 2:30 PM - 12:00 AM</p>
+                          <p className="font-semibold text-foreground">{t("home.contact.hoursLabel")}</p>
+                          <p className="text-muted-foreground text-sm">{t("home.contact.hoursMonSat")}</p>
+                          <p className="text-muted-foreground text-sm">{t("home.contact.hoursSun")}</p>
                         </div>
                       </div>
                     </div>
@@ -314,18 +328,18 @@ export default function HomePage() {
                   <div className="mt-8 flex flex-col sm:flex-row gap-3">
                     <Button asChild className="rounded-full">
                       <Link
-                        href="https://www.google.com/maps?q=Via%20Bruno%20Buozzi%2C%2012%2C%2039100%20Bolzano%20BZ"
+                        href={mapsHref}
                         target="_blank"
                         rel="noreferrer"
                         className="gap-2"
                       >
-                        Get directions
+                        {t("home.contact.directionsCta")}
                         <Navigation2 className="h-4 w-4" />
                       </Link>
                     </Button>
                     <Button asChild variant="outline" className="rounded-full">
-                      <a href="tel:+393928100919" className="gap-2">
-                        Call us
+                      <a href={`tel:${phoneTel}`} className="gap-2">
+                        {t("home.contact.callCta")}
                         <Phone className="h-4 w-4" />
                       </a>
                     </Button>
@@ -339,7 +353,7 @@ export default function HomePage() {
                       className="h-full w-full"
                       loading="lazy"
                       referrerPolicy="no-referrer-when-downgrade"
-                      src="https://www.google.com/maps?q=Via%20Bruno%20Buozzi%2C%2012%2C%2039100%20Bolzano%20BZ&output=embed"
+                      src={mapsEmbedSrc}
                     />
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-background/10 to-transparent pointer-events-none" />
