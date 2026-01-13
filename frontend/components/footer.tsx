@@ -1,7 +1,11 @@
+"use client"
+
 import Image from "next/image"
 import { MapPin, Phone, Clock } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 export function Footer() {
+  const { t } = useTranslation()
   return (
     <footer className="border-t border-border bg-card/50">
       <div className="container mx-auto px-4 py-12">
@@ -21,13 +25,13 @@ export function Footer() {
               </span>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Bolzano&apos;s premier billiard club. Professional tables, great drinks, unforgettable nights.
+              {t("footer.tagline")}
             </p>
           </div>
 
           {/* Contact */}
           <div>
-            <h3 className="mb-4 text-sm font-semibold text-foreground uppercase tracking-wider">Contact</h3>
+            <h3 className="mb-4 text-sm font-semibold text-foreground uppercase tracking-wider">{t("footer.contact")}</h3>
             <div className="space-y-3 text-sm">
               <div className="flex items-start gap-3">
                 <MapPin className="mt-0.5 h-4 w-4 text-primary flex-shrink-0" />
@@ -42,7 +46,9 @@ export function Footer() {
 
           {/* Hours */}
           <div>
-            <h3 className="mb-4 text-sm font-semibold text-foreground uppercase tracking-wider">Hours</h3>
+            <h3 className="mb-4 text-sm font-semibold text-foreground uppercase tracking-wider">
+              {t("footer.openingHours")}
+            </h3>
             <div className="space-y-2 text-sm">
               <div className="flex items-start gap-3">
                 <Clock className="mt-0.5 h-4 w-4 text-primary flex-shrink-0" />
@@ -56,17 +62,27 @@ export function Footer() {
 
           {/* Quick Links - Simplified */}
           <div>
-            <h3 className="mb-4 text-sm font-semibold text-foreground uppercase tracking-wider">Quick Links</h3>
+            <h3 className="mb-4 text-sm font-semibold text-foreground uppercase tracking-wider">
+              {t("footer.quickLinks")}
+            </h3>
             <div className="space-y-2 text-sm">
-              <a href="/login" className="block text-muted-foreground transition-colors hover:text-primary">
-                Member Login
+              <a href="/" className="block text-muted-foreground transition-colors hover:text-primary">
+                {t("footer.home")}
+              </a>
+              <a href="/opening-times" className="block text-muted-foreground transition-colors hover:text-primary">
+                {t("footer.openingTimes")}
+              </a>
+              <a href="/contact" className="block text-muted-foreground transition-colors hover:text-primary">
+                {t("footer.contactLink")}
               </a>
             </div>
           </div>
         </div>
 
         <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} 15 Palle. All rights reserved.</p>
+          <p>
+            &copy; {new Date().getFullYear()} 15 Palle. {t("footer.rights")}
+          </p>
         </div>
       </div>
     </footer>

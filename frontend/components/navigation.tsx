@@ -7,14 +7,19 @@ import { Button } from "@/components/ui/button"
 import { Menu, X, LogOut } from "lucide-react"
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
+import { useTranslation } from "react-i18next"
+import i18n, { getStoredLanguage, setStoredLanguage, type SupportedLanguage } from "@/lib/i18n"
+import LanguageSelector from "@/components/LanguageSelector"
 
 export function Navigation() {
+  const { t } = useTranslation()
   const pathname = usePathname()
   const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userType, setUserType] = useState<"customer" | "owner" | null>(null)
   const [scrolled, setScrolled] = useState(false)
+  const [language, setLanguage] = useState<SupportedLanguage>("it")
 
   useEffect(() => {
     const token = localStorage.getItem("token")
@@ -33,6 +38,12 @@ export function Navigation() {
   }, [pathname])
 
   useEffect(() => {
+    const stored = getStoredLanguage()
+    const initial = (stored || (i18n.language as any) || "it") as SupportedLanguage
+    setLanguage(initial)
+  }, [])
+
+  useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20)
     }
@@ -48,20 +59,31 @@ export function Navigation() {
     router.push("/")
   }
 
+  const handleLanguageChange = (next: SupportedLanguage) => {
+    setLanguage(next)
+    setStoredLanguage(next)
+  }
+
   const getNavItems = () => {
+    const baseItems = [
+      { href: "/", label: t("nav.home") },
+      { href: "/opening-times", label: t("nav.openingTimes") },
+      { href: "/contact", label: t("nav.contact") },
+    ]
+
     if (!isLoggedIn) {
-      return [{ href: "/login", label: "Login" }]
+      return [...baseItems, { href: "/login", label: t("nav.login") }]
     }
 
     if (userType === "customer") {
-      return [{ href: "/customer/profile", label: "My QR Code" }]
+      return [...baseItems, { href: "/customer/profile", label: t("nav.myProfile") }]
     }
 
     if (userType === "owner") {
-      return [{ href: "/owner/dashboard", label: "Dashboard" }]
+      return [...baseItems, { href: "/owner/dashboard", label: t("nav.dashboard") }]
     }
 
-    return []
+    return baseItems
   }
 
   const navItems = getNavItems()
@@ -107,6 +129,11 @@ export function Navigation() {
                 <Link href={item.href}>{item.label}</Link>
               </Button>
             ))}
+
+            <LanguageSelector
+              language={language}
+              onLanguageChange={(newLang) => handleLanguageChange(newLang as SupportedLanguage)}
+            />
             {isLoggedIn && (
               <Button
                 variant="ghost"
@@ -115,7 +142,7 @@ export function Navigation() {
                 className="gap-2 text-muted-foreground hover:text-foreground"
               >
                 <LogOut className="h-4 w-4" />
-                Logout
+                {t("nav.logout")}
               </Button>
             )}
           </div>
@@ -128,7 +155,7 @@ export function Navigation() {
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            <span className="sr-only">Toggle menu</span>
+            <span className="sr-only">{t("nav.toggleMenu")}</span>
           </Button>
         </div>
 
@@ -147,6 +174,15 @@ export function Navigation() {
                   <Link href={item.href}>{item.label}</Link>
                 </Button>
               ))}
+
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-sm text-muted-foreground">{t("nav.language")}</span>
+                <LanguageSelector
+                  language={language}
+                  onLanguageChange={(newLang) => handleLanguageChange(newLang as SupportedLanguage)}
+                />
+              </div>
+
               {isLoggedIn && (
                 <Button
                   variant="ghost"
@@ -157,7 +193,7 @@ export function Navigation() {
                   className="gap-2 justify-center"
                 >
                   <LogOut className="h-4 w-4" />
-                  Logout
+                  {t("nav.logout")}
                 </Button>
               )}
             </div>

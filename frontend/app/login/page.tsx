@@ -12,8 +12,10 @@ import { loginAdmin, requestVerificationCode, verifyAndRecover } from "@/lib/api
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { LogIn, Mail, ShieldCheck, Lock, User } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 export default function LoginPage() {
+  const { t } = useTranslation()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -28,13 +30,18 @@ export default function LoginPage() {
   const [ownerUsername, setOwnerUsername] = useState("")
   const [ownerPassword, setOwnerPassword] = useState("")
 
+  const handleTabChange = () => {
+    setError(null)
+    setIsLoading(false)
+  }
+
   const handleCustomerEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError(null)
 
     if (!customerEmail || !customerEmail.includes("@")) {
-      setError("Please enter a valid email address")
+      setError(t("login.validationEmail"))
       setIsLoading(false)
       return
     }
@@ -50,7 +57,7 @@ export default function LoginPage() {
 
       setStep("code")
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to send verification code")
+      setError(err instanceof Error ? err.message : t("login.failedSend"))
     } finally {
       setIsLoading(false)
     }
@@ -62,7 +69,7 @@ export default function LoginPage() {
     setError(null)
 
     if (verificationCode.length !== 6) {
-      setError("Please enter a valid 6-digit code")
+      setError(t("login.validationCode"))
       setIsLoading(false)
       return
     }
@@ -83,7 +90,7 @@ export default function LoginPage() {
 
       router.push("/customer/profile")
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Invalid verification code")
+      setError(err instanceof Error ? err.message : t("login.invalidCode"))
     } finally {
       setIsLoading(false)
     }
@@ -109,7 +116,7 @@ export default function LoginPage() {
 
       router.push("/owner/dashboard")
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Invalid credentials")
+      setError(err instanceof Error ? err.message : t("login.invalidCredentials"))
     } finally {
       setIsLoading(false)
     }
@@ -131,27 +138,27 @@ export default function LoginPage() {
           <div className="mx-auto max-w-md">
             <div className="mb-8 text-center">
               <LogIn className="mx-auto mb-4 h-12 w-12 text-primary" />
-              <h1 className="mb-2 text-3xl font-bold text-balance">Welcome to 15 Palle</h1>
-              <p className="text-muted-foreground">Sign in to access your account</p>
+              <h1 className="mb-2 text-3xl font-bold text-balance">{t("login.welcomeTitle")}</h1>
+              <p className="text-muted-foreground">{t("login.welcomeSubtitle")}</p>
             </div>
 
             <Card className="shadow-lg">
               <CardHeader>
-                <CardTitle>Login</CardTitle>
-                <CardDescription>Choose your account type to continue</CardDescription>
+                <CardTitle>{t("login.loginTitle")}</CardTitle>
+                <CardDescription>{t("login.chooseAccountType")}</CardDescription>
               </CardHeader>
               <CardContent>
-                <Tabs defaultValue="customer" className="w-full">
+                <Tabs defaultValue="customer" className="w-full" onValueChange={handleTabChange}>
                   <TabsList className="grid w-full grid-cols-2 mb-6">
-                    <TabsTrigger value="customer">Customer</TabsTrigger>
-                    <TabsTrigger value="owner">Owner</TabsTrigger>
+                    <TabsTrigger value="customer">{t("login.customer")}</TabsTrigger>
+                    <TabsTrigger value="owner">{t("login.owner")}</TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="customer" className="space-y-4">
                     {step === "email" ? (
                       <form onSubmit={handleCustomerEmailSubmit} className="space-y-4">
                         <div className="space-y-2">
-                          <Label htmlFor="customer-email">Email Address</Label>
+                          <Label htmlFor="customer-email">{t("login.emailAddress")}</Label>
                           <div className="relative">
                             <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                             <Input
@@ -164,7 +171,7 @@ export default function LoginPage() {
                               className="h-11 pl-10"
                             />
                           </div>
-                          <p className="text-xs text-muted-foreground">We'll send you a verification code</p>
+                          <p className="text-xs text-muted-foreground">{t("login.emailHint")}</p>
                         </div>
 
                         {error && (
@@ -174,13 +181,13 @@ export default function LoginPage() {
                         )}
 
                         <Button type="submit" className="w-full h-11" disabled={isLoading}>
-                          {isLoading ? "Sending..." : "Send Verification Code"}
+                          {isLoading ? t("login.sending") : t("login.sendCode")}
                         </Button>
                       </form>
                     ) : (
                       <form onSubmit={handleCustomerCodeSubmit} className="space-y-4">
                         <div className="space-y-2">
-                          <Label htmlFor="verification-code">Verification Code</Label>
+                          <Label htmlFor="verification-code">{t("login.verificationCode")}</Label>
                           <div className="relative">
                             <ShieldCheck className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                             <Input
@@ -195,7 +202,7 @@ export default function LoginPage() {
                             />
                           </div>
                           <p className="text-xs text-muted-foreground">
-                            Code sent to <strong>{customerEmail}</strong>
+                            {t("login.codeSentTo")} <strong>{customerEmail}</strong>
                           </p>
                         </div>
 
@@ -218,7 +225,7 @@ export default function LoginPage() {
                         )}
 
                         <Button type="submit" className="w-full h-11" disabled={isLoading}>
-                          {isLoading ? "Verifying..." : "View QR Code"}
+                          {isLoading ? t("login.verifying") : t("login.viewQrCode")}
                         </Button>
 
                         <Button
@@ -228,7 +235,7 @@ export default function LoginPage() {
                           onClick={handleBackToEmail}
                           disabled={isLoading}
                         >
-                          Use different email
+                          {t("login.useDifferentEmail")}
                         </Button>
                       </form>
                     )}
@@ -237,7 +244,7 @@ export default function LoginPage() {
                   <TabsContent value="owner" className="space-y-4">
                     <form onSubmit={handleOwnerLogin} className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="owner-username">Username</Label>
+                        <Label htmlFor="owner-username">{t("login.username")}</Label>
                         <div className="relative">
                           <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                           <Input
@@ -253,7 +260,7 @@ export default function LoginPage() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="owner-password">Password</Label>
+                        <Label htmlFor="owner-password">{t("login.password")}</Label>
                         <div className="relative">
                           <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                           <Input
@@ -275,7 +282,7 @@ export default function LoginPage() {
                       )}
 
                       <Button type="submit" className="w-full h-11" disabled={isLoading}>
-                        {isLoading ? "Signing in..." : "Sign In as Owner"}
+                        {isLoading ? t("login.signingIn") : t("login.signInOwner")}
                       </Button>
                     </form>
                   </TabsContent>
