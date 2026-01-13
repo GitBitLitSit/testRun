@@ -4,21 +4,17 @@ import Link from "next/link"
 import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Menu, LogOut } from "lucide-react"
+import { Menu, X, LogOut } from "lucide-react"
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
-import { useTranslation } from "react-i18next"
-import i18n, { getStoredLanguage, setStoredLanguage, type SupportedLanguage } from "@/lib/i18n"
-import LanguageSelector from "./LanguageSelector"
 
 export function Navigation() {
-  const { t } = useTranslation()
   const pathname = usePathname()
   const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userType, setUserType] = useState<"customer" | "owner" | null>(null)
-  const [language, setLanguage] = useState<SupportedLanguage>("it")
+  const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem("token")
@@ -37,9 +33,11 @@ export function Navigation() {
   }, [pathname])
 
   useEffect(() => {
-    const stored = getStoredLanguage()
-    const initial = (stored || (i18n.language as any) || "it") as SupportedLanguage
-    setLanguage(initial)
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20)
+    }
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
   const handleLogout = () => {
@@ -50,121 +48,116 @@ export function Navigation() {
     router.push("/")
   }
 
-  const handleLanguageChange = (next: SupportedLanguage) => {
-    setLanguage(next)
-    setStoredLanguage(next)
-  }
-
   const getNavItems = () => {
-    const baseItems = [
-      { href: "/", label: t("nav.home") },
-      { href: "/opening-times", label: t("nav.openingTimes") },
-      { href: "/contact", label: t("nav.contact") },
-    ]
-
     if (!isLoggedIn) {
-      return [...baseItems, { href: "/login", label: t("nav.login") }]
+      return [{ href: "/login", label: "Login" }]
     }
 
     if (userType === "customer") {
-      return [...baseItems, { href: "/customer/profile", label: t("nav.myProfile") }]
+      return [{ href: "/customer/profile", label: "My QR Code" }]
     }
 
     if (userType === "owner") {
-      return [...baseItems, { href: "/owner/dashboard", label: t("nav.dashboard") }]
+      return [{ href: "/owner/dashboard", label: "Dashboard" }]
     }
 
-    return baseItems
+    return []
   }
 
   const navItems = getNavItems()
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <nav
+      className={cn(
+        "fixed top-0 z-50 w-full transition-all duration-300",
+        scrolled ? "bg-background/95 backdrop-blur-md border-b border-border shadow-lg" : "bg-transparent",
+      )}
+    >
       <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <Image src="/logo.png" alt="15 Palle Logo" width={50} height={50} className="h-12 w-auto" />
-            <span className="text-xl font-bold text-primary">15 Palle</span>
+        <div className="flex h-20 items-center justify-between">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="relative">
+              <Image
+                src="/logo.png"
+                alt="15 Palle Logo"
+                width={60}
+                height={60}
+                className="h-14 w-14 rounded-full object-cover transition-transform group-hover:scale-105"
+              />
+            </div>
+            <span className="text-2xl font-bold text-foreground hidden sm:block">
+              15 <span className="text-primary">Palle</span>
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden items-center gap-6 md:flex">
+          <div className="hidden items-center gap-4 md:flex">
             {navItems.map((item) => (
-              <Link
+              <Button
                 key={item.href}
-                href={item.href}
+                asChild
+                variant={pathname === item.href ? "default" : "outline"}
                 className={cn(
-                  "text-sm font-medium transition-colors hover:text-primary",
-                  pathname === item.href ? "text-primary" : "text-muted-foreground",
+                  "text-sm font-medium px-6",
+                  pathname === item.href
+                    ? "bg-primary text-primary-foreground"
+                    : "border-primary/50 text-foreground hover:bg-primary hover:text-primary-foreground",
                 )}
               >
-                {item.label}
-              </Link>
+                <Link href={item.href}>{item.label}</Link>
+              </Button>
             ))}
-
             {isLoggedIn && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={handleLogout} 
-                // UPDATED: Added red text and hover classes
-                className="gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="gap-2 text-muted-foreground hover:text-foreground"
               >
                 <LogOut className="h-4 w-4" />
+                Logout
               </Button>
             )}
-            
-            <LanguageSelector
-              language={language}
-              onLanguageChange={(newLang) => handleLanguageChange(newLang as SupportedLanguage)}
-            />
-            
           </div>
 
           {/* Mobile Menu Button */}
-          <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            <Menu className="h-5 w-5" />
-            <span className="sr-only">{t("nav.toggleMenu")}</span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden text-foreground"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            <span className="sr-only">Toggle menu</span>
           </Button>
         </div>
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <div className="border-t border-border py-4 md:hidden">
+          <div className="absolute top-full left-0 right-0 bg-background/98 backdrop-blur-md border-b border-border py-6 px-4 md:hidden">
             <div className="flex flex-col gap-4">
               {navItems.map((item) => (
-                <Link
+                <Button
                   key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "text-sm font-medium transition-colors hover:text-primary",
-                    pathname === item.href ? "text-primary" : "text-muted-foreground",
-                  )}
+                  asChild
+                  variant={pathname === item.href ? "default" : "outline"}
+                  className="w-full justify-center"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  {item.label}
-                </Link>
+                  <Link href={item.href}>{item.label}</Link>
+                </Button>
               ))}
-
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">{t("nav.language")}</span>
-                <LanguageSelector
-                  language={language}
-                  onLanguageChange={(newLang) => handleLanguageChange(newLang as SupportedLanguage)}
-                />
-              </div>
-
               {isLoggedIn && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={handleLogout} 
-                  // UPDATED: Added red text and hover classes for mobile too
-                  className="gap-2 justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    handleLogout()
+                    setMobileMenuOpen(false)
+                  }}
+                  className="gap-2 justify-center"
                 >
                   <LogOut className="h-4 w-4" />
-                  {t("nav.logout")}
+                  Logout
                 </Button>
               )}
             </div>

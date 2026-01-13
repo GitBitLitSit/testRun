@@ -1,44 +1,51 @@
-"use client"
-
-import { MapPin, Phone, Mail, Clock } from "lucide-react"
-import { useTranslation } from "react-i18next"
+import Image from "next/image"
+import { MapPin, Phone, Clock } from "lucide-react"
 
 export function Footer() {
-  const { t } = useTranslation()
   return (
-    <footer className="border-t border-border bg-muted/50">
+    <footer className="border-t border-border bg-card/50">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-          <div>
-            <h3 className="mb-4 text-lg font-semibold text-primary">15 Palle</h3>
-            <p className="text-sm text-muted-foreground">
-              {t("footer.tagline")}
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4 items-start">
+          {/* Brand */}
+          <div className="lg:col-span-1">
+            <div className="flex items-center gap-3 mb-4">
+              <Image
+                src="/logo.png"
+                alt="15 Palle"
+                width={40}
+                height={40}
+                className="h-10 w-10 rounded-full object-cover"
+              />
+              <span className="text-xl font-bold text-foreground">
+                15 <span className="text-primary">Palle</span>
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Bolzano&apos;s premier billiard club. Professional tables, great drinks, unforgettable nights.
             </p>
           </div>
 
+          {/* Contact */}
           <div>
-            <h3 className="mb-4 text-lg font-semibold">{t("footer.contact")}</h3>
+            <h3 className="mb-4 text-sm font-semibold text-foreground uppercase tracking-wider">Contact</h3>
             <div className="space-y-3 text-sm">
-              <div className="flex items-start gap-2">
-                <MapPin className="mt-0.5 h-4 w-4 text-primary" />
+              <div className="flex items-start gap-3">
+                <MapPin className="mt-0.5 h-4 w-4 text-primary flex-shrink-0" />
                 <span className="text-muted-foreground">Via Bruno Buozzi, 12, 39100 Bolzano BZ</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-primary" />
+              <div className="flex items-center gap-3">
+                <Phone className="h-4 w-4 text-primary flex-shrink-0" />
                 <span className="text-muted-foreground">392 810 0919</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-primary" />
-                <span className="text-muted-foreground">info@15palle.it</span>
               </div>
             </div>
           </div>
 
+          {/* Hours */}
           <div>
-            <h3 className="mb-4 text-lg font-semibold">{t("footer.openingHours")}</h3>
+            <h3 className="mb-4 text-sm font-semibold text-foreground uppercase tracking-wider">Hours</h3>
             <div className="space-y-2 text-sm">
-              <div className="flex items-start gap-2">
-                <Clock className="mt-0.5 h-4 w-4 text-primary" />
+              <div className="flex items-start gap-3">
+                <Clock className="mt-0.5 h-4 w-4 text-primary flex-shrink-0" />
                 <div className="text-muted-foreground">
                   <p>Mon-Sat: 2:30 PM - 1:00 AM</p>
                   <p>Sunday: 2:30 PM - 12:00 AM</p>
@@ -47,26 +54,19 @@ export function Footer() {
             </div>
           </div>
 
+          {/* Quick Links - Simplified */}
           <div>
-            <h3 className="mb-4 text-lg font-semibold">{t("footer.quickLinks")}</h3>
+            <h3 className="mb-4 text-sm font-semibold text-foreground uppercase tracking-wider">Quick Links</h3>
             <div className="space-y-2 text-sm">
-              <a href="/" className="block text-muted-foreground transition-colors hover:text-primary">
-                {t("footer.home")}
-              </a>
-              <a href="/opening-times" className="block text-muted-foreground transition-colors hover:text-primary">
-                {t("footer.openingTimes")}
-              </a>
-              <a href="/contact" className="block text-muted-foreground transition-colors hover:text-primary">
-                {t("footer.contactLink")}
+              <a href="/login" className="block text-muted-foreground transition-colors hover:text-primary">
+                Member Login
               </a>
             </div>
           </div>
         </div>
 
-        <div className="mt-8 border-t border-border pt-8 text-center text-sm text-muted-foreground">
-          <p>
-            &copy; {new Date().getFullYear()} 15 Palle. {t("footer.rights")}
-          </p>
+        <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
+          <p>&copy; {new Date().getFullYear()} 15 Palle. All rights reserved.</p>
         </div>
       </div>
     </footer>

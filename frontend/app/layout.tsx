@@ -4,11 +4,9 @@ import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { Suspense } from "react"
-import { cookies } from "next/headers"
-import { I18nProvider } from "@/components/i18n-provider"
 
-const geistSans = Geist({ subsets: ["latin"], variable: "--font-geist-sans" })
-const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" })
+const geistSans = Geist({ subsets: ["latin"] })
+const geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "15 Palle - Billiard Club & Bar",
@@ -16,22 +14,15 @@ export const metadata: Metadata = {
   generator: "v0.app",
 }
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const cookieStore = await cookies()
-  const rawLang = cookieStore.get("lang")?.value || ""
-  const base = rawLang.toLowerCase().split("-")[0]
-  const lang = base === "en" || base === "de" || base === "it" ? base : "it"
-
   return (
-    <html lang={lang}>
-      <body className={`${geistSans.variable} ${geistMono.variable} font-sans`}>
-        <I18nProvider initialLanguage={lang}>
-          <Suspense fallback={null}>{children}</Suspense>
-        </I18nProvider>
+    <html lang="en">
+      <body className={`${geistSans.variable} font-sans`}>
+        <Suspense fallback={null}>{children}</Suspense>
         <Analytics />
       </body>
     </html>

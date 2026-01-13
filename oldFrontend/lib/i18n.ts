@@ -1,5 +1,5 @@
 import i18n from "i18next"
-import { initReactI18next } from "react-i18next"
+import { initReactI18next } from "@/node_modules/react-i18next"
 
 export const SUPPORTED_LANGUAGES = ["it", "en", "de"] as const
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number]
