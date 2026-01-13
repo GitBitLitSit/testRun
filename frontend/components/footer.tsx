@@ -69,11 +69,8 @@ export function Footer() {
               <a href="/" className="block text-muted-foreground transition-colors hover:text-primary">
                 {t("footer.home")}
               </a>
-              <a href="/opening-times" className="block text-muted-foreground transition-colors hover:text-primary">
-                {t("footer.openingTimes")}
-              </a>
-              <a href="/contact" className="block text-muted-foreground transition-colors hover:text-primary">
-                {t("footer.contactLink")}
+              <a href="/login" className="block text-muted-foreground transition-colors hover:text-primary">
+                {t("nav.login")}
               </a>
             </div>
           </div>

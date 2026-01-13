@@ -67,8 +67,6 @@ export function Navigation() {
   const getNavItems = () => {
     const baseItems = [
       { href: "/", label: t("nav.home") },
-      { href: "/opening-times", label: t("nav.openingTimes") },
-      { href: "/contact", label: t("nav.contact") },
     ]
 
     if (!isLoggedIn) {
