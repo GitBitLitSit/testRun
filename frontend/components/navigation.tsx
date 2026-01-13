@@ -65,23 +65,20 @@ export function Navigation() {
   }
 
   const getNavItems = () => {
-    const baseItems = [
-      { href: "/", label: t("nav.home") },
-    ]
 
     if (!isLoggedIn) {
-      return [...baseItems, { href: "/login", label: t("nav.login") }]
+      return [{ href: "/login", label: t("nav.login") }]
     }
 
     if (userType === "customer") {
-      return [...baseItems, { href: "/customer/profile", label: t("nav.myProfile") }]
+      return [{ href: "/customer/profile", label: t("nav.myProfile") }]
     }
 
     if (userType === "owner") {
-      return [...baseItems, { href: "/owner/dashboard", label: t("nav.dashboard") }]
+      return [{ href: "/owner/dashboard", label: t("nav.dashboard") }]
     }
 
-    return baseItems
+    return []
   }
 
   const navItems = getNavItems()
