@@ -37,35 +37,51 @@ export function BilliardBall({ number, children, title, className, delay }: Bill
   return (
     <div
       className={cn(
-        "group relative rounded-2xl border border-border bg-card p-6 transition-colors",
-        "hover:bg-card/80",
+        "group relative w-full max-w-sm mx-auto opacity-0 animate-slide-up",
+        "aspect-square rounded-full overflow-hidden",
+        "border border-border bg-card shadow-xl shadow-black/20",
+        "transition-transform duration-300 hover:-translate-y-1",
         delay,
         className,
       )}
     >
-      {/* Content */}
-      <div className="relative">
-        <div className="flex items-start gap-4">
-          <div
-            aria-hidden="true"
-            className="relative mt-1 h-12 w-12 flex-none rounded-full shadow-sm ring-1 ring-black/10"
-            style={{
-              background: isStripe
-                ? `linear-gradient(to bottom, #ffffff 0%, #ffffff 28%, ${ballConfig.solidColor} 28%, ${ballConfig.solidColor} 72%, #ffffff 72%, #ffffff 100%)`
-                : `radial-gradient(circle at 30% 30%, rgba(255,255,255,0.35), transparent 45%), ${ballConfig.solidColor}`,
-            }}
-          >
-            <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_30%_25%,rgba(255,255,255,0.25),transparent_50%)]" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-6 w-6 rounded-full bg-white/90 text-[12px] font-bold text-gray-900 ring-1 ring-black/10 flex items-center justify-center">
-                {number}
-              </div>
-            </div>
-          </div>
+      {/* Animated ball surface */}
+      <div className={cn("relative h-full w-full animate-float motion-reduce:animate-none", delay)}>
+        {/* Base color / stripe */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: isStripe
+              ? `linear-gradient(to bottom, #f8fafc 0%, #f8fafc 26%, ${ballConfig.solidColor} 26%, ${ballConfig.solidColor} 74%, #f8fafc 74%, #f8fafc 100%)`
+              : ballConfig.solidColor,
+          }}
+        />
 
-          <div className="min-w-0">
-            <h3 className="text-lg md:text-xl font-bold text-foreground tracking-tight">{title}</h3>
-            <p className="mt-2 text-sm md:text-base text-muted-foreground leading-relaxed">{children}</p>
+        {/* Lighting + gloss */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_22%,rgba(255,255,255,0.55),transparent_45%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(255,255,255,0.12),transparent_55%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_55%_65%,transparent_35%,rgba(0,0,0,0.55)_100%)]" />
+
+        {/* Subtle color ring highlight */}
+        <div
+          className="absolute inset-0 rounded-full ring-1"
+          style={{
+            boxShadow: `inset 0 0 0 1px ${ballConfig.solidColor}22, 0 12px 38px rgba(0,0,0,0.35)`,
+          }}
+        />
+
+        {/* Number circle */}
+        <div className="absolute left-1/2 top-7 -translate-x-1/2">
+          <div className="h-14 w-14 rounded-full bg-white/95 ring-1 ring-black/10 shadow-lg shadow-black/20 flex items-center justify-center">
+            <span className="text-2xl font-black text-gray-900">{number}</span>
+          </div>
+        </div>
+
+        {/* Text overlay (keeps readability) */}
+        <div className="relative z-10 h-full w-full flex items-center justify-center p-7 md:p-8">
+          <div className="w-full rounded-2xl bg-black/35 backdrop-blur-sm ring-1 ring-white/10 px-5 py-5 md:px-6 md:py-6 text-center">
+            <h3 className="text-lg md:text-xl font-black tracking-tight text-white">{title}</h3>
+            <p className="mt-2 text-sm md:text-base leading-relaxed text-white/85">{children}</p>
           </div>
         </div>
       </div>

@@ -180,7 +180,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-3 gap-6 md:gap-8">
+              <div className="grid md:grid-cols-3 gap-8 md:gap-10 place-items-center">
                 <BilliardBall number={9} title={t("home.features.professionalTablesTitle")} delay="animation-delay-200">
                   {t("home.features.professionalTablesText")}
                 </BilliardBall>
