@@ -96,7 +96,6 @@ export function BilliardBall({ number, children, title, className, delay }: Bill
 
       {/* Content */}
       <div className="relative max-w-sm pr-16 md:pr-24">
-        <p className="text-xs uppercase tracking-wider text-white/50">Ball {number}</p>
         <h3 className="mt-2 text-xl md:text-2xl font-bold text-white tracking-tight group-hover:text-primary transition-colors">
           {title}
         </h3>
