@@ -39,7 +39,6 @@ import {
   AlertCircle,
   Pencil,
   Trash2,
-  LogOut,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
@@ -415,16 +414,12 @@ export default function OwnerDashboard() {
               {wsError && <p className="text-sm text-destructive mt-1">{t("dashboard.websocketPrefix")} {wsError}</p>}
               {isConnected && <p className="text-sm text-green-600 mt-1">{t("dashboard.realtimeConnected")}</p>}
             </div>
-            <Button variant="outline" onClick={handleSignOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              {t("nav.logout")}
-            </Button>
           </div>
 
           {/* Stats Cards */}
           <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <Card className="border-primary/20">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <CardTitle className="text-sm font-medium">{t("dashboard.stats.totalMembers")}</CardTitle>
                 <Users className="h-4 w-4 text-primary" />
               </CardHeader>
@@ -433,7 +428,7 @@ export default function OwnerDashboard() {
               </CardContent>
             </Card>
             <Card className="border-green-200">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <CardTitle className="text-sm font-medium">{t("dashboard.stats.active")}</CardTitle>
                 <Users className="h-4 w-4 text-green-600" />
               </CardHeader>
@@ -444,7 +439,7 @@ export default function OwnerDashboard() {
               </CardContent>
             </Card>
             <Card className="border-red-200 sm:col-span-2 lg:col-span-1">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <CardTitle className="text-sm font-medium">{t("dashboard.stats.blocked")}</CardTitle>
                 <Users className="h-4 w-4 text-red-600" />
               </CardHeader>
