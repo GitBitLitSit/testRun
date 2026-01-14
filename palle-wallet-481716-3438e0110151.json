@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "palle-wallet-481716",
+  "private_key_id": "3438e01101510be26f33781933d878604d3d1ac9",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC2kJ+Vs++Xm3YE\nlDmWNxVTDnS9gp1EnvF1CtWUFahXrG6YuUptU9YY8aMctPrc/MPJu4abzHOuvurD\nihuNgpayN2nUpEQr6Qdx+AEe0euS0UV28+yLlOYpwMBc6KJULUgCvPra5s1AsRXV\nPH6d25UzAIzY9F0xSIcq6QYbTmiLbGXmUQVeiBMZVHZjdLKGT10X5iNST7xsr8Pu\nwxmWeljlTvvQbeeVcFNn0cD+Jg0rb1pAQtdf9M02F098luB1WPZYMLP5gB+SvH/O\nz7ah7cs6Ar7JRc6sbSP/pRslGmLgga3bKv1Hakvm/1MHMmPrTWiOBFx4ta8fwLNh\ny5Rr35UJAgMBAAECggEAUV3p0lXs7fwawHWzqNCKD4d83k3NfBz+7rRSdnqkmda/\nQBAtLMbVwC5KDWxX9pAtTsbmep/H21U52sa9+vb95RYvc9d2jr+AUvo+vZa/0KK2\nvAqBHcDSSD+hPIdueefolVfW0iNVzYRff7dDk2WffKi9HaDjvChgHe7XiuoKTEDW\nAN9zgS43ok2zVnOcIVMTDTIFdCbS0D8xoOLZALcU/TRpTQQksvPyjWFwV5n3BNHH\neondUDuSqxIqL08UcFUlEly+eCK+9jgNEWr74Q8ARLeyRnAdtR8970QXcjpgWo1b\nCIIS2pxdF180ye2KaLy07ZTBZkD8vwjcf1k9cgWLpQKBgQDYfUsnteFLN5RBG3zK\nNWF1UA+5mXctt2iluXQouwf2dt0xGzsNjngf78UzmDVwhw82KVh1hBUOVeVohP9f\nfbxroiTxgKGZ7YaankcbBPurQeSNtqb+EaYiUePHdBsGl4uEkKWIw028dJWDFd/E\nCqXLFCmvN3kQ2TpoUeIv++XTiwKBgQDX4lPJekFMlpERREvrCt1fVW9WcpRBscxb\nGA6sHOhUdVsqmrepVMz6sK0Q/uKXlj/DOOsjJgofWU/bVSZSfqGNMh3gj7vU5MCi\nMLMfGLfP89dZU5irczuU5idtGvy530PjSDcf1AYOUHLWlb2MKffWvX31R+B4GPP5\nrIRFLmH8OwKBgQCMsrmCgHmAqgmHWvb6cED7vmHJ7QyAwL+ZXXM5+XwOWWgePyVd\nBSfbEbindJfen1hqiep8za/llju3dyCFjjFD/qhl8ISWhsHBgXaS/+UUg4mn9HqJ\niyzfBzuzaCkcWqeJK3z56nx+K4L0I+Y/AfCIkH0a7EGZiqSkIfuP1fWjSwKBgQDF\n43b+VoyI0fPEKiCVIW5utvfJ/FmeJoa2ccTxS8ZDtReOZCg6lbsXiN/7lkjKvzVP\nlFsl6vaYadvjp5frQpx/uxLcB6Ubr1xMz+tBc/z6KACcpx5o+sYA5T/6qSRElT27\nlzTAfi/W6zN5M+V+F/JQ634MWoiOTgFGOjc82xmChQKBgFtwBQGrSA5qNXvJ7eza\nzpOPO6Z73JJ2b/jgIO2hO3Pv6TNyKcyh1tm01qkZg0SHC7Xy5QIRnjBP2QBmMJoG\naq2z07Ga+ZanDiYw5IMLszTC6O84T6upGnb7ftp+ahepXLkauig1vN0wFHoXMvpS\nOgHtzaE0NHQU00lbVQ4+Iqr6\n-----END PRIVATE KEY-----\n",
+  "client_email": "id-5palle-wallet-signer@palle-wallet-481716.iam.gserviceaccount.com",
+  "client_id": "105460663060959940481",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/id-5palle-wallet-signer%40palle-wallet-481716.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

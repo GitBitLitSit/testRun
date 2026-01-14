@@ -167,7 +167,7 @@ export default function HomePage() {
             </div>
 
             <div className="max-w-6xl mx-auto">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-10">
                 <div className="rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur px-5 py-4">
                   <p className="text-sm text-white/60">{t("home.stats.openLateLabel")}</p>
                   <p className="mt-1 text-xl font-semibold text-white">{t("home.stats.openLateValue")}</p>
