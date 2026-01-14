@@ -626,30 +626,34 @@ export default function OwnerDashboard() {
                         return (
                           <div
                             key={index}
-                            className={`flex items-center justify-between rounded-lg border p-4 ${
-                              hasWarning ? "border-red-300 bg-red-50" : "border-border bg-background"
+                            className={`flex items-center justify-between rounded-lg border p-4 transition-colors ${
+                              hasWarning 
+                                ? "border-destructive/50 bg-destructive/15" 
+                                : "border-border bg-card"
                             }`}
                           >
                             <div className="flex items-center gap-4">
-                              <div className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                                  hasWarning ? "bg-red-600" : "bg-primary"
-                                } text-white`}>
-                                {hasWarning ? "⚠" : "✓"}
+                              <div className={`flex h-10 w-10 items-center justify-center rounded-full shadow-sm ${
+                                  hasWarning ? "bg-destructive text-destructive-foreground" : "bg-primary text-primary-foreground"
+                                }`}>
+                                {hasWarning ? <AlertCircle className="h-5 w-5" /> : "✓"}
                               </div>
                               <div>
                                 <p className="font-semibold">
                                   {checkIn.member ? `${checkIn.member.firstName} ${checkIn.member.lastName}` : t("dashboard.checkins.unknownMember")}
                                 </p>
-                                <p className="text-sm text-muted-foreground">
+                                <p className={`text-sm ${hasWarning ? "text-foreground/80" : "text-muted-foreground"}`}>
                                   {checkIn.member?.email || t("dashboard.checkins.noEmail")}
                                 </p>
                                 {hasWarning && (
-                                  <p className="text-sm text-red-600 font-medium mt-1">{hasWarning}</p>
+                                  <p className="text-sm text-destructive font-medium mt-1 flex items-center gap-1">
+                                    {hasWarning}
+                                  </p>
                                 )}
                               </div>
                             </div>
                             <div className="text-right">
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-sm font-medium">
                                 {new Date(checkIn.timestamp|| Date.now()).toLocaleTimeString()}
                               </p>
                               <p className="text-xs text-muted-foreground">
