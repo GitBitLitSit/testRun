@@ -4,8 +4,6 @@ import { initReactI18next } from "react-i18next"
 export const SUPPORTED_LANGUAGES = ["it", "en", "de"] as const
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number]
 
-// NOTE: Copied from oldFrontend and used by the new UI.
-// Keep keys stable so pages/components can be migrated gradually.
 const resources = {
   it: {
     translation: {
@@ -50,6 +48,7 @@ const resources = {
         badges: {
           openUntil: "Aperti fino all'1",
         },
+        whyChoose: "Perché scegliere 15 Palle?",
         whyChooseSubtitle:
           "Uno spazio curato per chi vuole giocare bene e passare una bella serata — con attrezzatura professionale, atmosfera calda e orari lunghi.",
         stats: {
@@ -61,12 +60,17 @@ const resources = {
           atmosphereValue: "Accogliente + concentrata",
         },
         galleryTitle: "L'esperienza",
+        gallerySubtitle: "Uno spazio curato per il gioco serio e serate rilassanti. Vivi la migliore atmosfera a {{city}}.",
         galleryLabels: {
           championshipTables: "Tavoli da campionato",
           bar: "Il bar",
           gameTime: "È ora di giocare",
           lounge: "Lounge",
-          premiumGear: "Attrezzatura premium",
+          premiumGear: "Attrezzatura",
+          focus: "Focus",
+          joinClub: "Entra nel Club",
+          memberBenefits: "Eventi esclusivi e vantaggi",
+          becomeMember: "Diventa membro",
         },
         contact: {
           pill: "Facile da raggiungere • Parcheggio vicino",
@@ -83,7 +87,6 @@ const resources = {
         heroTitle: "Benvenuto da {{club}}",
         heroSubtitle:
           "Vivi il miglior club di biliardo in città. Tavoli professionali, grande atmosfera e una community accogliente.",
-        whyChoose: "Perché scegliere 15 Palle?",
         features: {
           professionalTablesTitle: "Tavoli professionali",
           professionalTablesText:
@@ -91,8 +94,10 @@ const resources = {
           friendlyCommunityTitle: "Community accogliente",
           friendlyCommunityText:
             "Unisciti a una community di appassionati. Dai principianti ai professionisti, tutti sono i benvenuti.",
+          locationPrefix: "Situato nel cuore di {{city}}.",
           extendedHoursTitle: "Orari estesi",
           extendedHoursText: "Aperti fino a tardi ogni giorno. Perfetto dopo il lavoro o per i tornei nel weekend.",
+          extendedHoursSuffix: "Aperti fino all'1:00.",
         },
         ourClub: "Il nostro club",
         visitUs: "Vieni a trovarci",
@@ -395,6 +400,7 @@ const resources = {
         badges: {
           openUntil: "Open until 1 AM",
         },
+        whyChoose: "Why Choose 15 Palle?",
         whyChooseSubtitle:
           "A polished space built for serious play and easy nights out — with pro equipment, warm atmosphere, and late hours.",
         stats: {
@@ -406,12 +412,17 @@ const resources = {
           atmosphereValue: "Friendly + focused",
         },
         galleryTitle: "The Experience",
+        gallerySubtitle: "A polished space built for serious play and easy nights out. Experience the best atmosphere in {{city}}.",
         galleryLabels: {
           championshipTables: "Championship Tables",
           bar: "The Bar",
           gameTime: "Game Time",
           lounge: "Lounge",
-          premiumGear: "Premium Gear",
+          premiumGear: "Gear",
+          focus: "Focus",
+          joinClub: "Join the Club",
+          memberBenefits: "Exclusive events & member benefits",
+          becomeMember: "Become a Member",
         },
         contact: {
           pill: "Easy to reach • Parking nearby",
@@ -428,7 +439,6 @@ const resources = {
         heroTitle: "Welcome to {{club}}",
         heroSubtitle:
           "Experience the finest billiard club in town. Professional tables, great atmosphere, and a welcoming community await you.",
-        whyChoose: "Why Choose 15 Palle?",
         features: {
           professionalTablesTitle: "Professional Tables",
           professionalTablesText:
@@ -436,8 +446,10 @@ const resources = {
           friendlyCommunityTitle: "Friendly Community",
           friendlyCommunityText:
             "Join a welcoming community of billiard enthusiasts. From beginners to pros, everyone is welcome.",
+          locationPrefix: "Located in the heart of {{city}}.",
           extendedHoursTitle: "Extended Hours",
           extendedHoursText: "Open late every day of the week. Perfect for after-work games or weekend tournaments.",
+          extendedHoursSuffix: "Open late until 1:00 AM.",
         },
         ourClub: "Our Club",
         visitUs: "Visit Us",
@@ -740,6 +752,7 @@ const resources = {
         badges: {
           openUntil: "Geöffnet bis 1 Uhr",
         },
+        whyChoose: "Warum 15 Palle?",
         whyChooseSubtitle:
           "Ein gepflegter Ort für konzentriertes Spiel und entspannte Abende — mit Profi-Equipment, warmer Atmosphäre und langen Öffnungszeiten.",
         stats: {
@@ -751,12 +764,17 @@ const resources = {
           atmosphereValue: "Freundlich + fokussiert",
         },
         galleryTitle: "Das Erlebnis",
+        gallerySubtitle: "Ein gepflegter Ort für konzentriertes Spiel und entspannte Abende. Erlebe die beste Atmosphäre in {{city}}.",
         galleryLabels: {
           championshipTables: "Turnier-Tische",
           bar: "Die Bar",
           gameTime: "Spielzeit",
           lounge: "Lounge",
-          premiumGear: "Premium Equipment",
+          premiumGear: "Equipment",
+          focus: "Fokus",
+          joinClub: "Werde Mitglied",
+          memberBenefits: "Exklusive Events & Vorteile",
+          becomeMember: "Mitglied werden",
         },
         contact: {
           pill: "Gut erreichbar • Parkplätze in der Nähe",
@@ -773,15 +791,16 @@ const resources = {
         heroTitle: "Willkommen bei {{club}}",
         heroSubtitle:
           "Erlebe den besten Billardclub der Stadt. Professionelle Tische, tolle Atmosphäre und eine freundliche Community.",
-        whyChoose: "Warum 15 Palle?",
         features: {
           professionalTablesTitle: "Professionelle Tische",
           professionalTablesText:
             "Hochwertige Billardtische, professionell gepflegt – für das beste Spielerlebnis.",
           friendlyCommunityTitle: "Freundliche Community",
           friendlyCommunityText: "Eine einladende Community für alle – vom Anfänger bis zum Profi.",
+          locationPrefix: "Mitten in {{city}}.",
           extendedHoursTitle: "Lange Öffnungszeiten",
           extendedHoursText: "Täglich lange geöffnet. Perfekt nach der Arbeit oder für Wochenend-Turniere.",
+          extendedHoursSuffix: "Geöffnet bis 1:00 Uhr.",
         },
         ourClub: "Unser Club",
         visitUs: "Besuche uns",
@@ -1088,4 +1107,3 @@ export function getApiLanguage(): SupportedLanguage {
 }
 
 export default i18n
-

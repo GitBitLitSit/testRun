@@ -4,7 +4,7 @@ import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { BilliardBall } from "@/components/billiard-ball"
 import { Button } from "@/components/ui/button"
-import { Clock, ChevronDown, ArrowRight, MapPin, Navigation2, Phone, Sparkles } from "lucide-react"
+import { Clock, ChevronDown, ArrowRight, MapPin, Navigation2, Phone, Trophy, Star } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { useEffect, useState } from "react"
@@ -15,10 +15,10 @@ export default function HomePage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
   const images = [
-    { src: "/professional-billiard-table-in-modern-club.jpg", alt: "Professional billiard table" },
-    { src: "/billiard-club-bar-area-with-drinks.jpg", alt: "Bar area" },
-    { src: "/people-playing-billiards-in-club.jpg", alt: "Players enjoying" },
-    { src: "/billiard-club-lounge-seating-area.jpg", alt: "Lounge area" },
+    { src: "/tableUpscale.jpg", alt: "Professional billiard table" },
+    { src: "/aura.png", alt: "Billiard game action" },
+    { src: "/aura2 expernded.png", alt: "Players enjoying" },
+    { src: "/anotherOne.png", alt: "Lounge area" },
   ]
 
   useEffect(() => {
@@ -37,18 +37,19 @@ export default function HomePage() {
   const phoneTel = "+393928100919"
   const mapsPageHref = "/maps"
   const mapsQuery = "Via Bruno Buozzi, 12, 39100 Bolzano BZ"
-  const mapsHref = `https://www.google.com/maps?q=${encodeURIComponent(mapsQuery)}`
-  const mapsEmbedSrc = `https://www.google.com/maps?q=${encodeURIComponent(mapsQuery)}&output=embed`
+  const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery)}`
+  const mapsEmbedSrc = `https://maps.google.com/maps?q=${encodeURIComponent(mapsQuery)}&output=embed`
   const addressLine = `Via Bruno Buozzi, 12, 39100 ${city} BZ`
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col bg-background font-sans selection:bg-primary/30">
       <Navigation />
 
       <main className="flex-1">
-        {/* Hero Section */}
+        {/* =========================================
+            HERO SECTION
+           ========================================= */}
         <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-          {/* Background image carousel */}
           <div className="absolute inset-0">
             {images.map((image, index) => (
               <div
@@ -57,208 +58,247 @@ export default function HomePage() {
                   index === currentImageIndex ? "opacity-100" : "opacity-0"
                 }`}
               >
+                <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/40 to-background z-10" />
                 <img src={image.src || "/placeholder.svg"} alt={image.alt} className="h-full w-full object-cover" />
               </div>
             ))}
-            <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background" />
           </div>
 
-          {/* Hero content */}
-          <div className="relative z-10 container mx-auto px-4 pt-20 text-center">
-            <div className="max-w-4xl mx-auto">
+          <div className="relative z-20 container mx-auto px-4 pt-20 text-center">
+            <div className="max-w-5xl mx-auto">
               <div className="mb-8 flex justify-center">
-                <Image
-                  src="/logo.png"
-                  alt="15 Palle"
-                  width={200}
-                  height={200}
-                  className="h-32 w-32 md:h-40 md:w-40 animate-pulse-glow rounded-full object-cover"
-                />
+                <div className="relative">
+                  <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl animate-pulse"></div>
+                  <Image
+                    src="/logo.png"
+                    alt="15 Palle"
+                    width={200}
+                    height={200}
+                    className="relative h-32 w-32 md:h-40 md:w-40 rounded-full object-cover border-2 border-white/10 shadow-2xl"
+                  />
+                </div>
               </div>
 
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-black mb-6 leading-tight">
-                <span className="text-foreground">{t("home.headline.line1")}</span>
+              <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-6 leading-none tracking-tight drop-shadow-lg">
+                <span className="text-white">{t("home.headline.line1")}</span>
                 <br />
-                <span className="text-primary">{t("home.headline.line2")}</span>
+                <span className="bg-gradient-to-r from-primary via-blue-400 to-primary bg-clip-text text-transparent">
+                  {t("home.headline.line2")}
+                </span>
               </h1>
 
-              <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
+              <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-10 leading-relaxed font-light">
                 {t("home.heroDescription.line1")}
                 <br className="hidden md:block" />
                 {t("home.heroDescription.line2", { city })}
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
                 <Button
                   asChild
                   size="lg"
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 py-6 rounded-full"
+                  className="bg-primary hover:bg-primary/90 text-white text-lg px-10 py-7 rounded-full shadow-[0_0_20px_rgba(59,130,246,0.5)] transition-all hover:scale-105"
                 >
-                  <Link href="/login" className="gap-2">
+                  <Link href="/login" className="gap-2 font-bold">
                     {t("home.ctaMemberLogin")}
                     <ArrowRight className="h-5 w-5" />
                   </Link>
                 </Button>
               </div>
 
-              <div className="flex flex-wrap justify-center gap-4 md:gap-8 text-sm mb-24">
-                <div className="flex items-center gap-2 bg-card/50 backdrop-blur-sm px-4 py-2 rounded-full">
+              <div className="flex flex-wrap justify-center gap-4 text-sm mb-24">
+                <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 px-5 py-2.5 rounded-full hover:bg-white/10 transition-colors cursor-default">
                   <Clock className="h-4 w-4 text-primary" />
-                  <span className="text-foreground">{t("home.badges.openUntil")}</span>
+                  <span className="text-gray-200 font-medium">{t("home.badges.openUntil")}</span>
                 </div>
                 <Link
                   href={mapsPageHref}
-                  className="flex items-center gap-2 bg-card/50 backdrop-blur-sm px-4 py-2 rounded-full hover:bg-card/70 transition-colors"
-                  aria-label={t("home.contact.directionsCta")}
+                  className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 px-5 py-2.5 rounded-full hover:bg-white/10 transition-colors"
                 >
                   <MapPin className="h-4 w-4 text-primary" />
-                  <span className="text-foreground">{city}</span>
+                  <span className="text-gray-200 font-medium">{city}</span>
                 </Link>
                 <a
                   href={`tel:${phoneTel}`}
-                  className="flex items-center gap-2 bg-card/50 backdrop-blur-sm px-4 py-2 rounded-full hover:bg-card/70 transition-colors"
-                  aria-label={t("home.contact.callCta")}
+                  className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 px-5 py-2.5 rounded-full hover:bg-white/10 transition-colors"
                 >
                   <Phone className="h-4 w-4 text-primary" />
-                  <span className="text-foreground">{phoneDisplay}</span>
+                  <span className="text-gray-200 font-medium">{phoneDisplay}</span>
                 </a>
               </div>
             </div>
 
+            {/* Carousel Dots */}
+            <div className="justify-center flex gap-2 z-30">
+              {images.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentImageIndex(index)}
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    index === currentImageIndex ? "bg-white w-8" : "bg-white/40 w-2 hover:bg-white/60"
+                  }`}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
+            </div>
+
             <button
               onClick={scrollToFeatures}
-              className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce text-muted-foreground hover:text-foreground transition-colors"
+              className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce text-gray-400 hover:text-white transition-colors p-2 z-30"
+              aria-label="Scroll down"
             >
               <ChevronDown className="h-8 w-8" />
             </button>
           </div>
-
-          <div className="absolute bottom-24 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-            {images.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentImageIndex(index)}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  index === currentImageIndex
-                    ? "w-8 bg-primary"
-                    : "w-2 bg-muted-foreground/50 hover:bg-muted-foreground"
-                }`}
-              />
-            ))}
-          </div>
         </section>
 
-        {/* Features Section - Clean cards design */}
-        <section id="features" className="py-24 md:py-32 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-background via-[#0a0d12] to-background" />
-          <div className="absolute inset-0 [background:radial-gradient(1200px_circle_at_20%_10%,rgba(47,105,159,0.22),transparent_55%),radial-gradient(900px_circle_at_80%_50%,rgba(64,194,108,0.14),transparent_60%)]" />
-          <div className="absolute inset-0 opacity-[0.06] [background-image:linear-gradient(to_right,white_1px,transparent_1px),linear-gradient(to_bottom,white_1px,transparent_1px)] [background-size:64px_64px]" />
-
+        {/* =========================================
+            WHY CHOOSE 15 PALLE
+           ========================================= */}
+        <section id="features" className="py-32 relative bg-[#0a0a0a]">
+          <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-[#0a0a0a] to-[#050505]" />
+          
           <div className="container mx-auto px-4 relative z-10">
-            <div className="text-center mb-16 md:mb-20">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-white/70 backdrop-blur">
-                <Sparkles className="h-4 w-4 text-secondary" />
-                <span>{t("home.heroDescription.line2", { city })}</span>
-              </div>
-              <h2 className="mt-6 text-3xl md:text-5xl font-black text-white mb-4 tracking-tight">{t("home.whyChoose")}</h2>
-              <p className="text-white/60 text-lg max-w-2xl mx-auto leading-relaxed">
+            {/* Header */}
+            <div className="text-center mb-20">
+              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 tracking-tight">
+                {t("home.whyChoose")}
+              </h2>
+              <p className="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed font-light">
                 {t("home.whyChooseSubtitle")}
               </p>
             </div>
 
-            <div className="max-w-6xl mx-auto">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-10">
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur px-5 py-4">
-                  <p className="text-sm text-white/60">{t("home.stats.openLateLabel")}</p>
-                  <p className="mt-1 text-xl font-semibold text-white">{t("home.stats.openLateValue")}</p>
-                </div>
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur px-5 py-4">
-                  <p className="text-sm text-white/60">{t("home.stats.locationLabel")}</p>
-                  <p className="mt-1 text-xl font-semibold text-white">{t("home.stats.locationValue", { city })}</p>
-                </div>
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur px-5 py-4">
-                  <p className="text-sm text-white/60">{t("home.stats.atmosphereLabel")}</p>
-                  <p className="mt-1 text-xl font-semibold text-white">{t("home.stats.atmosphereValue")}</p>
-                </div>
+            {/* Main Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+              
+              {/* Card 1: Equipment */}
+              <div className="group relative rounded-2xl bg-[#111] p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-900/10 border border-white/5 hover:border-blue-500/20">
+                 <div className="mb-6 w-full flex justify-between items-start">
+                    <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400">
+                       <Trophy className="h-6 w-6" />
+                    </div>
+                    <div className="transform group-hover:rotate-12 transition-transform duration-500 opacity-80">
+                      <BilliardBall number={1} size="sm" title="" />
+                    </div>
+                 </div>
+                 <h3 className="text-xl font-bold text-white mb-3">{t("home.features.professionalTablesTitle")}</h3>
+                 <p className="text-gray-400 leading-relaxed text-sm">
+                   {t("home.features.professionalTablesText")}
+                 </p>
               </div>
 
-              <div className="grid md:grid-cols-3 gap-6 md:gap-8">
-                <BilliardBall number={9} title={t("home.features.professionalTablesTitle")} delay="animation-delay-200">
-                  {t("home.features.professionalTablesText")}
-                </BilliardBall>
-
-                <BilliardBall number={11} title={t("home.features.friendlyCommunityTitle")} delay="animation-delay-400">
-                  {t("home.features.friendlyCommunityText")}
-                </BilliardBall>
-
-                <BilliardBall number={6} title={t("home.features.extendedHoursTitle")} delay="animation-delay-600">
-                  {t("home.features.extendedHoursText")}
-                </BilliardBall>
+              {/* Card 2: Community */}
+              <div className="group relative rounded-2xl bg-[#111] p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-yellow-900/10 border border-white/5 hover:border-yellow-500/20">
+                 <div className="mb-6 w-full flex justify-between items-start">
+                    <div className="p-3 bg-yellow-500/10 rounded-xl text-yellow-400">
+                       <MapPin className="h-6 w-6" />
+                    </div>
+                    <div className="transform group-hover:rotate-12 transition-transform duration-500 opacity-80">
+                      <BilliardBall number={8} size="sm" title="" />
+                    </div>
+                 </div>
+                 <h3 className="text-xl font-bold text-white mb-3">{t("home.features.friendlyCommunityTitle")}</h3>
+                 <p className="text-gray-400 leading-relaxed text-sm">
+                    {t("home.features.locationPrefix", { city })} {t("home.features.friendlyCommunityText")}
+                 </p>
               </div>
+
+              {/* Card 3: Hours */}
+              <div className="group relative rounded-2xl bg-[#111] p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-red-900/10 border border-white/5 hover:border-red-500/20">
+                 <div className="mb-6 w-full flex justify-between items-start">
+                    <div className="p-3 bg-red-500/10 rounded-xl text-red-400">
+                       <Clock className="h-6 w-6" />
+                    </div>
+                    <div className="transform group-hover:rotate-12 transition-transform duration-500 opacity-80">
+                      <BilliardBall number={3} size="sm" title="" />
+                    </div>
+                 </div>
+                 <h3 className="text-xl font-bold text-white mb-3">{t("home.features.extendedHoursTitle")}</h3>
+                 <p className="text-gray-400 leading-relaxed text-sm">
+                   {t("home.features.extendedHoursText")} {t("home.features.extendedHoursSuffix")}
+                 </p>
+              </div>
+
             </div>
           </div>
         </section>
 
-        {/* Gallery Section */}
-        <section className="py-16 md:py-24 bg-card/30">
+        {/* =========================================
+            THE EXPERIENCE
+           ========================================= */}
+        <section className="py-28 bg-[#050505] relative">
           <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-black text-foreground mb-4">{t("home.galleryTitle")}</h2>
+            <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+              <div className="max-w-2xl">
+                <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">{t("home.galleryTitle")}</h2>
+                <p className="text-gray-400 text-lg font-light">
+                  {t("home.gallerySubtitle", { city })}
+                </p>
+              </div>
+              {/* Button Removed per request */}
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 max-w-6xl mx-auto">
-              <div className="col-span-2 row-span-2 relative aspect-square overflow-hidden rounded-2xl group">
+            {/* Styled Bento Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-4 h-auto md:h-[650px]">
+              
+              {/* Main Feature Image (Mano.jpg) */}
+              <div className="group relative col-span-1 md:col-span-2 md:row-span-2 rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-[#0a0a0a]">
+                <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-70 transition-opacity duration-500"/>
                 <img
-                  src="/professional-billiard-table-in-modern-club.jpg"
-                  alt={t("home.galleryLabels.championshipTables")}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  src="/2xfisb.png"
+                  alt="Racking the balls"
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105 will-change-transform"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
-                  <span className="text-foreground font-semibold text-lg">{t("home.galleryLabels.championshipTables")}</span>
+                
+                {/* Floating Label */}
+                <div className="absolute bottom-6 left-6 z-20">
+                   <div className="backdrop-blur-md bg-white/10 border border-white/10 rounded-2xl p-4 pr-8 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+                      <p className="text-primary text-xs font-bold uppercase tracking-widest mb-1">{t("home.galleryLabels.focus")}</p>
+                      <h3 className="text-white text-2xl font-bold">{t("home.galleryLabels.gameTime")}</h3>
+                   </div>
                 </div>
               </div>
 
-              <div className="relative aspect-square overflow-hidden rounded-2xl group">
+              {/* Top Right: Bar (Wide) */}
+              <div className="group relative col-span-1 md:col-span-2 rounded-3xl overflow-hidden border border-white/10 bg-[#0a0a0a]">
+                 <div className="absolute inset-0 z-10 bg-black/40 group-hover:bg-black/20 transition-colors duration-500"/>
                 <img
-                  src="/billiard-club-bar-area-with-drinks.jpg"
+                  src="/2xbar.png"
                   alt={t("home.galleryLabels.bar")}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                  <span className="text-foreground font-medium">{t("home.galleryLabels.bar")}</span>
+                <div className="absolute bottom-4 left-4 z-20">
+                   <div className="backdrop-blur-sm bg-black/40 rounded-full px-4 py-2 border border-white/5">
+                      <p className="text-white font-medium text-sm">{t("home.galleryLabels.bar")}</p>
+                   </div>
                 </div>
               </div>
 
-              <div className="relative aspect-square overflow-hidden rounded-2xl group">
+              {/* Bottom Right 1: Lounge (Square) */}
+              <div className="group relative rounded-3xl overflow-hidden border border-white/10 bg-[#0a0a0a]">
+                 <div className="absolute inset-0 z-10 bg-black/40 group-hover:bg-black/20 transition-colors duration-500"/>
                 <img
-                  src="/people-playing-billiards-in-club.jpg"
-                  alt={t("home.galleryLabels.gameTime")}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                  <span className="text-foreground font-medium">{t("home.galleryLabels.gameTime")}</span>
-                </div>
-              </div>
-
-              <div className="relative aspect-square overflow-hidden rounded-2xl group">
-                <img
-                  src="/billiard-club-lounge-seating-area.jpg"
+                  src="/lounge.jpg"
                   alt={t("home.galleryLabels.lounge")}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                  <span className="text-foreground font-medium">{t("home.galleryLabels.lounge")}</span>
+                <div className="absolute bottom-4 left-4 z-20">
+                   <p className="text-white font-medium text-sm drop-shadow-md bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm">{t("home.galleryLabels.lounge")}</p>
                 </div>
               </div>
 
-              <div className="relative aspect-square overflow-hidden rounded-2xl group">
-                <img
-                  src="/billiard-balls-on-table-close-up.jpg"
-                  alt={t("home.galleryLabels.premiumGear")}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+              {/* Bottom Right 2: Membership (Square CTA) - UPDATED with mano.jpg */}
+              <div className="group relative rounded-3xl overflow-hidden border border-white/10 bg-[#0a0a0a]">
+                <div className="absolute inset-0 z-10 bg-black/40 group-hover:bg-black/20 transition-colors duration-500"/>
+                {/* Background Image */}
+                <img 
+                    src="/mano.jpg" 
+                    alt="Join Club"
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                  <span className="text-foreground font-medium">{t("home.galleryLabels.premiumGear")}</span>
+                <div className="absolute bottom-4 left-4 z-20">
+                   <p className="text-white font-medium text-sm drop-shadow-md bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm">{t("home.galleryLabels.premiumGear")}</p>
                 </div>
               </div>
             </div>
@@ -266,67 +306,67 @@ export default function HomePage() {
         </section>
 
         {/* Contact Section */}
-        <section className="py-16 md:py-24 relative overflow-hidden">
-          <div className="absolute inset-0 [background:radial-gradient(900px_circle_at_10%_20%,rgba(47,105,159,0.14),transparent_60%),radial-gradient(900px_circle_at_90%_80%,rgba(245,215,66,0.08),transparent_60%)]" />
+        <section className="py-24 relative overflow-hidden bg-background">
+          <div className="absolute inset-0 [background:radial-gradient(900px_circle_at_10%_20%,rgba(47,105,159,0.08),transparent_60%),radial-gradient(900px_circle_at_90%_80%,rgba(245,215,66,0.05),transparent_60%)]" />
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto relative">
-              <div className="grid lg:grid-cols-2 gap-8 lg:gap-10 items-stretch">
-                <div className="rounded-3xl border border-border bg-card/70 backdrop-blur p-8 md:p-10 shadow-2xl shadow-black/10">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/40 px-4 py-2 text-sm text-muted-foreground">
+              <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-stretch">
+                <div className="rounded-[32px] border border-white/10 bg-[#0a0a0a]/80 backdrop-blur-xl p-8 md:p-12 shadow-2xl">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-gray-400">
                     <MapPin className="h-4 w-4 text-primary" />
                     <span>{t("home.contact.pill")}</span>
                   </div>
 
-                  <h2 className="mt-6 text-3xl md:text-4xl font-black text-foreground tracking-tight">
+                  <h2 className="mt-8 text-3xl md:text-5xl font-black text-white tracking-tight">
                     {t("home.contact.title")}
                   </h2>
-                  <p className="mt-3 text-muted-foreground leading-relaxed">
+                  <p className="mt-4 text-gray-400 leading-relaxed text-lg">
                     {t("home.contact.subtitle", { city })}
                   </p>
 
-                  <div className="mt-8 grid gap-4">
-                    <div className="rounded-2xl border border-border/60 bg-background/40 p-5">
-                      <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 rounded-2xl bg-primary/15 ring-1 ring-primary/20 flex items-center justify-center flex-shrink-0">
-                          <MapPin className="h-5 w-5 text-primary" />
+                  <div className="mt-10 grid gap-6">
+                    <div className="group rounded-2xl border border-white/5 bg-white/[0.02] p-6 hover:bg-white/[0.04] transition-colors">
+                      <div className="flex items-start gap-5">
+                        <div className="w-12 h-12 rounded-2xl bg-primary/10 ring-1 ring-primary/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                          <MapPin className="h-6 w-6 text-primary" />
                         </div>
                         <div>
-                          <p className="font-semibold text-foreground">{t("home.contact.addressLabel")}</p>
-                          <p className="text-muted-foreground text-sm">{addressLine}</p>
+                          <p className="font-bold text-white text-lg">{t("home.contact.addressLabel")}</p>
+                          <p className="text-gray-400 mt-1">{addressLine}</p>
                         </div>
                       </div>
                     </div>
 
-                    <div className="rounded-2xl border border-border/60 bg-background/40 p-5">
-                      <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 rounded-2xl bg-secondary/15 ring-1 ring-secondary/20 flex items-center justify-center flex-shrink-0">
-                          <Phone className="h-5 w-5 text-secondary" />
+                    <div className="group rounded-2xl border border-white/5 bg-white/[0.02] p-6 hover:bg-white/[0.04] transition-colors">
+                      <div className="flex items-start gap-5">
+                        <div className="w-12 h-12 rounded-2xl bg-blue-400/10 ring-1 ring-blue-400/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                          <Phone className="h-6 w-6 text-blue-400" />
                         </div>
                         <div>
-                          <p className="font-semibold text-foreground">{t("home.contact.phoneLabel")}</p>
-                          <a className="text-muted-foreground text-sm hover:text-foreground transition-colors" href="tel:+393928100919">
+                          <p className="font-bold text-white text-lg">{t("home.contact.phoneLabel")}</p>
+                          <a className="text-gray-400 mt-1 hover:text-white transition-colors" href="tel:+393928100919">
                             +39 392 810 0919
                           </a>
                         </div>
                       </div>
                     </div>
 
-                    <div className="rounded-2xl border border-border/60 bg-background/40 p-5">
-                      <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 rounded-2xl bg-accent/15 ring-1 ring-accent/20 flex items-center justify-center flex-shrink-0">
-                          <Clock className="h-5 w-5 text-accent" />
+                    <div className="group rounded-2xl border border-white/5 bg-white/[0.02] p-6 hover:bg-white/[0.04] transition-colors">
+                      <div className="flex items-start gap-5">
+                        <div className="w-12 h-12 rounded-2xl bg-yellow-500/10 ring-1 ring-yellow-500/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                          <Clock className="h-6 w-6 text-yellow-500" />
                         </div>
                         <div>
-                          <p className="font-semibold text-foreground">{t("home.contact.hoursLabel")}</p>
-                          <p className="text-muted-foreground text-sm">{t("home.contact.hoursMonSat")}</p>
-                          <p className="text-muted-foreground text-sm">{t("home.contact.hoursSun")}</p>
+                          <p className="font-bold text-white text-lg">{t("home.contact.hoursLabel")}</p>
+                          <p className="text-gray-400 mt-1">{t("home.contact.hoursMonSat")}</p>
+                          <p className="text-gray-400">{t("home.contact.hoursSun")}</p>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-8 flex flex-col sm:flex-row gap-3">
-                    <Button asChild className="rounded-full">
+                  <div className="mt-10 flex flex-col sm:flex-row gap-4">
+                    <Button asChild size="lg" className="rounded-full h-14 px-8 text-base bg-white text-black hover:bg-gray-200">
                       <Link
                         href={mapsHref}
                         target="_blank"
@@ -334,33 +374,33 @@ export default function HomePage() {
                         className="gap-2"
                       >
                         {t("home.contact.directionsCta")}
-                        <Navigation2 className="h-4 w-4" />
+                        <Navigation2 className="h-5 w-5" />
                       </Link>
                     </Button>
-                    <Button asChild variant="outline" className="rounded-full">
+                    <Button asChild variant="outline" size="lg" className="rounded-full h-14 px-8 text-base border-white/20 hover:bg-white/10 hover:text-white">
                       <a href={`tel:${phoneTel}`} className="gap-2">
                         {t("home.contact.callCta")}
-                        <Phone className="h-4 w-4" />
+                        <Phone className="h-5 w-5" />
                       </a>
                     </Button>
                   </div>
                 </div>
 
-                <div className="relative rounded-3xl border border-border bg-card overflow-hidden shadow-2xl shadow-black/10">
-                  <div className="absolute inset-0">
+                <div className="relative rounded-[32px] border border-white/10 bg-[#0a0a0a] overflow-hidden shadow-2xl h-[500px] lg:h-auto">
+                  <div className="absolute inset-0 filter grayscale hover:grayscale-0 transition-all duration-700">
                     <iframe
                       title="15 Palle location"
-                      className="h-full w-full"
+                      className="h-full w-full opacity-80"
                       loading="lazy"
                       referrerPolicy="no-referrer-when-downgrade"
                       src={mapsEmbedSrc}
                     />
                   </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-background/10 to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent pointer-events-none" />
 
-                  <div className="relative h-full min-h-[420px] flex items-end p-6">
-                    <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-background/50 backdrop-blur px-4 py-3">
-                      <div className="h-12 w-12 overflow-hidden rounded-xl">
+                  <div className="relative h-full flex items-end p-8">
+                    <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-black/60 backdrop-blur-md p-4 w-full">
+                      <div className="h-14 w-14 overflow-hidden rounded-xl border border-white/10">
                         <Image
                           src="/billiard-club-interior-atmosphere.jpg"
                           alt="Club atmosphere"
@@ -370,8 +410,8 @@ export default function HomePage() {
                         />
                       </div>
                       <div>
-                        <p className="text-sm text-white/70">15 Palle</p>
-                        <p className="text-base font-semibold text-white">Via Bruno Buozzi, 12</p>
+                        <p className="text-xs text-primary font-bold uppercase tracking-wider">Located at</p>
+                        <p className="text-lg font-bold text-white">Via Bruno Buozzi, 12</p>
                       </div>
                     </div>
                   </div>
