@@ -119,7 +119,7 @@ export default function HomePage() {
                 <button
                   type="button"
                   onClick={scrollToDirections}
-                  className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 px-5 py-2.5 rounded-full hover:bg-white/10 transition-colors"
+                  className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 px-5 py-2.5 rounded-full hover:bg-white/10 transition-colors cursor-pointer"
                 >
                   <MapPin className="h-4 w-4 text-primary" />
                   <span className="text-gray-200 font-medium">{city}</span>
