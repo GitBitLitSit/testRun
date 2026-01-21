@@ -32,14 +32,19 @@ export default function HomePage() {
     document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })
   }
 
+  const scrollToDirections = () => {
+    document.getElementById("directions")?.scrollIntoView({ behavior: "smooth" })
+  }
+
   const city = t("common.city.bolzano")
   const phoneDisplay = "392 810 0919"
   const phoneTel = "+393928100919"
-  const mapsPageHref = "/maps"
   const mapsQuery = "Via Bruno Buozzi, 12, 39100 Bolzano BZ"
-  const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery)}`
+  const mapsHref = "https://maps.app.goo.gl/zCHo35LtzudktdZ96"
   const mapsEmbedSrc = `https://maps.google.com/maps?q=${encodeURIComponent(mapsQuery)}&output=embed`
   const addressLine = `Via Bruno Buozzi, 12, 39100 ${city} BZ`
+  const isSunday = new Date().getDay() === 0
+  const openUntilLabel = t(isSunday ? "home.badges.openUntilSunday" : "home.badges.openUntilWeekday")
 
   return (
     <div className="flex min-h-screen flex-col bg-background font-sans selection:bg-primary/30">
@@ -109,15 +114,16 @@ export default function HomePage() {
               <div className="flex flex-wrap justify-center gap-4 text-sm mb-24">
                 <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 px-5 py-2.5 rounded-full hover:bg-white/10 transition-colors cursor-default">
                   <Clock className="h-4 w-4 text-primary" />
-                  <span className="text-gray-200 font-medium">{t("home.badges.openUntil")}</span>
+                  <span className="text-gray-200 font-medium">{openUntilLabel}</span>
                 </div>
-                <Link
-                  href={mapsPageHref}
+                <button
+                  type="button"
+                  onClick={scrollToDirections}
                   className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 px-5 py-2.5 rounded-full hover:bg-white/10 transition-colors"
                 >
                   <MapPin className="h-4 w-4 text-primary" />
                   <span className="text-gray-200 font-medium">{city}</span>
-                </Link>
+                </button>
                 <a
                   href={`tel:${phoneTel}`}
                   className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 px-5 py-2.5 rounded-full hover:bg-white/10 transition-colors"
@@ -306,7 +312,7 @@ export default function HomePage() {
         </section>
 
         {/* Contact Section */}
-        <section className="py-24 relative overflow-hidden bg-background">
+        <section id="directions" className="py-24 relative overflow-hidden bg-background">
           <div className="absolute inset-0 [background:radial-gradient(900px_circle_at_10%_20%,rgba(47,105,159,0.08),transparent_60%),radial-gradient(900px_circle_at_90%_80%,rgba(245,215,66,0.05),transparent_60%)]" />
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto relative">

@@ -46,7 +46,8 @@ const resources = {
         },
         ctaMemberLogin: "Login membri",
         badges: {
-          openUntil: "Aperti fino all'1",
+          openUntilWeekday: "Aperti fino all'1:00",
+          openUntilSunday: "Aperti fino alle 24:00",
         },
         whyChoose: "Perché scegliere 15 Palle?",
         whyChooseSubtitle:
@@ -398,7 +399,8 @@ const resources = {
         },
         ctaMemberLogin: "Member Login",
         badges: {
-          openUntil: "Open until 1 AM",
+          openUntilWeekday: "Open until 1:00 AM",
+          openUntilSunday: "Open until 12:00 AM",
         },
         whyChoose: "Why Choose 15 Palle?",
         whyChooseSubtitle:
@@ -750,7 +752,8 @@ const resources = {
         },
         ctaMemberLogin: "Mitglieder-Login",
         badges: {
-          openUntil: "Geöffnet bis 1 Uhr",
+          openUntilWeekday: "Geöffnet bis 1:00 Uhr",
+          openUntilSunday: "Geöffnet bis 24:00 Uhr",
         },
         whyChoose: "Warum 15 Palle?",
         whyChooseSubtitle:
