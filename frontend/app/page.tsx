@@ -39,7 +39,7 @@ export default function HomePage() {
   const city = t("common.city.bolzano")
   const phoneDisplay = "392 810 0919"
   const phoneTel = "+393928100919"
-  const mapsQuery = "Via Bruno Buozzi, 12, 39100 Bolzano BZ"
+  const mapsQuery = "Billiardclub 15 Palle, Via Bruno Buozzi, 12, 39100 Bolzano BZ"
   const mapsHref = "https://maps.app.goo.gl/m9vFp5QStRofnNaJ9"
   const mapsEmbedSrc = `https://maps.google.com/maps?q=${encodeURIComponent(mapsQuery)}&output=embed`
   const addressLine = `Via Bruno Buozzi, 12, 39100 ${city} BZ`
@@ -195,9 +195,9 @@ export default function HomePage() {
               </div>
 
               {/* Card 2: Community */}
-              <div className="group relative rounded-2xl bg-[#111] p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-yellow-900/10 border border-white/5 hover:border-[#1a1a1a]/40">
+              <div className="group relative rounded-2xl bg-[#111] p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-yellow-900/10 border border-white/5 hover:border-white/20">
                  <div className="mb-6 w-full flex justify-between items-start">
-                    <div className="rounded-xl bg-[#1a1a1a]/10 p-3 text-[#1a1a1a]">
+                    <div className="rounded-xl bg-white/10 p-3 text-white">
                        <MapPin className="h-6 w-6" />
                     </div>
                     <div className="transform group-hover:rotate-12 transition-transform duration-500 opacity-80">
