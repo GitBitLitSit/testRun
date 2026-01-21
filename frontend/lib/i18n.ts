@@ -35,6 +35,23 @@ const resources = {
           bolzano: "Bolzano",
         },
       },
+      cookie: {
+        title: "Preferenze cookie",
+        description:
+          "Usiamo cookie necessari per far funzionare il sito. Con il tuo consenso usiamo anche cookie analitici e di marketing per capire l'uso e personalizzare le offerte.",
+        acceptAll: "Accetta tutti",
+        rejectAll: "Rifiuta non essenziali",
+        managePreferences: "Gestisci preferenze",
+        hidePreferences: "Nascondi dettagli",
+        savePreferences: "Salva preferenze",
+        necessaryTitle: "Cookie necessari",
+        necessaryDesc: "Sempre attivi. Necessari per funzioni di base come sicurezza e lingua.",
+        analyticsTitle: "Cookie analitici",
+        analyticsDesc: "Ci aiutano a misurare il traffico e migliorare l'esperienza.",
+        marketingTitle: "Cookie di marketing",
+        marketingDesc: "Usati per mostrare offerte pertinenti e misurare le campagne.",
+        changeHint: "Puoi modificare la scelta in qualsiasi momento nelle impostazioni del browser.",
+      },
       home: {
         headline: {
           line1: "Dove ogni",
@@ -388,6 +405,23 @@ const resources = {
           bolzano: "Bolzano",
         },
       },
+      cookie: {
+        title: "Cookie preferences",
+        description:
+          "We use necessary cookies to keep the site running. With your permission we also use analytics and marketing cookies to understand usage and personalize offers.",
+        acceptAll: "Accept all",
+        rejectAll: "Reject non-essential",
+        managePreferences: "Manage preferences",
+        hidePreferences: "Hide details",
+        savePreferences: "Save preferences",
+        necessaryTitle: "Necessary cookies",
+        necessaryDesc: "Always on. Required for core features like security and language settings.",
+        analyticsTitle: "Analytics cookies",
+        analyticsDesc: "Help us measure traffic and improve the experience.",
+        marketingTitle: "Marketing cookies",
+        marketingDesc: "Used to show relevant offers and measure campaign performance.",
+        changeHint: "You can change your choice anytime in your browser settings.",
+      },
       home: {
         headline: {
           line1: "Where Every",
@@ -740,6 +774,23 @@ const resources = {
         city: {
           bolzano: "Bozen",
         },
+      },
+      cookie: {
+        title: "Cookie-Einstellungen",
+        description:
+          "Wir verwenden notwendige Cookies, damit die Website funktioniert. Mit Ihrer Zustimmung nutzen wir auch Analyse- und Marketing-Cookies, um die Nutzung zu verstehen und Angebote zu personalisieren.",
+        acceptAll: "Alle akzeptieren",
+        rejectAll: "Nicht essenzielle ablehnen",
+        managePreferences: "Einstellungen anpassen",
+        hidePreferences: "Details ausblenden",
+        savePreferences: "Einstellungen speichern",
+        necessaryTitle: "Notwendige Cookies",
+        necessaryDesc: "Immer aktiv. Erforderlich für grundlegende Funktionen wie Sicherheit und Sprache.",
+        analyticsTitle: "Analyse-Cookies",
+        analyticsDesc: "Helfen uns, den Traffic zu messen und die Erfahrung zu verbessern.",
+        marketingTitle: "Marketing-Cookies",
+        marketingDesc: "Werden verwendet, um relevante Angebote zu zeigen und Kampagnen zu messen.",
+        changeHint: "Sie können Ihre Auswahl jederzeit in den Browser-Einstellungen ändern.",
       },
       home: {
         headline: {
