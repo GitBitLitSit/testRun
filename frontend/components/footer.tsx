@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next"
 export function Footer() {
   const { t } = useTranslation()
   const city = t("common.city.bolzano")
-  const phoneDisplay = "392 810 0919"
+  const phoneDisplay = " +39 392 810 0919"
   const phoneTel = "+393928100919"
   const mapsHref = "https://maps.app.goo.gl/m9vFp5QStRofnNaJ9"
   return (
