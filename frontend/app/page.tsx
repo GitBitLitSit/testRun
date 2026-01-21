@@ -119,7 +119,7 @@ export default function HomePage() {
                 <button
                   type="button"
                   onClick={scrollToDirections}
-                  className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 px-5 py-2.5 rounded-full hover:bg-white/10 transition-colors"
+                  className="flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 px-5 py-2.5 rounded-full hover:bg-white/10 transition-colors cursor-pointer"
                 >
                   <MapPin className="h-4 w-4 text-primary" />
                   <span className="text-gray-200 font-medium">{city}</span>
@@ -403,24 +403,6 @@ export default function HomePage() {
                     />
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent pointer-events-none" />
-
-                  <div className="relative h-full flex items-end p-8">
-                    <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-black/60 backdrop-blur-md p-4 w-full">
-                      <div className="h-14 w-14 overflow-hidden rounded-xl border border-white/10">
-                        <Image
-                          src="/billiard-club-interior-atmosphere.jpg"
-                          alt="Club atmosphere"
-                          width={96}
-                          height={96}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                      <div>
-                        <p className="text-xs text-primary font-bold uppercase tracking-wider">Located at</p>
-                        <p className="text-lg font-bold text-white">Via Bruno Buozzi, 12</p>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>

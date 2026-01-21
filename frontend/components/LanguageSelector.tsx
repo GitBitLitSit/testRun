@@ -50,7 +50,7 @@ export default function LanguageSelector({ language, onLanguageChange }: Languag
     <div className="relative inline-block text-left" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex h-9 items-center justify-between gap-2 rounded-md border border-input bg-background px-3 text-sm font-medium shadow-sm ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="flex h-9 items-center justify-between gap-2 rounded-md border border-input bg-background px-3 text-sm font-medium shadow-sm ring-offset-background transition-colors hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         type="button"
       >
         <img src={selectedLang.src} alt={selectedLang.label} className="h-3.5 w-5 object-cover" />
@@ -83,8 +83,8 @@ export default function LanguageSelector({ language, onLanguageChange }: Languag
                   setIsOpen(false)
                 }}
                 className={cn(
-                  "flex cursor-pointer items-center gap-3 px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground first:rounded-t-md last:rounded-b-md",
-                  language === lang.code && "bg-accent/50 font-medium",
+                  "flex cursor-pointer items-center gap-3 px-3 py-2 text-sm transition-colors hover:bg-primary/10 hover:text-primary first:rounded-t-md last:rounded-b-md",
+                  language === lang.code && "bg-primary/10 text-primary font-medium",
                 )}
               >
                 <img src={lang.src} alt={lang.label} className="h-3.5 w-5 object-cover shadow-sm" />
