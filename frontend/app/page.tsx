@@ -40,7 +40,7 @@ export default function HomePage() {
   const phoneDisplay = "392 810 0919"
   const phoneTel = "+393928100919"
   const mapsQuery = "Via Bruno Buozzi, 12, 39100 Bolzano BZ"
-  const mapsHref = "https://maps.app.goo.gl/zCHo35LtzudktdZ96"
+  const mapsHref = "https://maps.app.goo.gl/m9vFp5QStRofnNaJ9"
   const mapsEmbedSrc = `https://maps.google.com/maps?q=${encodeURIComponent(mapsQuery)}&output=embed`
   const addressLine = `Via Bruno Buozzi, 12, 39100 ${city} BZ`
   const isSunday = new Date().getDay() === 0
@@ -179,9 +179,9 @@ export default function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
               
               {/* Card 1: Equipment */}
-              <div className="group relative rounded-2xl bg-[#111] p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-900/10 border border-white/5 hover:border-blue-500/20">
+              <div className="group relative rounded-2xl bg-[#111] p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-900/10 border border-white/5 hover:border-[#f5d742]/30">
                  <div className="mb-6 w-full flex justify-between items-start">
-                    <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400">
+                    <div className="rounded-xl bg-[#f5d742]/10 p-3 text-[#f5d742]">
                        <Trophy className="h-6 w-6" />
                     </div>
                     <div className="transform group-hover:rotate-12 transition-transform duration-500 opacity-80">
@@ -195,9 +195,9 @@ export default function HomePage() {
               </div>
 
               {/* Card 2: Community */}
-              <div className="group relative rounded-2xl bg-[#111] p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-yellow-900/10 border border-white/5 hover:border-yellow-500/20">
+              <div className="group relative rounded-2xl bg-[#111] p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-yellow-900/10 border border-white/5 hover:border-[#1a1a1a]/40">
                  <div className="mb-6 w-full flex justify-between items-start">
-                    <div className="p-3 bg-yellow-500/10 rounded-xl text-yellow-400">
+                    <div className="rounded-xl bg-[#1a1a1a]/10 p-3 text-[#1a1a1a]">
                        <MapPin className="h-6 w-6" />
                     </div>
                     <div className="transform group-hover:rotate-12 transition-transform duration-500 opacity-80">
@@ -211,9 +211,9 @@ export default function HomePage() {
               </div>
 
               {/* Card 3: Hours */}
-              <div className="group relative rounded-2xl bg-[#111] p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-red-900/10 border border-white/5 hover:border-red-500/20">
+              <div className="group relative rounded-2xl bg-[#111] p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-red-900/10 border border-white/5 hover:border-[#e84040]/30">
                  <div className="mb-6 w-full flex justify-between items-start">
-                    <div className="p-3 bg-red-500/10 rounded-xl text-red-400">
+                    <div className="rounded-xl bg-[#e84040]/10 p-3 text-[#e84040]">
                        <Clock className="h-6 w-6" />
                     </div>
                     <div className="transform group-hover:rotate-12 transition-transform duration-500 opacity-80">
@@ -318,12 +318,7 @@ export default function HomePage() {
             <div className="max-w-6xl mx-auto relative">
               <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-stretch">
                 <div className="rounded-[32px] border border-white/10 bg-[#0a0a0a]/80 backdrop-blur-xl p-8 md:p-12 shadow-2xl">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-gray-400">
-                    <MapPin className="h-4 w-4 text-primary" />
-                    <span>{t("home.contact.pill")}</span>
-                  </div>
-
-                  <h2 className="mt-8 text-3xl md:text-5xl font-black text-white tracking-tight">
+                  <h2 className="mt-4 text-3xl md:text-5xl font-black text-white tracking-tight">
                     {t("home.contact.title")}
                   </h2>
                   <p className="mt-4 text-gray-400 leading-relaxed text-lg">

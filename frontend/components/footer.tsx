@@ -10,7 +10,7 @@ export function Footer() {
   const city = t("common.city.bolzano")
   const phoneDisplay = "392 810 0919"
   const phoneTel = "+393928100919"
-  const mapsPageHref = "/maps"
+  const mapsHref = "https://maps.app.goo.gl/m9vFp5QStRofnNaJ9"
   return (
     <footer className="border-t border-border bg-card/50">
       <div className="container mx-auto px-4 py-12">
@@ -41,7 +41,9 @@ export function Footer() {
               <div className="flex items-start gap-3">
                 <MapPin className="mt-0.5 h-4 w-4 text-primary flex-shrink-0" />
                 <Link
-                  href={mapsPageHref}
+                  href={mapsHref}
+                  target="_blank"
+                  rel="noreferrer"
                   className="text-muted-foreground transition-colors hover:text-primary"
                   aria-label={t("home.contact.directionsCta")}
                 >

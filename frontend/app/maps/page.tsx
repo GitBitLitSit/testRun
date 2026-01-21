@@ -13,7 +13,7 @@ export default function MapsPage() {
   const city = t("common.city.bolzano")
   const phoneTel = "+393928100919"
   const mapsQuery = "Via Bruno Buozzi, 12, 39100 Bolzano BZ"
-  const mapsHref = "https://maps.app.goo.gl/zCHo35LtzudktdZ96"
+  const mapsHref = "https://maps.app.goo.gl/m9vFp5QStRofnNaJ9"
   const mapsEmbedSrc = `https://www.google.com/maps?q=${encodeURIComponent(mapsQuery)}&output=embed`
   const addressLine = `Via Bruno Buozzi, 12, 39100 ${city} BZ`
 
