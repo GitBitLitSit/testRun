@@ -64,6 +64,42 @@ export async function importMembersCsv(csvText: string) {
   return handleResponse(res)
 }
 
+export async function previewMembersCsv(csvText: string) {
+  const res = await fetch(`${API_URL}/members/import/preview`, {
+    method: "POST",
+    headers: {
+      ...getAuthHeadersWithoutContentType(),
+      "Content-Type": "text/csv",
+    },
+    body: csvText,
+  })
+  return handleResponse(res)
+}
+
+export async function previewMembersBatch(
+  members: Array<{
+    firstName: string
+    lastName: string
+    email: string
+  }>,
+) {
+  const res = await fetch(`${API_URL}/members/import/preview`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ members }),
+  })
+  return handleResponse(res)
+}
+
+export async function checkExistingEmails(payload: { emails?: string[]; batches?: string[][] }) {
+  const res = await fetch(`${API_URL}/members/import/existing`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  })
+  return handleResponse(res)
+}
+
 export async function importMembersBatch(
   members: Array<{
     firstName: string
@@ -72,6 +108,7 @@ export async function importMembersBatch(
     blocked?: boolean
     emailValid?: boolean
     createdAt?: string
+    sendEmail?: boolean
   }>,
 ) {
   const res = await fetch(`${API_URL}/members/import/batch`, {
