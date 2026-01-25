@@ -331,69 +331,77 @@ export default function CustomerProfilePage() {
                   >
                     <div
                       ref={membershipPassRef}
-                      className={`relative mx-auto w-full max-w-lg rounded-2xl border border-muted/50 bg-gradient-to-br from-primary/10 via-background to-background p-6 text-center shadow-sm lg:max-w-xl ${
+                      className={`relative mx-auto w-full max-w-lg overflow-hidden rounded-[28px] border border-white/10 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-7 text-center shadow-[0_30px_80px_rgba(0,0,0,0.45)] ring-1 ring-white/10 lg:max-w-xl ${
                         isFullscreen ? "scale-150" : ""
                       }`}
                     >
-                      <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-b from-white/10 via-transparent to-transparent" />
+                      <div className="pointer-events-none absolute -top-24 right-6 h-40 w-40 rounded-full bg-primary/30 blur-3xl" />
+                      <div className="pointer-events-none absolute -bottom-24 left-4 h-40 w-40 rounded-full bg-sky-500/10 blur-3xl" />
+                      <div className="pointer-events-none absolute inset-0 rounded-[28px] bg-gradient-to-b from-white/10 via-transparent to-transparent" />
                       <div className="relative space-y-6">
+                        <div className="flex items-center justify-between">
+                          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.3em] text-white/60">
+                            15 Palle
+                          </span>
+                          <div className="h-8 w-14 rounded-md border border-white/10 bg-gradient-to-br from-white/20 via-white/5 to-transparent" />
+                        </div>
                         <div className="space-y-2">
-                          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-white/50">
                             {t("profile.membershipPass")}
                           </p>
-                          <p className={`font-bold ${isFullscreen ? "text-4xl" : "text-2xl"}`}>
+                          <p className={`font-bold text-white ${isFullscreen ? "text-4xl" : "text-2xl"}`}>
                             {member.firstName} {member.lastName}
                           </p>
-                          <p className={`text-muted-foreground ${isFullscreen ? "text-2xl" : "text-base"}`}>
+                          <p className={`text-white/70 ${isFullscreen ? "text-2xl" : "text-base"}`}>
                             {member.email}
                           </p>
-                          <p className="text-xs uppercase tracking-widest text-muted-foreground">
+                          <p className="text-xs uppercase tracking-widest text-white/50">
                             {t("profile.memberSince")} · {memberSinceDate}
                           </p>
-                        <div className="flex justify-center">
-                          {member.blocked ? (
-                            <span className="inline-flex items-center rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-xs font-semibold text-red-100">
-                              {t("profile.accountBlocked")}
-                            </span>
-                          ) : member.emailValid ? (
-                            <span className="inline-flex items-center rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-100">
-                              {t("profile.activeMember")}
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center rounded-full border border-muted/40 bg-muted/10 px-3 py-1 text-xs font-semibold text-muted-foreground">
-                              {t("profile.pendingVerification")}
-                            </span>
-                          )}
-                        </div>
+                          <div className="flex justify-center">
+                            {member.blocked ? (
+                              <span className="inline-flex items-center rounded-full border border-red-400/40 bg-red-500/15 px-3 py-1 text-xs font-semibold text-red-100">
+                                {t("profile.accountBlocked")}
+                              </span>
+                            ) : member.emailValid ? (
+                              <span className="inline-flex items-center rounded-full border border-emerald-400/40 bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-100 shadow-[0_0_16px_rgba(16,185,129,0.25)]">
+                                {t("profile.activeMember")}
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs font-semibold text-white/70">
+                                {t("profile.pendingVerification")}
+                              </span>
+                            )}
+                          </div>
                         </div>
 
                         <div className="flex justify-center">
                           <div
                             ref={qrCodeRef}
-                            className="rounded-lg border bg-white p-4 shadow-sm transition-transform duration-300 group-hover:scale-[1.02]"
+                            className="rounded-2xl border border-white/20 bg-white p-4 shadow-[0_16px_40px_rgba(0,0,0,0.35)] transition-transform duration-300 group-hover:scale-[1.02]"
                           >
                             <QRCodeSVG value={member.qrUuid} size={isFullscreen ? 256 : 220} level="H" />
                           </div>
                         </div>
 
-                        <div className="rounded-full border border-muted/40 bg-background/80 px-4 py-2 shadow-sm">
+                        <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 shadow-sm backdrop-blur">
                           <div className="flex items-center justify-center gap-2">
                             <Button
                               onClick={handlePrintQrCode}
                               size="icon"
                               variant="ghost"
-                              className="size-10 rounded-full border border-primary/20 bg-primary/10 text-primary shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-primary/20"
+                              className="size-10 rounded-full border border-white/15 bg-white/10 text-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/20"
                               aria-label="Print QR code"
                               title="Print QR code"
                             >
                               <Printer className="h-4 w-4" />
                             </Button>
-                            <div className="h-6 w-px bg-muted/60" />
+                            <div className="h-6 w-px bg-white/20" />
                             <Button
                               variant="ghost"
                               size="icon"
                               onClick={handleDownloadQrCode}
-                              className="size-10 rounded-full border border-primary/20 bg-primary/10 text-primary shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-primary/20"
+                              className="size-10 rounded-full border border-white/15 bg-white/10 text-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/20"
                               aria-label="Download QR code"
                               title="Download QR code"
                             >
