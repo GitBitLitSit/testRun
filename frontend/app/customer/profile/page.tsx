@@ -189,7 +189,7 @@ export default function CustomerProfilePage() {
         ctx.fillText(text, x, y)
       }
 
-      const outerRadius = 36
+      const outerRadius = 40
       const outerGradient = ctx.createLinearGradient(0, 0, passWidth, passHeight)
       outerGradient.addColorStop(0, "#0f172a")
       outerGradient.addColorStop(0.55, "#0b1222")
@@ -206,7 +206,7 @@ export default function CustomerProfilePage() {
       const innerY = innerPadding
       const innerW = passWidth - innerPadding * 2
       const innerH = passHeight - innerPadding * 2
-      const innerRadius = 28
+      const innerRadius = 32
       const innerGradient = ctx.createLinearGradient(innerX, innerY, innerX + innerW, innerY + innerH)
       innerGradient.addColorStop(0, "rgba(30, 41, 59, 0.98)")
       innerGradient.addColorStop(0.6, "rgba(15, 23, 42, 0.98)")
@@ -217,6 +217,10 @@ export default function CustomerProfilePage() {
       ctx.strokeStyle = "rgba(255, 255, 255, 0.06)"
       ctx.lineWidth = 1
       ctx.stroke()
+
+      ctx.save()
+      drawRoundedRect(ctx, innerX, innerY, innerW, innerH, innerRadius)
+      ctx.clip()
 
       const glowTop = ctx.createRadialGradient(
         innerX + innerW * 0.85,
@@ -243,49 +247,34 @@ export default function CustomerProfilePage() {
       glowBottom.addColorStop(1, "rgba(168, 85, 247, 0)")
       ctx.fillStyle = glowBottom
       ctx.fillRect(innerX, innerY, innerW, innerH)
+      ctx.restore()
 
       const centerX = passWidth / 2
-      const notchWidth = 96
-      const notchHeight = 10
-      drawRoundedRect(
-        ctx,
-        centerX - notchWidth / 2,
-        innerY + 12,
-        notchWidth,
-        notchHeight,
-        6,
-      )
-      ctx.fillStyle = "rgba(255, 255, 255, 0.08)"
-      ctx.fill()
-
-      drawRoundedRect(ctx, innerX + innerW - 72, innerY + 20, 48, 28, 8)
-      ctx.fillStyle = "rgba(255, 255, 255, 0.12)"
-      ctx.fill()
 
       ctx.textAlign = "center"
       ctx.textBaseline = "middle"
       ctx.fillStyle = "rgba(226, 232, 240, 0.7)"
-      ctx.font = `600 10px ${fontFamily}`
-      ctx.fillText(passLabel.toUpperCase(), centerX, innerY + 40)
+      ctx.font = `600 12px ${fontFamily}`
+      ctx.fillText(passLabel.toUpperCase(), centerX, innerY + 52)
 
       ctx.fillStyle = "#f8fafc"
-      drawFitText(fullName, centerX, innerY + 72, innerW - 48, 24, 16, 700)
+      drawFitText(fullName, centerX, innerY + 86, innerW - 48, 28, 18, 700)
 
       ctx.fillStyle = "rgba(226, 232, 240, 0.78)"
-      drawFitText(member.email, centerX, innerY + 98, innerW - 56, 13, 11, 500)
+      drawFitText(member.email, centerX, innerY + 116, innerW - 56, 15, 12, 500)
       ctx.fillStyle = "rgba(148, 163, 184, 0.9)"
-      drawFitText(memberSinceText, centerX, innerY + 120, innerW - 56, 11, 9, 600)
+      drawFitText(memberSinceText, centerX, innerY + 140, innerW - 56, 12, 10, 600)
 
-      const headerHeight = 160
+      const headerHeight = 188
       const maxQr = innerW * 0.72
-      const bottomPadding = 40
+      const bottomPadding = 48
       const available = innerH - headerHeight - bottomPadding
       const qrSize = Math.max(140, Math.min(maxQr, available))
       const qrX = centerX - qrSize / 2
       const qrY = innerY + headerHeight + Math.max(8, (available - qrSize) / 2)
-      const qrPadding = 12
+      const qrPadding = 14
 
-      drawRoundedRect(ctx, qrX - qrPadding, qrY - qrPadding, qrSize + qrPadding * 2, qrSize + qrPadding * 2, 20)
+      drawRoundedRect(ctx, qrX - qrPadding, qrY - qrPadding, qrSize + qrPadding * 2, qrSize + qrPadding * 2, 24)
       ctx.fillStyle = "#ffffff"
       ctx.fill()
       ctx.strokeStyle = "rgba(15, 23, 42, 0.12)"
@@ -377,44 +366,36 @@ export default function CustomerProfilePage() {
                   >
                     <div
                       ref={membershipPassRef}
-                      className={`relative mx-auto w-full max-w-lg overflow-hidden rounded-[28px] border border-white/10 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-7 text-center shadow-[0_30px_80px_rgba(0,0,0,0.45)] ring-1 ring-white/10 lg:max-w-xl ${
+                      className={`relative mx-auto w-full max-w-lg rounded-2xl border border-muted/50 bg-gradient-to-br from-primary/10 via-background to-background p-6 text-center shadow-sm lg:max-w-xl ${
                         isFullscreen ? "scale-150" : ""
                       }`}
                     >
-                      <div className="pointer-events-none absolute -top-24 right-6 h-40 w-40 rounded-full bg-primary/30 blur-3xl" />
-                      <div className="pointer-events-none absolute -bottom-24 left-4 h-40 w-40 rounded-full bg-sky-500/10 blur-3xl" />
-                      <div className="pointer-events-none absolute inset-0 rounded-[28px] bg-gradient-to-b from-white/10 via-transparent to-transparent" />
+                      <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-b from-white/10 via-transparent to-transparent" />
                       <div className="relative space-y-6">
-                        <div className="flex items-center justify-between">
-                          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.3em] text-white/60">
-                            15 Palle
-                          </span>
-                          <div className="h-8 w-14 rounded-md border border-white/10 bg-gradient-to-br from-white/20 via-white/5 to-transparent" />
-                        </div>
                         <div className="space-y-2">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-white/50">
+                          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                             {t("profile.membershipPass")}
                           </p>
-                          <p className={`font-bold text-white ${isFullscreen ? "text-4xl" : "text-2xl"}`}>
+                          <p className={`font-bold ${isFullscreen ? "text-4xl" : "text-2xl"}`}>
                             {member.firstName} {member.lastName}
                           </p>
-                          <p className={`text-white/70 ${isFullscreen ? "text-2xl" : "text-base"}`}>
+                          <p className={`text-muted-foreground ${isFullscreen ? "text-2xl" : "text-base"}`}>
                             {member.email}
                           </p>
-                          <p className="text-xs uppercase tracking-widest text-white/50">
+                          <p className="text-xs uppercase tracking-widest text-muted-foreground">
                             {t("profile.memberSince")} · {memberSinceDate}
                           </p>
                           <div className="flex justify-center">
                             {member.blocked ? (
-                              <span className="inline-flex items-center rounded-full border border-red-400/40 bg-red-500/15 px-3 py-1 text-xs font-semibold text-red-100">
+                              <span className="inline-flex items-center rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-xs font-semibold text-red-600">
                                 {t("profile.accountBlocked")}
                               </span>
                             ) : member.emailValid ? (
-                              <span className="inline-flex items-center rounded-full border border-emerald-400/40 bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-100 shadow-[0_0_16px_rgba(16,185,129,0.25)]">
+                              <span className="inline-flex items-center rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-600">
                                 {t("profile.activeMember")}
                               </span>
                             ) : (
-                              <span className="inline-flex items-center rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs font-semibold text-white/70">
+                              <span className="inline-flex items-center rounded-full border border-muted/40 bg-muted/10 px-3 py-1 text-xs font-semibold text-muted-foreground">
                                 {t("profile.pendingVerification")}
                               </span>
                             )}
@@ -424,30 +405,30 @@ export default function CustomerProfilePage() {
                         <div className="flex justify-center">
                           <div
                             ref={qrCodeRef}
-                            className="rounded-2xl border border-white/20 bg-white p-4 shadow-[0_16px_40px_rgba(0,0,0,0.35)] transition-transform duration-300 group-hover:scale-[1.02]"
+                            className="rounded-lg border bg-white p-4 shadow-sm transition-transform duration-300 group-hover:scale-[1.02]"
                           >
                             <QRCodeSVG value={member.qrUuid} size={isFullscreen ? 256 : 220} level="H" />
                           </div>
                         </div>
 
-                        <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 shadow-sm backdrop-blur">
+                        <div className="rounded-full border border-muted/40 bg-background/80 px-4 py-2 shadow-sm">
                           <div className="flex items-center justify-center gap-2">
                             <Button
                               onClick={handlePrintQrCode}
                               size="icon"
                               variant="ghost"
-                              className="size-10 rounded-full border border-white/15 bg-white/10 text-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/20"
+                              className="size-10 rounded-full border border-primary/20 bg-primary/10 text-primary shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-primary/20"
                               aria-label="Print QR code"
                               title="Print QR code"
                             >
                               <Printer className="h-4 w-4" />
                             </Button>
-                            <div className="h-6 w-px bg-white/20" />
+                            <div className="h-6 w-px bg-muted/60" />
                             <Button
                               variant="ghost"
                               size="icon"
                               onClick={handleDownloadQrCode}
-                              className="size-10 rounded-full border border-white/15 bg-white/10 text-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/20"
+                              className="size-10 rounded-full border border-primary/20 bg-primary/10 text-primary shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-primary/20"
                               aria-label="Download QR code"
                               title="Download QR code"
                             >
