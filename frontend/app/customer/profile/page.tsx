@@ -254,18 +254,18 @@ export default function CustomerProfilePage() {
       ctx.textAlign = "center"
       ctx.textBaseline = "middle"
       ctx.fillStyle = "rgba(226, 232, 240, 0.7)"
-      ctx.font = `600 14px ${fontFamily}`
-      ctx.fillText(passLabel.toUpperCase(), centerX, innerY + 56)
+      ctx.font = `600 16px ${fontFamily}`
+      ctx.fillText(passLabel.toUpperCase(), centerX, innerY + 60)
 
       ctx.fillStyle = "#f8fafc"
-      drawFitText(fullName, centerX, innerY + 96, innerW - 48, 32, 22, 700)
+      drawFitText(fullName, centerX, innerY + 104, innerW - 48, 38, 26, 700)
 
       ctx.fillStyle = "rgba(226, 232, 240, 0.78)"
-      drawFitText(member.email, centerX, innerY + 130, innerW - 56, 17, 13, 500)
+      drawFitText(member.email, centerX, innerY + 144, innerW - 56, 19, 15, 500)
       ctx.fillStyle = "rgba(148, 163, 184, 0.9)"
-      drawFitText(memberSinceText, centerX, innerY + 156, innerW - 56, 14, 11, 600)
+      drawFitText(memberSinceText, centerX, innerY + 170, innerW - 56, 16, 12, 600)
 
-      const headerHeight = 206
+      const headerHeight = 224
       const maxQr = innerW * 0.72
       const bottomPadding = 48
       const available = innerH - headerHeight - bottomPadding
