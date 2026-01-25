@@ -230,9 +230,10 @@ export default function CustomerProfilePage() {
       ctx.fillStyle = "rgba(148, 163, 184, 0.9)"
       drawFitText(memberSinceText, centerX, innerY + 98, innerW - 56, 11, 9, 600)
 
-      const headerHeight = 118
+      const headerHeight = 136
       const maxQr = innerW * 0.68
-      const available = innerH - headerHeight - 24
+      const bottomPadding = 32
+      const available = innerH - headerHeight - bottomPadding
       const qrSize = Math.max(140, Math.min(maxQr, available))
       const qrX = centerX - qrSize / 2
       const qrY = innerY + headerHeight + Math.max(8, (available - qrSize) / 2)
@@ -349,6 +350,21 @@ export default function CustomerProfilePage() {
                           <p className="text-xs uppercase tracking-widest text-muted-foreground">
                             {t("profile.memberSince")} · {memberSinceDate}
                           </p>
+                        <div className="flex justify-center">
+                          {member.blocked ? (
+                            <span className="inline-flex items-center rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-xs font-semibold text-red-100">
+                              {t("profile.accountBlocked")}
+                            </span>
+                          ) : member.emailValid ? (
+                            <span className="inline-flex items-center rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-100">
+                              {t("profile.activeMember")}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center rounded-full border border-muted/40 bg-muted/10 px-3 py-1 text-xs font-semibold text-muted-foreground">
+                              {t("profile.pendingVerification")}
+                            </span>
+                          )}
+                        </div>
                         </div>
 
                         <div className="flex justify-center">
