@@ -5,9 +5,9 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { User, Mail, Calendar, LogOut, Maximize2, Minimize2 } from "lucide-react"
+import { User, Mail, Calendar, Maximize2, Minimize2, Printer, Wallet } from "lucide-react"
 import { QRCodeSVG } from "qrcode.react"
 import type { Member } from "@/lib/types"
 
@@ -15,6 +15,7 @@ export default function CustomerProfilePage() {
   const router = useRouter()
   const [member, setMember] = useState<Member | null>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const qrCodeRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const memberData = localStorage.getItem("currentMember")
@@ -29,6 +30,73 @@ export default function CustomerProfilePage() {
   const handleSignOut = () => {
     localStorage.removeItem("currentMember")
     router.push("/")
+  }
+
+  const handlePrintQrCode = () => {
+    if (!member) {
+      return
+    }
+
+    const qrCodeElement = qrCodeRef.current?.querySelector("svg")
+    if (!qrCodeElement) {
+      return
+    }
+
+    const serializer = new XMLSerializer()
+    let svgMarkup = serializer.serializeToString(qrCodeElement)
+
+    if (!svgMarkup.includes("xmlns=")) {
+      svgMarkup = svgMarkup.replace("<svg", '<svg xmlns="http://www.w3.org/2000/svg"')
+    }
+
+    const printWindow = window.open("", "qr-code-print", "width=600,height=600")
+    if (!printWindow) {
+      return
+    }
+
+    printWindow.document.open()
+    printWindow.document.write(`
+      <!doctype html>
+      <html>
+        <head>
+          <title>Member QR Code</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              margin: 0;
+              padding: 24px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              gap: 16px;
+            }
+            .meta {
+              text-align: center;
+            }
+            .qr {
+              border: 1px solid #e5e7eb;
+              padding: 16px;
+              border-radius: 12px;
+              background: #ffffff;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="meta">
+            <div style="font-size: 18px; font-weight: 700;">${member.firstName} ${member.lastName}</div>
+            <div style="font-size: 14px; color: #6b7280;">${member.email}</div>
+          </div>
+          <div class="qr">${svgMarkup}</div>
+        </body>
+      </html>
+    `)
+    printWindow.document.close()
+    printWindow.focus()
+    printWindow.onload = () => {
+      printWindow.print()
+      printWindow.close()
+    }
   }
 
   if (!member) {
@@ -101,7 +169,7 @@ export default function CustomerProfilePage() {
                     {member.blocked ? (
                       <Badge variant="destructive">Account Blocked</Badge>
                     ) : member.emailValid ? (
-                      <Badge className="bg-green-600 hover:bg-green-700">Active Member</Badge>
+                      <Badge className="bg-green-600">Active Member</Badge>
                     ) : (
                       <Badge variant="secondary">Pending Verification</Badge>
                     )}
@@ -141,7 +209,7 @@ export default function CustomerProfilePage() {
                     </div>
 
                     <div className="flex justify-center">
-                      <div className="rounded-lg border bg-white p-4">
+                      <div ref={qrCodeRef} className="rounded-lg border bg-white p-4">
                         <QRCodeSVG value={member.qrUuid} size={isFullscreen ? 256 : 200} level="H" />
                       </div>
                     </div>
@@ -152,8 +220,19 @@ export default function CustomerProfilePage() {
                           ⚠ Account Blocked
                         </Badge>
                       ) : (
-                        <Badge className="bg-green-600 hover:bg-green-700 text-lg px-4 py-2">✓ Active Member</Badge>
+                        <Badge className="bg-green-600 text-lg px-4 py-2">✓ Active Member</Badge>
                       )}
+                    </div>
+
+                    <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+                      <Button onClick={handlePrintQrCode} className="gap-2">
+                        <Printer className="h-4 w-4" />
+                        Print QR Code
+                      </Button>
+                      <Button variant="outline" disabled className="gap-2">
+                        <Wallet className="h-4 w-4" />
+                        Add to Google Wallet (Soon)
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
