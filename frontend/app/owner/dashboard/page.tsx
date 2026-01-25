@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useCallback, useRef, SetStateAction } from "react"
+import { useEffect, useState, useCallback, useMemo, useRef, SetStateAction } from "react"
 import { useRouter } from "next/navigation"
 import { useTranslation } from "react-i18next"
 import Image from "next/image" // <--- Added Import
@@ -23,7 +23,8 @@ import {
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { getMembers, createMember, resetQrCode, getCheckIns, updateMember, deleteMember } from "@/lib/api"
+import { Checkbox } from "@/components/ui/checkbox"
+import { getMembers, createMember, resetQrCode, getCheckIns, updateMember, deleteMember, previewMembersCsv, importMembersBatch } from "@/lib/api"
 import { useRealtimeCheckIns } from "@/hooks/use-realtime"
 import type { Member, CheckInEvent } from "@/lib/types"
 import {
@@ -41,6 +42,20 @@ import {
   Trash2,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+
+type ImportPreviewRow = {
+  id: string
+  firstName: string
+  lastName: string
+  email: string
+  sendEmail: boolean
+}
+
+type ImportPreviewStats = {
+  skippedInvalid: number
+  skippedDuplicateInFile: number
+  skippedExisting: number
+}
 
 export default function OwnerDashboard() {
   const router = useRouter()
@@ -102,6 +117,16 @@ export default function OwnerDashboard() {
   // Import State
   const [importDialogOpen, setImportDialogOpen] = useState(false)
   const [csvFile, setCsvFile] = useState<File | null>(null)
+  const [importStep, setImportStep] = useState<"upload" | "review">("upload")
+  const [importPreviewRows, setImportPreviewRows] = useState<ImportPreviewRow[]>([])
+  const [importPreviewStats, setImportPreviewStats] = useState<ImportPreviewStats>({
+    skippedInvalid: 0,
+    skippedDuplicateInFile: 0,
+    skippedExisting: 0,
+  })
+  const [importError, setImportError] = useState<string | null>(null)
+  const [isPreviewing, setIsPreviewing] = useState(false)
+  const [isImporting, setIsImporting] = useState(false)
   
   // Edit State
   const [editDialogOpen, setEditDialogOpen] = useState(false)
@@ -128,6 +153,18 @@ export default function OwnerDashboard() {
       setNewMemberForm({ firstName: "", lastName: "", email: "", sendEmail: false })
     }
   }, [createDialogOpen])
+
+  useEffect(() => {
+    if (!importDialogOpen) {
+      setCsvFile(null)
+      setImportStep("upload")
+      setImportPreviewRows([])
+      setImportPreviewStats({ skippedInvalid: 0, skippedDuplicateInFile: 0, skippedExisting: 0 })
+      setImportError(null)
+      setIsPreviewing(false)
+      setIsImporting(false)
+    }
+  }, [importDialogOpen])
 
   // --- WEBSOCKET HANDLER ---
   const handleNewCheckIn = useCallback((event: CheckInEvent) => {
@@ -206,6 +243,43 @@ export default function OwnerDashboard() {
       loadCheckIns()
     }
   }, [checkInsPage, activeTab])
+
+  const importValidation = useMemo(() => {
+    const invalidRowIds = new Set<string>()
+    const duplicateRowIds = new Set<string>()
+    const seenEmails = new Map<string, string>()
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+    for (const row of importPreviewRows) {
+      const firstName = row.firstName.trim()
+      const lastName = row.lastName.trim()
+      const email = row.email.trim().toLowerCase()
+
+      if (!firstName || !lastName || !email || emailRegex.test(email) === false) {
+        invalidRowIds.add(row.id)
+      }
+
+      if (email) {
+        const existing = seenEmails.get(email)
+        if (existing) {
+          duplicateRowIds.add(existing)
+          duplicateRowIds.add(row.id)
+        } else {
+          seenEmails.set(email, row.id)
+        }
+      }
+    }
+
+    return {
+      invalidRowIds,
+      duplicateRowIds,
+      hasIssues: invalidRowIds.size > 0 || duplicateRowIds.size > 0,
+    }
+  }, [importPreviewRows])
+
+  const importAllSendEmail = importPreviewRows.length > 0 && importPreviewRows.every((row) => row.sendEmail)
+  const importSomeSendEmail = importPreviewRows.some((row) => row.sendEmail)
+  const canSubmitImport = importPreviewRows.length > 0 && !importValidation.hasIssues && !isImporting
 
 
   // --- ACTION HANDLERS ---
@@ -324,34 +398,127 @@ export default function OwnerDashboard() {
     }
   }
 
-  const handleImportCSV = async () => {
+  const handleImportFileChange = (file: File | null) => {
+    setCsvFile(file)
+    setImportError(null)
+    setImportStep("upload")
+    setImportPreviewRows([])
+    setImportPreviewStats({ skippedInvalid: 0, skippedDuplicateInFile: 0, skippedExisting: 0 })
+  }
+
+  const handlePreviewImport = async () => {
     if (!csvFile) return
-    const reader = new FileReader()
-    reader.onload = async (e) => {
-      try {
-        const content = e.target?.result as string
-        const lines = content.trim().split("\n")
-        const headers = lines[0].split(",").map((h) => h.trim().toLowerCase())
-        let imported = 0
-        for (let i = 1; i < lines.length; i++) {
-          const values = lines[i].split(",").map((v) => v.trim().replace(/^"|"$/g, ""))
-          const row: Record<string, string> = {}
-          headers.forEach((header, index) => { row[header] = values[index] || "" })
-          if (row.firstname && row.lastname && row.email) {
-            await createMember({ firstName: row.firstname, lastName: row.lastname, email: row.email })
-            imported++
-          }
-        }
-        toast({ title: t("dashboard.toasts.importCompleteTitle"), description: t("dashboard.toasts.importCompleteDesc", { count: imported }) })
-        setImportDialogOpen(false)
-        setCsvFile(null)
-        setMembersPage(1)
-        loadMembers()
-      } catch (error) {
-        toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedImport"), variant: "destructive" })
-      }
+    setImportError(null)
+    setIsPreviewing(true)
+    try {
+      const content = await csvFile.text()
+      const result = await previewMembersCsv(content)
+      const previewRows = (result?.preview || []).map((row: { firstName: string; lastName: string; email: string }) => ({
+        id: crypto.randomUUID(),
+        firstName: row.firstName,
+        lastName: row.lastName,
+        email: row.email,
+        sendEmail: false,
+      }))
+
+      setImportPreviewRows(previewRows)
+      setImportPreviewStats({
+        skippedInvalid: result?.skippedInvalid || 0,
+        skippedDuplicateInFile: result?.skippedDuplicateInFile || 0,
+        skippedExisting: result?.skippedExisting || 0,
+      })
+      setImportStep("review")
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : t("dashboard.toasts.failedImport")
+      setImportError(errorMessage)
+      toast({ title: t("dashboard.toasts.errorTitle"), description: errorMessage, variant: "destructive" })
+    } finally {
+      setIsPreviewing(false)
     }
-    reader.readAsText(csvFile)
+  }
+
+  const handleImportRowChange = (id: string, field: "firstName" | "lastName" | "email" | "sendEmail", value: string | boolean) => {
+    setImportPreviewRows((prev) =>
+      prev.map((row) => (row.id === id ? { ...row, [field]: value } : row)),
+    )
+  }
+
+  const handleToggleAllSendEmail = (checked: boolean) => {
+    setImportPreviewRows((prev) => prev.map((row) => ({ ...row, sendEmail: checked })))
+  }
+
+  const handleConfirmImport = async () => {
+    if (!canSubmitImport) return
+
+    setIsImporting(true)
+    try {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      const seenEmails = new Set<string>()
+      const cleanedRows: Array<{ firstName: string; lastName: string; email: string; sendEmail: boolean }> = []
+
+      for (const row of importPreviewRows) {
+        const firstName = row.firstName.trim()
+        const lastName = row.lastName.trim()
+        const email = row.email.trim().toLowerCase()
+        if (!firstName || !lastName || !email || emailRegex.test(email) === false) {
+          continue
+        }
+        if (seenEmails.has(email)) {
+          continue
+        }
+        seenEmails.add(email)
+        cleanedRows.push({ firstName, lastName, email, sendEmail: row.sendEmail })
+      }
+
+      if (cleanedRows.length === 0) {
+        toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedImport"), variant: "destructive" })
+        return
+      }
+
+      const batchSize = 1500
+      let totalInserted = 0
+      let totalSkippedExisting = 0
+      let totalInvalid = 0
+      let totalDuplicate = 0
+      let totalEmailFailed = 0
+
+      for (let i = 0; i < cleanedRows.length; i += batchSize) {
+        const batch = cleanedRows.slice(i, i + batchSize)
+        const res = await importMembersBatch(batch)
+        totalInserted += res?.inserted || 0
+        totalSkippedExisting += res?.skippedExisting || 0
+        totalInvalid += res?.invalid || 0
+        totalDuplicate += res?.duplicateInBatch || 0
+        totalEmailFailed += res?.emailFailed || 0
+      }
+
+      toast({
+        title: t("dashboard.toasts.importCompleteTitle"),
+        description: t("dashboard.toasts.importCompleteDesc", { count: totalInserted }),
+      })
+
+      if (totalSkippedExisting > 0 || totalInvalid > 0 || totalDuplicate > 0 || totalEmailFailed > 0) {
+        toast({
+          title: t("dashboard.toasts.errorTitle"),
+          description: t("dashboard.dialogs.importReviewIssues", {
+            existing: totalSkippedExisting,
+            invalid: totalInvalid,
+            duplicate: totalDuplicate,
+            emailFailed: totalEmailFailed,
+          }),
+          variant: "destructive",
+        })
+      }
+
+      setImportDialogOpen(false)
+      setMembersPage(1)
+      loadMembers()
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : t("dashboard.toasts.failedImport")
+      toast({ title: t("dashboard.toasts.errorTitle"), description: errorMessage, variant: "destructive" })
+    } finally {
+      setIsImporting(false)
+    }
   }
 
   const handleViewMember = (member: Member) => { setSelectedMember(member); setDetailsDrawerOpen(true) }
@@ -862,17 +1029,146 @@ export default function OwnerDashboard() {
 
       {/* Import CSV Dialog */}
       <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-3xl">
           <DialogHeader>
             <DialogTitle>{t("dashboard.dialogs.importTitle")}</DialogTitle>
             <DialogDescription>{t("dashboard.dialogs.importDescription")}</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <Input type="file" accept=".csv" onChange={(e) => setCsvFile(e.target.files?.[0] || null)} />
-          </div>
+          {importStep === "upload" ? (
+            <div className="space-y-4 py-4">
+              <Input
+                type="file"
+                accept=".csv"
+                onChange={(e) => handleImportFileChange(e.target.files?.[0] || null)}
+              />
+              {importError && (
+                <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3">
+                  <p className="text-sm text-destructive font-medium flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-2" />
+                    {importError}
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4 py-4">
+              <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+                <p>{t("dashboard.dialogs.importPreviewSummary", { count: importPreviewRows.length })}</p>
+                <p>
+                  {t("dashboard.dialogs.importPreviewFiltered", {
+                    existing: importPreviewStats.skippedExisting,
+                    invalid: importPreviewStats.skippedInvalid,
+                    duplicate: importPreviewStats.skippedDuplicateInFile,
+                  })}
+                </p>
+              </div>
+
+              {importValidation.hasIssues && (
+                <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3">
+                  <p className="text-sm text-destructive font-medium">
+                    {t("dashboard.dialogs.importValidationIssues", {
+                      invalid: importValidation.invalidRowIds.size,
+                      duplicate: importValidation.duplicateRowIds.size,
+                    })}
+                  </p>
+                </div>
+              )}
+
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="import-send-all"
+                    checked={importAllSendEmail ? true : importSomeSendEmail ? "indeterminate" : false}
+                    onCheckedChange={(checked) => handleToggleAllSendEmail(checked === true)}
+                    disabled={importPreviewRows.length === 0}
+                  />
+                  <Label htmlFor="import-send-all" className="font-normal cursor-pointer">
+                    {t("dashboard.dialogs.importSendEmailAll")}
+                  </Label>
+                </div>
+                {csvFile?.name && (
+                  <span className="text-xs text-muted-foreground">{csvFile.name}</span>
+                )}
+              </div>
+
+              {importPreviewRows.length === 0 ? (
+                <div className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
+                  {t("dashboard.dialogs.importNoPreview")}
+                </div>
+              ) : (
+                <div className="max-h-72 overflow-auto rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>{t("dashboard.dialogs.firstName")}</TableHead>
+                        <TableHead>{t("dashboard.dialogs.lastName")}</TableHead>
+                        <TableHead>{t("dashboard.dialogs.email")}</TableHead>
+                        <TableHead className="text-center">{t("dashboard.dialogs.importSendEmail")}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {importPreviewRows.map((row) => {
+                        const hasIssue =
+                          importValidation.invalidRowIds.has(row.id) || importValidation.duplicateRowIds.has(row.id)
+                        return (
+                          <TableRow key={row.id} className={hasIssue ? "bg-destructive/5" : ""}>
+                            <TableCell>
+                              <Input
+                                value={row.firstName}
+                                onChange={(e) => handleImportRowChange(row.id, "firstName", e.target.value)}
+                                className={hasIssue ? "border-destructive" : ""}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                value={row.lastName}
+                                onChange={(e) => handleImportRowChange(row.id, "lastName", e.target.value)}
+                                className={hasIssue ? "border-destructive" : ""}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                type="email"
+                                value={row.email}
+                                onChange={(e) => handleImportRowChange(row.id, "email", e.target.value)}
+                                className={hasIssue ? "border-destructive" : ""}
+                              />
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Checkbox
+                                checked={row.sendEmail}
+                                onCheckedChange={(checked) => handleImportRowChange(row.id, "sendEmail", checked === true)}
+                              />
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </div>
+          )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setImportDialogOpen(false)}>{t("common.cancel")}</Button>
-            <Button onClick={handleImportCSV} disabled={!csvFile}>{t("dashboard.dialogs.importCta")}</Button>
+            {importStep === "upload" ? (
+              <>
+                <Button variant="outline" onClick={() => setImportDialogOpen(false)}>
+                  {t("common.cancel")}
+                </Button>
+                <Button onClick={handlePreviewImport} disabled={!csvFile || isPreviewing}>
+                  {isPreviewing ? t("dashboard.dialogs.importPreviewing") : t("dashboard.dialogs.importPreviewCta")}
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" onClick={() => setImportStep("upload")}>
+                  {t("dashboard.dialogs.importBack")}
+                </Button>
+                <Button onClick={handleConfirmImport} disabled={!canSubmitImport}>
+                  {isImporting ? t("dashboard.dialogs.importing") : t("dashboard.dialogs.importCreateCta")}
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

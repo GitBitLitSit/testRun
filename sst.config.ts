@@ -80,8 +80,8 @@ export default $config({
       runtime: "nodejs22.x",
     });
 
-    api.route("POST /members/import/batch", {
-      handler: "./src/handlers/members/importBatch.handler",
+    api.route("POST /members/import/preview", {
+      handler: "./src/handlers/members/importPreview.handler",
       environment: {
         JWT_SECRET_KEY: process.env.JWT_SECRET_KEY!,
         MONGODB_URI: process.env.MONGODB_URI!,
@@ -89,6 +89,24 @@ export default $config({
       },
       architecture: "arm64",
       runtime: "nodejs22.x",
+    });
+
+    api.route("POST /members/import/batch", {
+      handler: "./src/handlers/members/importBatch.handler",
+      environment: {
+        JWT_SECRET_KEY: process.env.JWT_SECRET_KEY!,
+        MONGODB_URI: process.env.MONGODB_URI!,
+        MONGODB_DB_NAME: process.env.MONGODB_DB_NAME!,
+        SES_SENDER_EMAIL: process.env.SES_SENDER_EMAIL!,
+      },
+      architecture: "arm64",
+      runtime: "nodejs22.x",
+      permissions: [
+        {
+          actions: ["ses:SendEmail", "ses:SendRawEmail"],
+          resources: ["*"],
+        },
+      ],
     });
 
     api.route("PUT /members/{id}", {

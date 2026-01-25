@@ -1,5 +1,6 @@
 import { APIGatewayProxyHandlerV2 } from "aws-lambda";
 import { connectToMongo } from "../../adapters/database";
+import { sendQrCodeEmail } from "../../adapters/email";
 import { verifyJWT } from "../../lib/jwt";
 import { AppError } from "../../lib/appError";
 import { errorResponse, json } from "../../lib/http";
@@ -12,6 +13,7 @@ type ImportMemberRow = {
   blocked?: unknown;
   emailValid?: unknown;
   createdAt?: unknown;
+  sendEmail?: unknown;
 };
 
 function parseBooleanLoose(v: unknown): boolean | undefined {
@@ -40,6 +42,12 @@ function parseDateLoose(v: unknown): Date | undefined {
   return undefined;
 }
 
+function chunk<T>(arr: T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
+}
+
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   const token = event.headers.authorization?.split(" ")[1];
   if (!token) return errorResponse(event, 401, "NO_TOKEN_PROVIDED");
@@ -63,7 +71,11 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 
     let invalid = 0;
     let accepted = 0;
+    let duplicateInBatch = 0;
     const ops: any[] = [];
+    const docs: Member[] = [];
+    const sendEmailFlags: boolean[] = [];
+    const seenEmails = new Set<string>();
 
     for (const r of rows as ImportMemberRow[]) {
       const firstName = String(r?.firstName ?? "").trim();
@@ -79,8 +91,15 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         continue;
       }
 
+      if (seenEmails.has(email)) {
+        duplicateInBatch++;
+        continue;
+      }
+      seenEmails.add(email);
+
       const blocked = parseBooleanLoose(r?.blocked) ?? false;
-      const emailValid = parseBooleanLoose(r?.emailValid) ?? false;
+      const sendEmail = parseBooleanLoose(r?.sendEmail) ?? false;
+      const emailValid = sendEmail ? false : parseBooleanLoose(r?.emailValid) ?? false;
       const createdAt = parseDateLoose(r?.createdAt) ?? new Date();
 
       const doc: Member = {
@@ -103,19 +122,80 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
           upsert: true,
         },
       });
+      docs.push(doc);
+      sendEmailFlags.push(sendEmail);
       accepted++;
     }
 
     if (ops.length === 0) {
-      return json(200, { success: true, inserted: 0, accepted, invalid });
+      return json(200, {
+        success: true,
+        inserted: 0,
+        accepted,
+        invalid,
+        duplicateInBatch,
+        skippedExisting: accepted,
+        emailRequested: 0,
+        emailSent: 0,
+        emailFailed: 0,
+      });
     }
 
     const result = await collection.bulkWrite(ops, { ordered: false });
+    const inserted = result.upsertedCount ?? 0;
+    const upsertedIds = result.upsertedIds ?? [];
+    const insertedIndexes = Array.isArray(upsertedIds)
+      ? upsertedIds.map((entry: any) => Number(entry?.index)).filter((idx) => !Number.isNaN(idx))
+      : Object.keys(upsertedIds).map((key) => Number(key));
+
+    const docsToEmail: Member[] = [];
+    for (const idx of insertedIndexes) {
+      if (sendEmailFlags[idx]) {
+        docsToEmail.push(docs[idx]);
+      }
+    }
+
+    let emailSent = 0;
+    let emailFailed = 0;
+    const successEmails: string[] = [];
+    const sender = process.env.SES_SENDER_EMAIL;
+
+    if (docsToEmail.length > 0 && sender) {
+      const batchSize = 5;
+      for (let i = 0; i < docsToEmail.length; i += batchSize) {
+        const batch = docsToEmail.slice(i, i + batchSize);
+        const results = await Promise.all(
+          batch.map((doc) => sendQrCodeEmail(sender, doc.firstName, doc.lastName, doc.email, doc.qrUuid)),
+        );
+        results.forEach((res, index) => {
+          if (res.success) {
+            emailSent++;
+            successEmails.push(batch[index].email);
+          } else {
+            emailFailed++;
+          }
+        });
+      }
+    } else if (docsToEmail.length > 0) {
+      emailFailed = docsToEmail.length;
+    }
+
+    if (successEmails.length > 0) {
+      for (const emailChunk of chunk(successEmails, 500)) {
+        await collection.updateMany({ email: { $in: emailChunk } } as any, { $set: { emailValid: true } });
+      }
+    }
+
     return json(200, {
       success: true,
-      inserted: result.upsertedCount ?? 0,
+      inserted,
       accepted,
       invalid,
+      duplicateInBatch,
+      skippedExisting: Math.max(0, accepted - inserted),
+      emailRequested: docsToEmail.length,
+      emailSent,
+      emailFailed,
     });
   } catch (error) {
     if (error instanceof AppError && error.code === "INVALID_TOKEN") {
