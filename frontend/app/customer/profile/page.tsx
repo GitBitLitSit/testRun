@@ -158,7 +158,22 @@ export default function CustomerProfilePage() {
               <Card className="relative overflow-hidden border-muted/40 bg-gradient-to-br from-background via-background to-primary/5 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent" />
                 <CardHeader className="relative z-10">
-                  <CardTitle>Personal Information</CardTitle>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <CardTitle>Personal Information</CardTitle>
+                    {member.blocked ? (
+                      <Badge variant="destructive" className="text-sm px-3 py-1 font-semibold shadow-sm">
+                        Account Blocked
+                      </Badge>
+                    ) : member.emailValid ? (
+                      <Badge className="bg-green-600 text-sm px-3 py-1 font-semibold shadow-sm ring-1 ring-green-500/30">
+                        Active Member
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className="text-sm px-3 py-1 font-semibold shadow-sm">
+                        Pending Verification
+                      </Badge>
+                    )}
+                  </div>
                   <CardDescription>Your account details</CardDescription>
                 </CardHeader>
                 <CardContent className="relative z-10 space-y-4">
@@ -194,22 +209,6 @@ export default function CustomerProfilePage() {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">Status</p>
-                    {member.blocked ? (
-                      <Badge variant="destructive" className="text-base px-4 py-2 font-semibold shadow-sm">
-                        Account Blocked
-                      </Badge>
-                    ) : member.emailValid ? (
-                      <Badge className="bg-green-600 text-base px-4 py-2 font-semibold shadow-sm ring-1 ring-green-500/30">
-                        Active Member
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary" className="text-base px-4 py-2 font-semibold shadow-sm">
-                        Pending Verification
-                      </Badge>
-                    )}
-                  </div>
                 </CardContent>
               </Card>
 
@@ -272,6 +271,8 @@ export default function CustomerProfilePage() {
                           <Button
                             onClick={handlePrintQrCode}
                             size="icon"
+                            variant="outline"
+                            className="border-muted/60 bg-background/80 text-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:bg-primary/10"
                             aria-label="Print QR code"
                             title="Print QR code"
                           >
@@ -281,6 +282,7 @@ export default function CustomerProfilePage() {
                             variant="outline"
                             size="icon"
                             onClick={handleDownloadQrCode}
+                            className="border-muted/60 bg-background/80 text-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:bg-primary/10"
                             aria-label="Download QR code"
                             title="Download QR code"
                           >
