@@ -56,12 +56,22 @@ export function CookieConsent() {
       <div className="relative mx-auto max-w-6xl overflow-hidden rounded-2xl border border-border/60 bg-card/95 shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur animate-slide-up">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.08),transparent_45%),radial-gradient(circle_at_top_right,rgba(245,215,66,0.06),transparent_45%)]" />
         <div className="relative flex flex-col gap-5 p-6 md:p-8">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="space-y-2 lg:max-w-2xl">
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+            <div className="space-y-2">
               <h2 className="text-lg font-semibold text-foreground md:text-xl">{t("cookie.title")}</h2>
               <p className="text-sm text-muted-foreground leading-relaxed">{t("cookie.description")}</p>
+              <p className="text-xs text-muted-foreground">{t("cookie.changeHint")}</p>
             </div>
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <div className="flex flex-wrap items-center justify-start gap-2 sm:gap-3 lg:justify-end">
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                className="rounded-full px-4 text-sm font-semibold"
+                onClick={rejectAll}
+              >
+                {t("cookie.rejectAll")}
+              </Button>
               <Button
                 type="button"
                 size="sm"
@@ -72,15 +82,6 @@ export function CookieConsent() {
                 aria-controls="cookie-preferences"
               >
                 {expanded ? t("cookie.hidePreferences") : t("cookie.managePreferences")}
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="secondary"
-                className="rounded-full px-4 text-sm font-semibold"
-                onClick={rejectAll}
-              >
-                {t("cookie.rejectAll")}
               </Button>
               <Button
                 type="button"
@@ -147,16 +148,13 @@ export function CookieConsent() {
                 </div>
               </div>
 
-              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-xs text-muted-foreground">{t("cookie.changeHint")}</p>
+              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
                 <Button type="button" className="rounded-full px-5" onClick={savePreferences}>
                   {t("cookie.savePreferences")}
                 </Button>
               </div>
             </div>
-          ) : (
-            <p className="text-xs text-muted-foreground">{t("cookie.changeHint")}</p>
-          )}
+          ) : null}
         </div>
       </div>
     </div>
