@@ -91,6 +91,15 @@ export async function previewMembersBatch(
   return handleResponse(res)
 }
 
+export async function checkExistingEmails(payload: { emails?: string[]; batches?: string[][] }) {
+  const res = await fetch(`${API_URL}/members/import/existing`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  })
+  return handleResponse(res)
+}
+
 export async function importMembersBatch(
   members: Array<{
     firstName: string

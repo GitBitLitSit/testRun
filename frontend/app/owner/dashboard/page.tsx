@@ -25,7 +25,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Progress } from "@/components/ui/progress"
-import { getMembers, createMember, resetQrCode, getCheckIns, updateMember, deleteMember, previewMembersBatch, importMembersBatch } from "@/lib/api"
+import { getMembers, createMember, resetQrCode, getCheckIns, updateMember, deleteMember, checkExistingEmails, importMembersBatch } from "@/lib/api"
 import { normalizeCsvHeader, parseCsv } from "@/lib/csv"
 import { useRealtimeCheckIns } from "@/hooks/use-realtime"
 import type { Member, CheckInEvent } from "@/lib/types"
@@ -173,6 +173,7 @@ export default function OwnerDashboard() {
   // --- REFS ---
   const activeTabRef = useRef(activeTab)
   const checkInsPageRef = useRef(checkInsPage)
+  const importFileInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => { activeTabRef.current = activeTab }, [activeTab])
   useEffect(() => { checkInsPageRef.current = checkInsPage }, [checkInsPage])
@@ -202,6 +203,7 @@ export default function OwnerDashboard() {
     skippedDuplicateInFile: 0,
     skippedExisting: 0,
   })
+  const [showImportPreviewTable, setShowImportPreviewTable] = useState(true)
   const [importFileSummary, setImportFileSummary] = useState({ rows: 0, candidates: 0, size: 0 })
   const [importPreviewProgress, setImportPreviewProgress] = useState({ current: 0, total: 0 })
   const [importImportProgress, setImportImportProgress] = useState({ current: 0, total: 0 })
@@ -241,6 +243,7 @@ export default function OwnerDashboard() {
       setImportStep("upload")
       setImportPreviewRows([])
       setImportPreviewStats({ skippedInvalid: 0, skippedDuplicateInFile: 0, skippedExisting: 0 })
+      setShowImportPreviewTable(true)
       setImportFileSummary({ rows: 0, candidates: 0, size: 0 })
       setImportPreviewProgress({ current: 0, total: 0 })
       setImportImportProgress({ current: 0, total: 0 })
@@ -492,6 +495,7 @@ export default function OwnerDashboard() {
     setImportStep("upload")
     setImportPreviewRows([])
     setImportPreviewStats({ skippedInvalid: 0, skippedDuplicateInFile: 0, skippedExisting: 0 })
+    setShowImportPreviewTable(true)
     setImportFileSummary({ rows: 0, candidates: 0, size: file?.size || 0 })
     setImportPreviewProgress({ current: 0, total: 0 })
     setImportImportProgress({ current: 0, total: 0 })
@@ -518,26 +522,34 @@ export default function OwnerDashboard() {
         return
       }
 
-      const previewBatchSize = 500
-      const batches = chunkArray(parsed.candidates, previewBatchSize)
-      setImportPreviewProgress({ current: 0, total: batches.length })
+      const emailBatchSize = 1000
+      const requestBatchSize = 5
+      const emailBatches = chunkArray(parsed.candidates.map((candidate) => candidate.email), emailBatchSize)
+      const requestBatches = chunkArray(emailBatches, requestBatchSize)
+      setImportPreviewProgress({ current: 0, total: requestBatches.length })
 
-      const previewRows: ImportPreviewRow[] = []
-      for (let i = 0; i < batches.length; i++) {
-        const result = await previewMembersBatch(batches[i])
-        const chunkPreview = (result?.preview || []).map((row: { firstName: string; lastName: string; email: string }) => ({
+      const existingEmails = new Set<string>()
+      for (let i = 0; i < requestBatches.length; i++) {
+        const result = await checkExistingEmails({ batches: requestBatches[i] })
+        for (const email of result?.existingEmails || []) {
+          existingEmails.add(String(email).toLowerCase())
+        }
+        setImportPreviewProgress({ current: i + 1, total: requestBatches.length })
+      }
+
+      const previewRows = parsed.candidates
+        .filter((candidate) => !existingEmails.has(candidate.email))
+        .map((candidate) => ({
           id: crypto.randomUUID(),
-          firstName: row.firstName,
-          lastName: row.lastName,
-          email: row.email,
+          firstName: candidate.firstName,
+          lastName: candidate.lastName,
+          email: candidate.email,
           sendEmail: false,
         }))
-        previewRows.push(...chunkPreview)
-        setImportPreviewProgress({ current: i + 1, total: batches.length })
-      }
 
       const skippedExisting = Math.max(0, parsed.candidates.length - previewRows.length)
       setImportPreviewRows(previewRows)
+      setShowImportPreviewTable(previewRows.length <= 500)
       setImportPreviewStats({
         skippedInvalid: parsed.skippedInvalid,
         skippedDuplicateInFile: parsed.skippedDuplicateInFile,
@@ -767,10 +779,10 @@ export default function OwnerDashboard() {
                         <UserPlus className="mr-2 h-4 w-4" /> {t("dashboard.members.addMember")}
                       </Button>
                       <Button variant="outline" size="sm" onClick={handleExportCSV}>
-                        <Download className="mr-2 h-4 w-4" /> {t("dashboard.members.export")}
+                        <Upload className="mr-2 h-4 w-4" /> {t("dashboard.members.export")}
                       </Button>
                       <Button variant="outline" size="sm" onClick={() => setImportDialogOpen(true)}>
-                        <Upload className="mr-2 h-4 w-4" /> {t("dashboard.members.import")}
+                        <Download className="mr-2 h-4 w-4" /> {t("dashboard.members.import")}
                       </Button>
                     </div>
                   </div>
@@ -1173,14 +1185,54 @@ export default function OwnerDashboard() {
           </div>
           {importStep === "upload" ? (
             <div className="space-y-4 py-4">
-              <Input
+              <input
+                ref={importFileInputRef}
                 type="file"
                 accept=".csv"
+                className="sr-only"
                 onChange={(e) => handleImportFileChange(e.target.files?.[0] || null)}
               />
+              <div
+                className="rounded-md border border-dashed p-4 transition-colors hover:border-primary/70 cursor-pointer"
+                onClick={() => importFileInputRef.current?.click()}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault()
+                    importFileInputRef.current?.click()
+                  }
+                }}
+              >
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold">{t("dashboard.dialogs.importSelectFile")}</p>
+                    {csvFile ? (
+                      <p className="text-xs text-muted-foreground">
+                        <span className="mr-1">{t("dashboard.dialogs.importFileSelectedLabel")}</span>
+                        <span className="font-medium text-foreground">{csvFile.name}</span>
+                        <span className="ml-2">({formatBytes(csvFile.size)})</span>
+                      </p>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">{t("dashboard.dialogs.importNoFile")}</p>
+                    )}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      importFileInputRef.current?.click()
+                    }}
+                  >
+                    <Upload className="mr-2 h-4 w-4" />
+                    {t("dashboard.dialogs.importChooseFile")}
+                  </Button>
+                </div>
+              </div>
               {csvFile && (
                 <div className="rounded-md border bg-muted/40 p-3 text-xs text-muted-foreground space-y-1">
-                  <p>{t("dashboard.dialogs.importFileSelected", { name: csvFile.name, size: formatBytes(csvFile.size) })}</p>
                   <p>{t("dashboard.dialogs.importSplitHint")}</p>
                 </div>
               )}
@@ -1267,11 +1319,26 @@ export default function OwnerDashboard() {
                 )}
               </div>
 
+              {importPreviewRows.length > 0 && (
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+                  <span>{t("dashboard.dialogs.importPreviewRowCount", { count: importPreviewRows.length })}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowImportPreviewTable((prev) => !prev)}
+                  >
+                    {showImportPreviewTable
+                      ? t("dashboard.dialogs.importHidePreview")
+                      : t("dashboard.dialogs.importShowPreview")}
+                  </Button>
+                </div>
+              )}
+
               {importPreviewRows.length === 0 ? (
                 <div className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
                   {t("dashboard.dialogs.importNoPreview")}
                 </div>
-              ) : (
+              ) : showImportPreviewTable ? (
                 <div className="max-h-72 overflow-auto rounded-md border">
                   <Table>
                     <TableHeader>
@@ -1321,6 +1388,10 @@ export default function OwnerDashboard() {
                       })}
                     </TableBody>
                   </Table>
+                </div>
+              ) : (
+                <div className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
+                  {t("dashboard.dialogs.importPreviewHidden")}
                 </div>
               )}
             </div>
