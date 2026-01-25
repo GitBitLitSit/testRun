@@ -143,8 +143,9 @@ export default function CustomerProfilePage() {
     const safeFileBase = fileBase.trim().replace(/\s+/g, "-") || "15Palle-MembershipPass"
 
     const passRect = membershipPassRef.current?.getBoundingClientRect()
-    const passWidth = Math.max(320, Math.round(passRect?.width ?? 360))
-    const passHeight = Math.max(380, Math.round(passRect?.height ?? 460))
+    const passWidth = Math.max(360, Math.round(passRect?.width ?? 380))
+    const targetHeight = Math.max(620, Math.round(passWidth * 1.55))
+    const passHeight = Math.max(targetHeight, Math.round(passRect?.height ?? 560))
     const scale = 3
 
     const canvas = document.createElement("canvas")
@@ -188,9 +189,10 @@ export default function CustomerProfilePage() {
         ctx.fillText(text, x, y)
       }
 
-      const outerRadius = 24
+      const outerRadius = 36
       const outerGradient = ctx.createLinearGradient(0, 0, passWidth, passHeight)
       outerGradient.addColorStop(0, "#0f172a")
+      outerGradient.addColorStop(0.55, "#0b1222")
       outerGradient.addColorStop(1, "#020617")
       drawRoundedRect(ctx, 0, 0, passWidth, passHeight, outerRadius)
       ctx.fillStyle = outerGradient
@@ -199,15 +201,16 @@ export default function CustomerProfilePage() {
       ctx.lineWidth = 1
       ctx.stroke()
 
-      const innerPadding = 18
+      const innerPadding = 20
       const innerX = innerPadding
       const innerY = innerPadding
       const innerW = passWidth - innerPadding * 2
       const innerH = passHeight - innerPadding * 2
-      const innerRadius = 20
+      const innerRadius = 28
       const innerGradient = ctx.createLinearGradient(innerX, innerY, innerX + innerW, innerY + innerH)
-      innerGradient.addColorStop(0, "rgba(30, 41, 59, 0.96)")
-      innerGradient.addColorStop(1, "rgba(15, 23, 42, 0.96)")
+      innerGradient.addColorStop(0, "rgba(30, 41, 59, 0.98)")
+      innerGradient.addColorStop(0.6, "rgba(15, 23, 42, 0.98)")
+      innerGradient.addColorStop(1, "rgba(2, 6, 23, 0.98)")
       drawRoundedRect(ctx, innerX, innerY, innerW, innerH, innerRadius)
       ctx.fillStyle = innerGradient
       ctx.fill()
@@ -215,31 +218,74 @@ export default function CustomerProfilePage() {
       ctx.lineWidth = 1
       ctx.stroke()
 
+      const glowTop = ctx.createRadialGradient(
+        innerX + innerW * 0.85,
+        innerY + innerH * 0.1,
+        0,
+        innerX + innerW * 0.85,
+        innerY + innerH * 0.1,
+        innerW * 0.7,
+      )
+      glowTop.addColorStop(0, "rgba(56, 189, 248, 0.35)")
+      glowTop.addColorStop(1, "rgba(56, 189, 248, 0)")
+      ctx.fillStyle = glowTop
+      ctx.fillRect(innerX, innerY, innerW, innerH)
+
+      const glowBottom = ctx.createRadialGradient(
+        innerX + innerW * 0.15,
+        innerY + innerH * 0.85,
+        0,
+        innerX + innerW * 0.15,
+        innerY + innerH * 0.85,
+        innerW * 0.7,
+      )
+      glowBottom.addColorStop(0, "rgba(168, 85, 247, 0.28)")
+      glowBottom.addColorStop(1, "rgba(168, 85, 247, 0)")
+      ctx.fillStyle = glowBottom
+      ctx.fillRect(innerX, innerY, innerW, innerH)
+
       const centerX = passWidth / 2
+      const notchWidth = 96
+      const notchHeight = 10
+      drawRoundedRect(
+        ctx,
+        centerX - notchWidth / 2,
+        innerY + 12,
+        notchWidth,
+        notchHeight,
+        6,
+      )
+      ctx.fillStyle = "rgba(255, 255, 255, 0.08)"
+      ctx.fill()
+
+      drawRoundedRect(ctx, innerX + innerW - 72, innerY + 20, 48, 28, 8)
+      ctx.fillStyle = "rgba(255, 255, 255, 0.12)"
+      ctx.fill()
+
       ctx.textAlign = "center"
       ctx.textBaseline = "middle"
       ctx.fillStyle = "rgba(226, 232, 240, 0.7)"
       ctx.font = `600 10px ${fontFamily}`
-      ctx.fillText(passLabel.toUpperCase(), centerX, innerY + 28)
+      ctx.fillText(passLabel.toUpperCase(), centerX, innerY + 40)
 
       ctx.fillStyle = "#f8fafc"
-      drawFitText(fullName, centerX, innerY + 56, innerW - 48, 22, 16, 700)
+      drawFitText(fullName, centerX, innerY + 72, innerW - 48, 24, 16, 700)
 
       ctx.fillStyle = "rgba(226, 232, 240, 0.78)"
-      drawFitText(member.email, centerX, innerY + 78, innerW - 56, 13, 11, 500)
+      drawFitText(member.email, centerX, innerY + 98, innerW - 56, 13, 11, 500)
       ctx.fillStyle = "rgba(148, 163, 184, 0.9)"
-      drawFitText(memberSinceText, centerX, innerY + 98, innerW - 56, 11, 9, 600)
+      drawFitText(memberSinceText, centerX, innerY + 120, innerW - 56, 11, 9, 600)
 
-      const headerHeight = 136
-      const maxQr = innerW * 0.68
-      const bottomPadding = 32
+      const headerHeight = 160
+      const maxQr = innerW * 0.72
+      const bottomPadding = 40
       const available = innerH - headerHeight - bottomPadding
       const qrSize = Math.max(140, Math.min(maxQr, available))
       const qrX = centerX - qrSize / 2
       const qrY = innerY + headerHeight + Math.max(8, (available - qrSize) / 2)
       const qrPadding = 12
 
-      drawRoundedRect(ctx, qrX - qrPadding, qrY - qrPadding, qrSize + qrPadding * 2, qrSize + qrPadding * 2, 16)
+      drawRoundedRect(ctx, qrX - qrPadding, qrY - qrPadding, qrSize + qrPadding * 2, qrSize + qrPadding * 2, 20)
       ctx.fillStyle = "#ffffff"
       ctx.fill()
       ctx.strokeStyle = "rgba(15, 23, 42, 0.12)"
