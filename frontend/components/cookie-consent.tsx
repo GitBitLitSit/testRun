@@ -53,36 +53,50 @@ export function CookieConsent() {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 p-4 md:p-6">
-      <div className="mx-auto max-w-5xl rounded-2xl border border-border bg-card/95 shadow-lg backdrop-blur animate-slide-up">
-        <div className="flex flex-col gap-4 p-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-            <div className="space-y-2">
-              <h2 className="text-lg font-semibold text-foreground">{t("cookie.title")}</h2>
-              <p className="text-sm text-muted-foreground">{t("cookie.description")}</p>
+      <div className="relative mx-auto max-w-6xl overflow-hidden rounded-2xl border border-border/60 bg-card/95 shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur animate-slide-up">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.08),transparent_45%),radial-gradient(circle_at_top_right,rgba(245,215,66,0.06),transparent_45%)]" />
+        <div className="relative flex flex-col gap-5 p-6 md:p-8">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-2 lg:max-w-2xl">
+              <h2 className="text-lg font-semibold text-foreground md:text-xl">{t("cookie.title")}</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">{t("cookie.description")}</p>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               <Button
                 type="button"
+                size="sm"
                 variant="outline"
+                className="rounded-full border-border/70 bg-background/60 px-4 text-xs font-semibold uppercase tracking-wide text-foreground hover:bg-background/80"
                 onClick={() => setExpanded((prev) => !prev)}
                 aria-expanded={expanded}
                 aria-controls="cookie-preferences"
               >
                 {expanded ? t("cookie.hidePreferences") : t("cookie.managePreferences")}
               </Button>
-              <Button type="button" variant="secondary" onClick={rejectAll}>
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                className="rounded-full px-4 text-sm font-semibold"
+                onClick={rejectAll}
+              >
                 {t("cookie.rejectAll")}
               </Button>
-              <Button type="button" onClick={acceptAll}>
+              <Button
+                type="button"
+                size="sm"
+                className="rounded-full px-4 text-sm font-semibold shadow-[0_0_20px_rgba(59,130,246,0.35)]"
+                onClick={acceptAll}
+              >
                 {t("cookie.acceptAll")}
               </Button>
             </div>
           </div>
 
           {expanded ? (
-            <div id="cookie-preferences" className="border-t border-border/60 pt-4">
+            <div id="cookie-preferences" className="border-t border-border/60 pt-5">
               <div className="grid gap-4 md:grid-cols-3">
-                <div className="rounded-xl border border-border/60 bg-background/60 p-4">
+                <div className="rounded-xl border border-border/60 bg-background/60 p-4 transition-colors hover:bg-background/80">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <label htmlFor="cookie-necessary" className="text-sm font-medium text-foreground">
@@ -94,7 +108,7 @@ export function CookieConsent() {
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-border/60 bg-background/60 p-4">
+                <div className="rounded-xl border border-border/60 bg-background/60 p-4 transition-colors hover:bg-background/80">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <label htmlFor="cookie-analytics" className="text-sm font-medium text-foreground">
@@ -113,7 +127,7 @@ export function CookieConsent() {
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-border/60 bg-background/60 p-4">
+                <div className="rounded-xl border border-border/60 bg-background/60 p-4 transition-colors hover:bg-background/80">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <label htmlFor="cookie-marketing" className="text-sm font-medium text-foreground">
@@ -135,7 +149,7 @@ export function CookieConsent() {
 
               <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-xs text-muted-foreground">{t("cookie.changeHint")}</p>
-                <Button type="button" onClick={savePreferences}>
+                <Button type="button" className="rounded-full px-5" onClick={savePreferences}>
                   {t("cookie.savePreferences")}
                 </Button>
               </div>
