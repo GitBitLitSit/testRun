@@ -167,11 +167,17 @@ export default function CustomerProfilePage() {
                   <div className="space-y-2">
                     <p className="text-xs text-muted-foreground">Status</p>
                     {member.blocked ? (
-                      <Badge variant="destructive">Account Blocked</Badge>
+                      <Badge variant="destructive" className="text-base px-4 py-2 font-semibold shadow-sm">
+                        Account Blocked
+                      </Badge>
                     ) : member.emailValid ? (
-                      <Badge className="bg-green-600">Active Member</Badge>
+                      <Badge className="bg-green-600 text-base px-4 py-2 font-semibold shadow-sm ring-1 ring-green-500/30">
+                        Active Member
+                      </Badge>
                     ) : (
-                      <Badge variant="secondary">Pending Verification</Badge>
+                      <Badge variant="secondary" className="text-base px-4 py-2 font-semibold shadow-sm">
+                        Pending Verification
+                      </Badge>
                     )}
                   </div>
                 </CardContent>
@@ -198,41 +204,43 @@ export default function CustomerProfilePage() {
                 <CardContent
                   className={isFullscreen ? "flex flex-col items-center justify-center h-[calc(100vh-8rem)]" : ""}
                 >
-                  <div className={`space-y-6 text-center ${isFullscreen ? "scale-150" : ""}`}>
-                    <div className="space-y-2">
-                      <p className={`font-bold ${isFullscreen ? "text-4xl" : "text-2xl"}`}>
-                        {member.firstName} {member.lastName}
-                      </p>
-                      <p className={`text-muted-foreground ${isFullscreen ? "text-2xl" : "text-base"}`}>
-                        {member.email}
-                      </p>
-                    </div>
-
-                    <div className="flex justify-center">
-                      <div ref={qrCodeRef} className="rounded-lg border bg-white p-4">
-                        <QRCodeSVG value={member.qrUuid} size={isFullscreen ? 256 : 200} level="H" />
+                  <div
+                    className={`relative mx-auto w-full max-w-md rounded-2xl border border-muted/50 bg-gradient-to-br from-primary/10 via-background to-background p-6 text-center shadow-sm ${
+                      isFullscreen ? "scale-150" : ""
+                    }`}
+                  >
+                    <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-b from-white/10 via-transparent to-transparent" />
+                    <div className="relative space-y-6">
+                      <div className="space-y-2">
+                        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                          Membership Pass
+                        </p>
+                        <p className={`font-bold ${isFullscreen ? "text-4xl" : "text-2xl"}`}>
+                          {member.firstName} {member.lastName}
+                        </p>
+                        <p className={`text-muted-foreground ${isFullscreen ? "text-2xl" : "text-base"}`}>
+                          {member.email}
+                        </p>
                       </div>
-                    </div>
 
-                    <div>
-                      {member.blocked ? (
-                        <Badge variant="destructive" className="text-lg px-4 py-2">
-                          ⚠ Account Blocked
-                        </Badge>
-                      ) : (
-                        <Badge className="bg-green-600 text-lg px-4 py-2">✓ Active Member</Badge>
-                      )}
-                    </div>
+                      <div className="flex justify-center">
+                        <div ref={qrCodeRef} className="rounded-lg border bg-white p-4 shadow-sm">
+                          <QRCodeSVG value={member.qrUuid} size={isFullscreen ? 256 : 200} level="H" />
+                        </div>
+                      </div>
 
-                    <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-                      <Button onClick={handlePrintQrCode} className="gap-2">
-                        <Printer className="h-4 w-4" />
-                        Print QR Code
-                      </Button>
-                      <Button variant="outline" disabled className="gap-2">
-                        <Wallet className="h-4 w-4" />
-                        Add to Google Wallet (Soon)
-                      </Button>
+                      <div className="rounded-xl border border-muted/40 bg-background/70 p-3 shadow-sm">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+                          <Button onClick={handlePrintQrCode} className="gap-2">
+                            <Printer className="h-4 w-4" />
+                            Print QR Code
+                          </Button>
+                          <Button variant="outline" disabled className="gap-2">
+                            <Wallet className="h-4 w-4" />
+                            Add to Google Wallet (Soon)
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
