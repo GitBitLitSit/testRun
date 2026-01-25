@@ -289,7 +289,7 @@ const resources = {
           deleteTitle: "Elimina membro",
           deleteDescription: "Vuoi eliminare {{name}}? Questa azione non può essere annullata.",
           importTitle: "Importa membri da CSV",
-          importDescription: "Carica un CSV con colonne: firstName, lastName, email",
+          importDescription: "Carica un CSV con colonne: firstName, lastName, email. Le email già presenti vengono ignorate.",
           detailsTitle: "Dettagli membro",
           detailsDescription: "Visualizza e gestisci le informazioni del membro",
           personalInfo: "Informazioni personali",
@@ -338,7 +338,8 @@ const resources = {
           exportCompleteTitle: "Esportazione completata",
           exportCompleteDesc: "I membri sono stati esportati in CSV.",
           importCompleteTitle: "Importazione completata",
-          importCompleteDesc: "Importati {{count}} membri.",
+          importCompleteDesc:
+            "Importati {{inserted}} membri. Saltati {{skippedExisting}} esistenti, {{skippedInvalid}} non validi, {{skippedDuplicateInFile}} duplicati nel file.",
         },
         realtime: {
           passbackWarning: "⚠️ Avviso passback",
@@ -663,7 +664,7 @@ const resources = {
           deleteTitle: "Delete Member",
           deleteDescription: "Are you sure you want to delete {{name}}? This action cannot be undone.",
           importTitle: "Import Members from CSV",
-          importDescription: "Upload a CSV file with columns: firstName, lastName, email",
+          importDescription: "Upload a CSV file with columns: firstName, lastName, email. Existing emails are skipped.",
           detailsTitle: "Member Details",
           detailsDescription: "View and manage member information",
           personalInfo: "Personal Information",
@@ -712,7 +713,8 @@ const resources = {
           exportCompleteTitle: "Export complete",
           exportCompleteDesc: "Members data has been exported to CSV.",
           importCompleteTitle: "Import complete",
-          importCompleteDesc: "Imported {{count}} members.",
+          importCompleteDesc:
+            "Imported {{inserted}} members. Skipped {{skippedExisting}} existing, {{skippedInvalid}} invalid, {{skippedDuplicateInFile}} duplicates in file.",
         },
         realtime: {
           passbackWarning: "⚠️ Passback Warning",
@@ -1035,7 +1037,8 @@ const resources = {
           deleteTitle: "Mitglied löschen",
           deleteDescription: "Möchtest du {{name}} löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
           importTitle: "Mitglieder per CSV importieren",
-          importDescription: "CSV mit Spalten: firstName, lastName, email hochladen",
+          importDescription:
+            "CSV mit Spalten: firstName, lastName, email hochladen. Bereits vorhandene E-Mails werden übersprungen.",
           detailsTitle: "Mitgliedsdetails",
           detailsDescription: "Mitgliedsinformationen anzeigen und verwalten",
           personalInfo: "Persönliche Informationen",
@@ -1084,7 +1087,8 @@ const resources = {
           exportCompleteTitle: "Export abgeschlossen",
           exportCompleteDesc: "Mitglieder wurden als CSV exportiert.",
           importCompleteTitle: "Import abgeschlossen",
-          importCompleteDesc: "{{count}} Mitglieder importiert.",
+          importCompleteDesc:
+            "Importiert {{inserted}} Mitglieder. {{skippedExisting}} vorhandene, {{skippedInvalid}} ungültige, {{skippedDuplicateInFile}} Duplikate im File übersprungen.",
         },
         realtime: {
           passbackWarning: "⚠️ Passback-Warnung",
