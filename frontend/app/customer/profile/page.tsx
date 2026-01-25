@@ -119,13 +119,50 @@ export default function CustomerProfilePage() {
     const fileBase =
       `${member.firstName}-${member.lastName}-qr-code`.trim().replace(/\s+/g, "-").toLowerCase() ||
       "member-qr-code"
-    const blob = new Blob([svgMarkup], { type: "image/svg+xml;charset=utf-8" })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement("a")
-    link.href = url
-    link.download = `${fileBase}.svg`
-    link.click()
-    setTimeout(() => URL.revokeObjectURL(url), 0)
+    const svgBlob = new Blob([svgMarkup], { type: "image/svg+xml;charset=utf-8" })
+    const svgUrl = URL.createObjectURL(svgBlob)
+    const image = new Image()
+    image.onload = () => {
+      const sizeAttribute = qrCodeElement.getAttribute("width") || qrCodeElement.getAttribute("height")
+      const baseSize = Number(sizeAttribute) || Math.round(qrCodeElement.getBoundingClientRect().width) || 200
+      const scale = 3
+      const canvasSize = baseSize * scale
+      const canvas = document.createElement("canvas")
+      canvas.width = canvasSize
+      canvas.height = canvasSize
+      const ctx = canvas.getContext("2d")
+      if (!ctx) {
+        URL.revokeObjectURL(svgUrl)
+        return
+      }
+
+      ctx.imageSmoothingEnabled = false
+      ctx.fillStyle = "#ffffff"
+      ctx.fillRect(0, 0, canvasSize, canvasSize)
+      ctx.drawImage(image, 0, 0, canvasSize, canvasSize)
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            URL.revokeObjectURL(svgUrl)
+            return
+          }
+          const downloadUrl = URL.createObjectURL(blob)
+          const link = document.createElement("a")
+          link.href = downloadUrl
+          link.download = `${fileBase}.png`
+          link.click()
+          URL.revokeObjectURL(downloadUrl)
+          URL.revokeObjectURL(svgUrl)
+        },
+        "image/png",
+        1,
+      )
+    }
+    image.onerror = () => {
+      URL.revokeObjectURL(svgUrl)
+    }
+    image.src = svgUrl
   }
 
   if (!member) {
@@ -159,22 +196,26 @@ export default function CustomerProfilePage() {
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent" />
                 <CardHeader className="relative z-10">
                   <div className="flex flex-wrap items-center gap-3">
-                    <CardTitle>Personal Information</CardTitle>
-                    {member.blocked ? (
-                      <Badge variant="destructive" className="text-sm px-3 py-1 font-semibold shadow-sm">
-                        Account Blocked
-                      </Badge>
-                    ) : member.emailValid ? (
-                      <Badge className="bg-green-600 text-sm px-3 py-1 font-semibold shadow-sm ring-1 ring-green-500/30">
-                        Active Member
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary" className="text-sm px-3 py-1 font-semibold shadow-sm">
-                        Pending Verification
-                      </Badge>
-                    )}
+                    <div className="space-y-2">
+                      <CardTitle>Personal Information</CardTitle>
+                      <CardDescription>Your account details</CardDescription>
+                    </div>
+                    <div className="ml-auto flex w-full items-center justify-center sm:w-auto sm:justify-end">
+                      {member.blocked ? (
+                        <Badge variant="destructive" className="text-sm px-3 py-1 font-semibold shadow-sm">
+                          Account Blocked
+                        </Badge>
+                      ) : member.emailValid ? (
+                        <Badge className="bg-green-600 text-sm px-3 py-1 font-semibold shadow-sm ring-1 ring-green-500/30">
+                          Active Member
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="text-sm px-3 py-1 font-semibold shadow-sm">
+                          Pending Verification
+                        </Badge>
+                      )}
+                    </div>
                   </div>
-                  <CardDescription>Your account details</CardDescription>
                 </CardHeader>
                 <CardContent className="relative z-10 space-y-4">
                   <div className="space-y-2">
@@ -244,6 +285,7 @@ export default function CustomerProfilePage() {
                     }`}
                   >
                     <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-b from-white/10 via-transparent to-transparent" />
+                    <div className="pointer-events-none absolute inset-x-6 top-6 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
                     <div className="relative space-y-6">
                       <div className="space-y-2">
                         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
@@ -266,23 +308,36 @@ export default function CustomerProfilePage() {
                         </div>
                       </div>
 
-                      <div className="rounded-xl border border-muted/40 bg-background/70 p-3 shadow-sm">
-                        <div className="flex items-center justify-center gap-3">
+                      <div className="rounded-xl border border-muted/40 bg-background/70 p-4 text-left shadow-sm">
+                        <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                          <span>Member Since</span>
+                          <span>Member ID</span>
+                        </div>
+                        <div className="mt-2 flex items-center justify-between text-sm font-semibold">
+                          <span>{new Date(member.createdAt).toLocaleDateString()}</span>
+                          <span className="font-mono tracking-[0.25em]">{member.qrUuid.slice(0, 8).toUpperCase()}</span>
+                        </div>
+                        <p className="mt-3 text-xs text-muted-foreground">Scan at entry for fast check-in.</p>
+                      </div>
+
+                      <div className="rounded-full border border-muted/40 bg-background/80 px-4 py-2 shadow-sm">
+                        <div className="flex items-center justify-center gap-2">
                           <Button
                             onClick={handlePrintQrCode}
                             size="icon"
-                            variant="outline"
-                            className="border-muted/60 bg-background/80 text-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:bg-primary/10"
+                            variant="ghost"
+                            className="size-10 rounded-full border border-primary/20 bg-primary/10 text-primary shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-primary/20"
                             aria-label="Print QR code"
                             title="Print QR code"
                           >
                             <Printer className="h-4 w-4" />
                           </Button>
+                          <div className="h-6 w-px bg-muted/60" />
                           <Button
-                            variant="outline"
+                            variant="ghost"
                             size="icon"
                             onClick={handleDownloadQrCode}
-                            className="border-muted/60 bg-background/80 text-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:bg-primary/10"
+                            className="size-10 rounded-full border border-primary/20 bg-primary/10 text-primary shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-primary/20"
                             aria-label="Download QR code"
                             title="Download QR code"
                           >
