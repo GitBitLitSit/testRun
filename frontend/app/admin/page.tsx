@@ -51,8 +51,8 @@ export default function AdminLoginPage() {
     <div className="flex min-h-screen flex-col">
       <Navigation />
 
-      <main className="flex-1 bg-gradient-to-b from-primary/10 via-background to-background py-12 md:py-16">
-        <div className="container mx-auto px-4">
+      <main className="flex-1 flex items-center bg-gradient-to-b from-primary/10 via-background to-background pt-24 pb-16 md:pt-28 md:pb-20">
+        <div className="container mx-auto w-full px-4">
           <div className="mx-auto max-w-5xl">
             <div className="mb-8 text-center lg:hidden">
               <LogIn className="mx-auto mb-4 h-12 w-12 text-primary" />
