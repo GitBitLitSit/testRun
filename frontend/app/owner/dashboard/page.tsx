@@ -51,7 +51,7 @@ export default function OwnerDashboard() {
   useEffect(() => {
     const token = localStorage.getItem("token")
     if (!token) {
-      router.replace("/login")
+      router.replace("/admin")
     }
   }, [router])
 
