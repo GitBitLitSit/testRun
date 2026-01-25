@@ -48,6 +48,8 @@ function chunk<T>(arr: T[], size: number): T[][] {
   return out;
 }
 
+const MAX_MEMBERS = 5000;
+
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   const token = event.headers.authorization?.split(" ")[1];
   if (!token) return errorResponse(event, 401, "NO_TOKEN_PROVIDED");
@@ -62,8 +64,8 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     }
 
     // Keep each request safely under Lambda/API limits.
-    if (rows.length > 1500) {
-      return errorResponse(event, 400, "IMPORT_BATCH_TOO_LARGE", { max: 1500 });
+    if (rows.length > MAX_MEMBERS) {
+      return errorResponse(event, 400, "IMPORT_BATCH_TOO_LARGE", { max: MAX_MEMBERS });
     }
 
     const db = await connectToMongo();

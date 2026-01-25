@@ -74,10 +74,60 @@ function formatBytes(bytes: number) {
   return `${value.toFixed(value >= 10 || index === 0 ? 0 : 1)} ${units[index]}`
 }
 
-function chunkArray<T>(arr: T[], size: number): T[][] {
-  const out: T[][] = []
-  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size))
-  return out
+const MAX_REQUEST_BYTES = 4_500_000
+const MAX_EMAILS_PER_REQUEST = 50000
+const MAX_MEMBERS_PER_REQUEST = 5000
+
+function chunkEmailsByBytes(emails: string[], maxBytes: number, maxCount: number): string[][] {
+  const chunks: string[][] = []
+  const baseBytes = JSON.stringify({ emails: [] }).length
+  let current: string[] = []
+  let currentBytes = baseBytes
+
+  for (const email of emails) {
+    const emailBytes = email.length + 3
+    if (current.length > 0 && (currentBytes + emailBytes > maxBytes || current.length >= maxCount)) {
+      chunks.push(current)
+      current = []
+      currentBytes = baseBytes
+    }
+    current.push(email)
+    currentBytes += emailBytes
+  }
+
+  if (current.length > 0) {
+    chunks.push(current)
+  }
+
+  return chunks
+}
+
+function chunkMembersByBytes(
+  members: Array<{ firstName: string; lastName: string; email: string; sendEmail: boolean }>,
+  maxBytes: number,
+  maxCount: number,
+) {
+  const chunks: Array<Array<{ firstName: string; lastName: string; email: string; sendEmail: boolean }>> = []
+  const baseBytes = JSON.stringify({ members: [] }).length
+  let current: Array<{ firstName: string; lastName: string; email: string; sendEmail: boolean }> = []
+  let currentBytes = baseBytes
+
+  for (const member of members) {
+    const rowBytes = JSON.stringify(member).length + 1
+    if (current.length > 0 && (currentBytes + rowBytes > maxBytes || current.length >= maxCount)) {
+      chunks.push(current)
+      current = []
+      currentBytes = baseBytes
+    }
+    current.push(member)
+    currentBytes += rowBytes
+  }
+
+  if (current.length > 0) {
+    chunks.push(current)
+  }
+
+  return chunks
 }
 
 function parseCsvToCandidates(csvText: string): ParsedCsvResult {
@@ -522,19 +572,20 @@ export default function OwnerDashboard() {
         return
       }
 
-      const emailBatchSize = 1000
-      const requestBatchSize = 5
-      const emailBatches = chunkArray(parsed.candidates.map((candidate) => candidate.email), emailBatchSize)
-      const requestBatches = chunkArray(emailBatches, requestBatchSize)
-      setImportPreviewProgress({ current: 0, total: requestBatches.length })
+      const emailChunks = chunkEmailsByBytes(
+        parsed.candidates.map((candidate) => candidate.email),
+        MAX_REQUEST_BYTES,
+        MAX_EMAILS_PER_REQUEST,
+      )
+      setImportPreviewProgress({ current: 0, total: emailChunks.length })
 
       const existingEmails = new Set<string>()
-      for (let i = 0; i < requestBatches.length; i++) {
-        const result = await checkExistingEmails({ batches: requestBatches[i] })
+      for (let i = 0; i < emailChunks.length; i++) {
+        const result = await checkExistingEmails({ emails: emailChunks[i] })
         for (const email of result?.existingEmails || []) {
           existingEmails.add(String(email).toLowerCase())
         }
-        setImportPreviewProgress({ current: i + 1, total: requestBatches.length })
+        setImportPreviewProgress({ current: i + 1, total: emailChunks.length })
       }
 
       const previewRows = parsed.candidates
@@ -608,8 +659,8 @@ export default function OwnerDashboard() {
         return
       }
 
-      const batchSize = 1500
-      const totalBatches = Math.ceil(cleanedRows.length / batchSize)
+      const memberChunks = chunkMembersByBytes(cleanedRows, MAX_REQUEST_BYTES, MAX_MEMBERS_PER_REQUEST)
+      const totalBatches = memberChunks.length
       let totalInserted = 0
       let totalSkippedExisting = 0
       let totalInvalid = 0
@@ -617,15 +668,14 @@ export default function OwnerDashboard() {
       let totalEmailFailed = 0
 
       setImportImportProgress({ current: 0, total: totalBatches })
-      for (let i = 0; i < cleanedRows.length; i += batchSize) {
-        const batch = cleanedRows.slice(i, i + batchSize)
-        const res = await importMembersBatch(batch)
+      for (let i = 0; i < memberChunks.length; i++) {
+        const res = await importMembersBatch(memberChunks[i])
         totalInserted += res?.inserted || 0
         totalSkippedExisting += res?.skippedExisting || 0
         totalInvalid += res?.invalid || 0
         totalDuplicate += res?.duplicateInBatch || 0
         totalEmailFailed += res?.emailFailed || 0
-        setImportImportProgress({ current: Math.min(i / batchSize + 1, totalBatches), total: totalBatches })
+        setImportImportProgress({ current: i + 1, total: totalBatches })
       }
 
       toast({
@@ -779,10 +829,10 @@ export default function OwnerDashboard() {
                         <UserPlus className="mr-2 h-4 w-4" /> {t("dashboard.members.addMember")}
                       </Button>
                       <Button variant="outline" size="sm" onClick={handleExportCSV}>
-                        <Upload className="mr-2 h-4 w-4" /> {t("dashboard.members.export")}
+                        <Download className="mr-2 h-4 w-4" /> {t("dashboard.members.export")}
                       </Button>
                       <Button variant="outline" size="sm" onClick={() => setImportDialogOpen(true)}>
-                        <Download className="mr-2 h-4 w-4" /> {t("dashboard.members.import")}
+                        <Upload className="mr-2 h-4 w-4" /> {t("dashboard.members.import")}
                       </Button>
                     </div>
                   </div>

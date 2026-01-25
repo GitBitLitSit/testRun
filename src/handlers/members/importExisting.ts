@@ -12,7 +12,7 @@ function chunk<T>(arr: T[], size: number): T[][] {
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const MAX_EMAILS = 5000;
+const MAX_EMAILS = 50000;
 
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   const token = event.headers.authorization?.split(" ")[1];
