@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { User, Mail, Calendar, Maximize2, Minimize2, Printer, Wallet } from "lucide-react"
+import { User, Mail, Calendar, Maximize2, Minimize2, Printer, Download } from "lucide-react"
 import { QRCodeSVG } from "qrcode.react"
 import type { Member } from "@/lib/types"
 
@@ -99,6 +99,35 @@ export default function CustomerProfilePage() {
     }
   }
 
+  const handleDownloadQrCode = () => {
+    if (!member) {
+      return
+    }
+
+    const qrCodeElement = qrCodeRef.current?.querySelector("svg")
+    if (!qrCodeElement) {
+      return
+    }
+
+    const serializer = new XMLSerializer()
+    let svgMarkup = serializer.serializeToString(qrCodeElement)
+
+    if (!svgMarkup.includes("xmlns=")) {
+      svgMarkup = svgMarkup.replace("<svg", '<svg xmlns="http://www.w3.org/2000/svg"')
+    }
+
+    const fileBase =
+      `${member.firstName}-${member.lastName}-qr-code`.trim().replace(/\s+/g, "-").toLowerCase() ||
+      "member-qr-code"
+    const blob = new Blob([svgMarkup], { type: "image/svg+xml;charset=utf-8" })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.download = `${fileBase}.svg`
+    link.click()
+    setTimeout(() => URL.revokeObjectURL(url), 0)
+  }
+
   if (!member) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -126,15 +155,16 @@ export default function CustomerProfilePage() {
 
             <div className="grid gap-6 lg:grid-cols-2">
               {/* Profile Information */}
-              <Card>
-                <CardHeader>
+              <Card className="relative overflow-hidden border-muted/40 bg-gradient-to-br from-background via-background to-primary/5 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent" />
+                <CardHeader className="relative z-10">
                   <CardTitle>Personal Information</CardTitle>
                   <CardDescription>Your account details</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="relative z-10 space-y-4">
                   <div className="space-y-2">
                     <p className="text-xs text-muted-foreground">First Name</p>
-                    <div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2">
+                    <div className="flex items-center gap-2 rounded-xl border border-muted/60 bg-background/60 px-3 py-2 shadow-sm backdrop-blur-sm transition-colors duration-200 hover:border-primary/40 hover:bg-background/80">
                       <User className="h-4 w-4 text-muted-foreground" />
                       <span>{member.firstName}</span>
                     </div>
@@ -142,7 +172,7 @@ export default function CustomerProfilePage() {
 
                   <div className="space-y-2">
                     <p className="text-xs text-muted-foreground">Last Name</p>
-                    <div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2">
+                    <div className="flex items-center gap-2 rounded-xl border border-muted/60 bg-background/60 px-3 py-2 shadow-sm backdrop-blur-sm transition-colors duration-200 hover:border-primary/40 hover:bg-background/80">
                       <User className="h-4 w-4 text-muted-foreground" />
                       <span>{member.lastName}</span>
                     </div>
@@ -150,7 +180,7 @@ export default function CustomerProfilePage() {
 
                   <div className="space-y-2">
                     <p className="text-xs text-muted-foreground">Email</p>
-                    <div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2">
+                    <div className="flex items-center gap-2 rounded-xl border border-muted/60 bg-background/60 px-3 py-2 shadow-sm backdrop-blur-sm transition-colors duration-200 hover:border-primary/40 hover:bg-background/80">
                       <Mail className="h-4 w-4 text-muted-foreground" />
                       <span className="break-all">{member.email}</span>
                     </div>
@@ -158,7 +188,7 @@ export default function CustomerProfilePage() {
 
                   <div className="space-y-2">
                     <p className="text-xs text-muted-foreground">Member Since</p>
-                    <div className="flex items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2">
+                    <div className="flex items-center gap-2 rounded-xl border border-muted/60 bg-background/60 px-3 py-2 shadow-sm backdrop-blur-sm transition-colors duration-200 hover:border-primary/40 hover:bg-background/80">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       <span>{new Date(member.createdAt).toLocaleDateString()}</span>
                     </div>
@@ -184,8 +214,13 @@ export default function CustomerProfilePage() {
               </Card>
 
               {/* QR Code */}
-              <Card className={isFullscreen ? "fixed inset-0 z-50 rounded-none" : ""}>
-                <CardHeader>
+              <Card
+                className={`group relative overflow-hidden border-muted/40 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
+                  isFullscreen ? "fixed inset-0 z-50 rounded-none" : ""
+                }`}
+              >
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent" />
+                <CardHeader className="relative z-10">
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle>Your QR Code</CardTitle>
@@ -202,7 +237,7 @@ export default function CustomerProfilePage() {
                   </div>
                 </CardHeader>
                 <CardContent
-                  className={isFullscreen ? "flex flex-col items-center justify-center h-[calc(100vh-8rem)]" : ""}
+                  className={`relative z-10 ${isFullscreen ? "flex flex-col items-center justify-center h-[calc(100vh-8rem)]" : ""}`}
                 >
                   <div
                     className={`relative mx-auto w-full max-w-md rounded-2xl border border-muted/50 bg-gradient-to-br from-primary/10 via-background to-background p-6 text-center shadow-sm ${
@@ -224,20 +259,32 @@ export default function CustomerProfilePage() {
                       </div>
 
                       <div className="flex justify-center">
-                        <div ref={qrCodeRef} className="rounded-lg border bg-white p-4 shadow-sm">
+                        <div
+                          ref={qrCodeRef}
+                          className="rounded-lg border bg-white p-4 shadow-sm transition-transform duration-300 group-hover:scale-[1.02]"
+                        >
                           <QRCodeSVG value={member.qrUuid} size={isFullscreen ? 256 : 200} level="H" />
                         </div>
                       </div>
 
                       <div className="rounded-xl border border-muted/40 bg-background/70 p-3 shadow-sm">
-                        <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-                          <Button onClick={handlePrintQrCode} className="gap-2">
+                        <div className="flex items-center justify-center gap-3">
+                          <Button
+                            onClick={handlePrintQrCode}
+                            size="icon"
+                            aria-label="Print QR code"
+                            title="Print QR code"
+                          >
                             <Printer className="h-4 w-4" />
-                            Print QR Code
                           </Button>
-                          <Button variant="outline" disabled className="gap-2">
-                            <Wallet className="h-4 w-4" />
-                            Add to Google Wallet (Soon)
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={handleDownloadQrCode}
+                            aria-label="Download QR code"
+                            title="Download QR code"
+                          >
+                            <Download className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
