@@ -24,7 +24,9 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Checkbox } from "@/components/ui/checkbox"
-import { getMembers, createMember, resetQrCode, getCheckIns, updateMember, deleteMember, previewMembersCsv, importMembersBatch } from "@/lib/api"
+import { Progress } from "@/components/ui/progress"
+import { getMembers, createMember, resetQrCode, getCheckIns, updateMember, deleteMember, previewMembersBatch, importMembersBatch } from "@/lib/api"
+import { normalizeCsvHeader, parseCsv } from "@/lib/csv"
 import { useRealtimeCheckIns } from "@/hooks/use-realtime"
 import type { Member, CheckInEvent } from "@/lib/types"
 import {
@@ -55,6 +57,82 @@ type ImportPreviewStats = {
   skippedInvalid: number
   skippedDuplicateInFile: number
   skippedExisting: number
+}
+
+type ParsedCsvResult = {
+  totalRows: number
+  candidates: Array<{ firstName: string; lastName: string; email: string }>
+  skippedInvalid: number
+  skippedDuplicateInFile: number
+}
+
+function formatBytes(bytes: number) {
+  if (!bytes) return "0 B"
+  const units = ["B", "KB", "MB", "GB"]
+  const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1)
+  const value = bytes / Math.pow(1024, index)
+  return `${value.toFixed(value >= 10 || index === 0 ? 0 : 1)} ${units[index]}`
+}
+
+function chunkArray<T>(arr: T[], size: number): T[][] {
+  const out: T[][] = []
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size))
+  return out
+}
+
+function parseCsvToCandidates(csvText: string): ParsedCsvResult {
+  const rows = parseCsv(csvText)
+  if (rows.length === 0) {
+    return { totalRows: 0, candidates: [], skippedInvalid: 0, skippedDuplicateInFile: 0 }
+  }
+
+  const firstRow = rows[0].map((value) => normalizeCsvHeader(String(value)))
+  const hasHeader = firstRow.includes("email") || firstRow.includes("e-mail") || firstRow.includes("mail")
+  const header = hasHeader ? firstRow : ["firstname", "lastname", "email"]
+  const dataRows = hasHeader ? rows.slice(1) : rows
+
+  const firstNameIdx = header.findIndex((h) => h === "firstname")
+  const lastNameIdx = header.findIndex((h) => h === "lastname")
+  const emailIdx = header.findIndex((h) => h === "email" || h === "mail" || h === "e-mail")
+
+  if (firstNameIdx < 0 || lastNameIdx < 0 || emailIdx < 0) {
+    throw new Error("CSV_INVALID")
+  }
+
+  const candidates: Array<{ firstName: string; lastName: string; email: string }> = []
+  const seenEmails = new Set<string>()
+  let skippedInvalid = 0
+  let skippedDuplicateInFile = 0
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+  for (const row of dataRows) {
+    const firstName = String(row[firstNameIdx] ?? "").trim()
+    const lastName = String(row[lastNameIdx] ?? "").trim()
+    const emailRaw = String(row[emailIdx] ?? "").trim()
+    const email = emailRaw.toLowerCase()
+
+    if (!firstName || !lastName || !email) {
+      skippedInvalid++
+      continue
+    }
+    if (emailRegex.test(email) === false) {
+      skippedInvalid++
+      continue
+    }
+    if (seenEmails.has(email)) {
+      skippedDuplicateInFile++
+      continue
+    }
+    seenEmails.add(email)
+    candidates.push({ firstName, lastName, email })
+  }
+
+  return {
+    totalRows: dataRows.length,
+    candidates,
+    skippedInvalid,
+    skippedDuplicateInFile,
+  }
 }
 
 export default function OwnerDashboard() {
@@ -124,6 +202,9 @@ export default function OwnerDashboard() {
     skippedDuplicateInFile: 0,
     skippedExisting: 0,
   })
+  const [importFileSummary, setImportFileSummary] = useState({ rows: 0, candidates: 0, size: 0 })
+  const [importPreviewProgress, setImportPreviewProgress] = useState({ current: 0, total: 0 })
+  const [importImportProgress, setImportImportProgress] = useState({ current: 0, total: 0 })
   const [importError, setImportError] = useState<string | null>(null)
   const [isPreviewing, setIsPreviewing] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
@@ -160,6 +241,9 @@ export default function OwnerDashboard() {
       setImportStep("upload")
       setImportPreviewRows([])
       setImportPreviewStats({ skippedInvalid: 0, skippedDuplicateInFile: 0, skippedExisting: 0 })
+      setImportFileSummary({ rows: 0, candidates: 0, size: 0 })
+      setImportPreviewProgress({ current: 0, total: 0 })
+      setImportImportProgress({ current: 0, total: 0 })
       setImportError(null)
       setIsPreviewing(false)
       setIsImporting(false)
@@ -279,7 +363,11 @@ export default function OwnerDashboard() {
 
   const importAllSendEmail = importPreviewRows.length > 0 && importPreviewRows.every((row) => row.sendEmail)
   const importSomeSendEmail = importPreviewRows.some((row) => row.sendEmail)
-  const canSubmitImport = importPreviewRows.length > 0 && !importValidation.hasIssues && !isImporting
+  const canSubmitImport = importPreviewRows.length > 0 && !importValidation.hasIssues && !isImporting && !isPreviewing
+  const previewProgressValue =
+    importPreviewProgress.total > 0 ? Math.round((importPreviewProgress.current / importPreviewProgress.total) * 100) : 0
+  const importProgressValue =
+    importImportProgress.total > 0 ? Math.round((importImportProgress.current / importImportProgress.total) * 100) : 0
 
 
   // --- ACTION HANDLERS ---
@@ -404,32 +492,65 @@ export default function OwnerDashboard() {
     setImportStep("upload")
     setImportPreviewRows([])
     setImportPreviewStats({ skippedInvalid: 0, skippedDuplicateInFile: 0, skippedExisting: 0 })
+    setImportFileSummary({ rows: 0, candidates: 0, size: file?.size || 0 })
+    setImportPreviewProgress({ current: 0, total: 0 })
+    setImportImportProgress({ current: 0, total: 0 })
   }
 
   const handlePreviewImport = async () => {
     if (!csvFile) return
     setImportError(null)
     setIsPreviewing(true)
+    setImportPreviewProgress({ current: 0, total: 0 })
     try {
       const content = await csvFile.text()
-      const result = await previewMembersCsv(content)
-      const previewRows = (result?.preview || []).map((row: { firstName: string; lastName: string; email: string }) => ({
-        id: crypto.randomUUID(),
-        firstName: row.firstName,
-        lastName: row.lastName,
-        email: row.email,
-        sendEmail: false,
-      }))
+      const parsed = parseCsvToCandidates(content)
+      setImportFileSummary({ rows: parsed.totalRows, candidates: parsed.candidates.length, size: csvFile.size })
+      setImportPreviewStats({
+        skippedInvalid: parsed.skippedInvalid,
+        skippedDuplicateInFile: parsed.skippedDuplicateInFile,
+        skippedExisting: 0,
+      })
 
+      if (parsed.candidates.length === 0) {
+        setImportPreviewRows([])
+        setImportStep("review")
+        return
+      }
+
+      const previewBatchSize = 500
+      const batches = chunkArray(parsed.candidates, previewBatchSize)
+      setImportPreviewProgress({ current: 0, total: batches.length })
+
+      const previewRows: ImportPreviewRow[] = []
+      for (let i = 0; i < batches.length; i++) {
+        const result = await previewMembersBatch(batches[i])
+        const chunkPreview = (result?.preview || []).map((row: { firstName: string; lastName: string; email: string }) => ({
+          id: crypto.randomUUID(),
+          firstName: row.firstName,
+          lastName: row.lastName,
+          email: row.email,
+          sendEmail: false,
+        }))
+        previewRows.push(...chunkPreview)
+        setImportPreviewProgress({ current: i + 1, total: batches.length })
+      }
+
+      const skippedExisting = Math.max(0, parsed.candidates.length - previewRows.length)
       setImportPreviewRows(previewRows)
       setImportPreviewStats({
-        skippedInvalid: result?.skippedInvalid || 0,
-        skippedDuplicateInFile: result?.skippedDuplicateInFile || 0,
-        skippedExisting: result?.skippedExisting || 0,
+        skippedInvalid: parsed.skippedInvalid,
+        skippedDuplicateInFile: parsed.skippedDuplicateInFile,
+        skippedExisting,
       })
       setImportStep("review")
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : t("dashboard.toasts.failedImport")
+      const errorMessage =
+        error instanceof Error && error.message === "CSV_INVALID"
+          ? t("errors.CSV_INVALID")
+          : error instanceof Error
+            ? error.message
+            : t("dashboard.toasts.failedImport")
       setImportError(errorMessage)
       toast({ title: t("dashboard.toasts.errorTitle"), description: errorMessage, variant: "destructive" })
     } finally {
@@ -476,12 +597,14 @@ export default function OwnerDashboard() {
       }
 
       const batchSize = 1500
+      const totalBatches = Math.ceil(cleanedRows.length / batchSize)
       let totalInserted = 0
       let totalSkippedExisting = 0
       let totalInvalid = 0
       let totalDuplicate = 0
       let totalEmailFailed = 0
 
+      setImportImportProgress({ current: 0, total: totalBatches })
       for (let i = 0; i < cleanedRows.length; i += batchSize) {
         const batch = cleanedRows.slice(i, i + batchSize)
         const res = await importMembersBatch(batch)
@@ -490,6 +613,7 @@ export default function OwnerDashboard() {
         totalInvalid += res?.invalid || 0
         totalDuplicate += res?.duplicateInBatch || 0
         totalEmailFailed += res?.emailFailed || 0
+        setImportImportProgress({ current: Math.min(i / batchSize + 1, totalBatches), total: totalBatches })
       }
 
       toast({
@@ -1034,6 +1158,19 @@ export default function OwnerDashboard() {
             <DialogTitle>{t("dashboard.dialogs.importTitle")}</DialogTitle>
             <DialogDescription>{t("dashboard.dialogs.importDescription")}</DialogDescription>
           </DialogHeader>
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            <span className={importStep === "upload" ? "font-medium text-foreground" : ""}>
+              {t("dashboard.dialogs.importStepUpload")}
+            </span>
+            <span>•</span>
+            <span className={importStep === "review" ? "font-medium text-foreground" : ""}>
+              {t("dashboard.dialogs.importStepReview")}
+            </span>
+            <span>•</span>
+            <span className={importStep === "review" && isImporting ? "font-medium text-foreground" : ""}>
+              {t("dashboard.dialogs.importStepCreate")}
+            </span>
+          </div>
           {importStep === "upload" ? (
             <div className="space-y-4 py-4">
               <Input
@@ -1041,6 +1178,25 @@ export default function OwnerDashboard() {
                 accept=".csv"
                 onChange={(e) => handleImportFileChange(e.target.files?.[0] || null)}
               />
+              {csvFile && (
+                <div className="rounded-md border bg-muted/40 p-3 text-xs text-muted-foreground space-y-1">
+                  <p>{t("dashboard.dialogs.importFileSelected", { name: csvFile.name, size: formatBytes(csvFile.size) })}</p>
+                  <p>{t("dashboard.dialogs.importSplitHint")}</p>
+                </div>
+              )}
+              {isPreviewing && (
+                <div className="space-y-2">
+                  <Progress value={previewProgressValue} />
+                  <p className="text-xs text-muted-foreground">
+                    {importPreviewProgress.total > 0
+                      ? t("dashboard.dialogs.importPreviewProgress", {
+                          current: importPreviewProgress.current,
+                          total: importPreviewProgress.total,
+                        })
+                      : t("dashboard.dialogs.importParsing")}
+                  </p>
+                </div>
+              )}
               {importError && (
                 <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3">
                   <p className="text-sm text-destructive font-medium flex items-center">
@@ -1055,6 +1211,12 @@ export default function OwnerDashboard() {
               <div className="flex flex-col gap-1 text-sm text-muted-foreground">
                 <p>{t("dashboard.dialogs.importPreviewSummary", { count: importPreviewRows.length })}</p>
                 <p>
+                  {t("dashboard.dialogs.importFileSummary", {
+                    rows: importFileSummary.rows,
+                    eligible: importFileSummary.candidates,
+                  })}
+                </p>
+                <p>
                   {t("dashboard.dialogs.importPreviewFiltered", {
                     existing: importPreviewStats.skippedExisting,
                     invalid: importPreviewStats.skippedInvalid,
@@ -1062,6 +1224,18 @@ export default function OwnerDashboard() {
                   })}
                 </p>
               </div>
+
+              {isImporting && (
+                <div className="space-y-2">
+                  <Progress value={importProgressValue} />
+                  <p className="text-xs text-muted-foreground">
+                    {t("dashboard.dialogs.importImportProgress", {
+                      current: importImportProgress.current,
+                      total: importImportProgress.total,
+                    })}
+                  </p>
+                </div>
+              )}
 
               {importValidation.hasIssues && (
                 <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3">
@@ -1087,7 +1261,9 @@ export default function OwnerDashboard() {
                   </Label>
                 </div>
                 {csvFile?.name && (
-                  <span className="text-xs text-muted-foreground">{csvFile.name}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {csvFile.name} • {formatBytes(csvFile.size)}
+                  </span>
                 )}
               </div>
 
@@ -1161,7 +1337,7 @@ export default function OwnerDashboard() {
               </>
             ) : (
               <>
-                <Button variant="outline" onClick={() => setImportStep("upload")}>
+                <Button variant="outline" onClick={() => setImportStep("upload")} disabled={isImporting}>
                   {t("dashboard.dialogs.importBack")}
                 </Button>
                 <Button onClick={handleConfirmImport} disabled={!canSubmitImport}>

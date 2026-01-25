@@ -76,6 +76,21 @@ export async function previewMembersCsv(csvText: string) {
   return handleResponse(res)
 }
 
+export async function previewMembersBatch(
+  members: Array<{
+    firstName: string
+    lastName: string
+    email: string
+  }>,
+) {
+  const res = await fetch(`${API_URL}/members/import/preview`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ members }),
+  })
+  return handleResponse(res)
+}
+
 export async function importMembersBatch(
   members: Array<{
     firstName: string
