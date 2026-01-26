@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback, useRef, SetStateAction } from "react"
 import { useRouter } from "next/navigation"
 import { useTranslation } from "react-i18next"
-import Image from "next/image" // <--- Added Import
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
@@ -38,7 +37,6 @@ import { useRealtimeCheckIns } from "@/hooks/use-realtime"
 import type { Member, CheckInEvent } from "@/lib/types"
 import {
   Users,
-  Download,
   Upload,
   Eye,
   RotateCcw,
@@ -373,24 +371,6 @@ export default function OwnerDashboard() {
     }
   }
 
-  const handleExportCSV = () => {
-    try {
-      const headers = ["firstName", "lastName", "email", "blocked", "emailValid", "createdAt"]
-      const rows = membersData.map((m) => [m.firstName, m.lastName, m.email, m.blocked, m.emailValid, m.createdAt])
-      const csv = [headers, ...rows].map((row) => row.map((cell) => `"${cell}"`).join(",")).join("\n")
-      const blob = new Blob([csv], { type: "text/csv" })
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = `members-${new Date().toISOString().split("T")[0]}.csv`
-      a.click()
-      window.URL.revokeObjectURL(url)
-      toast({ title: t("dashboard.toasts.exportCompleteTitle"), description: t("dashboard.toasts.exportCompleteDesc") })
-    } catch (error) {
-      toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedExport"), variant: "destructive" })
-    }
-  }
-
   function chunkArray<T>(items: T[], size: number) {
     const chunks: T[][] = []
     for (let i = 0; i < items.length; i += size) {
@@ -685,15 +665,28 @@ export default function OwnerDashboard() {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="members">{t("dashboard.tabs.members")}</TabsTrigger>
-              <TabsTrigger value="checkins">
+            <TabsList className="grid h-auto w-full grid-cols-3 gap-2 rounded-xl border border-border/60 bg-muted/50 p-2 shadow-sm">
+              <TabsTrigger
+                value="members"
+                className="h-10 rounded-lg text-sm font-semibold text-muted-foreground transition-colors hover:bg-background/80 hover:text-foreground data-[state=active]:border data-[state=active]:border-border data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+              >
+                {t("dashboard.tabs.members")}
+              </TabsTrigger>
+              <TabsTrigger
+                value="checkins"
+                className="h-10 rounded-lg text-sm font-semibold text-muted-foreground transition-colors hover:bg-background/80 hover:text-foreground data-[state=active]:border data-[state=active]:border-border data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+              >
                 {t("dashboard.tabs.checkins")}
                 {unreadCheckInsCount > 0 && (
                   <Badge className="ml-2 bg-primary text-primary-foreground">{unreadCheckInsCount}</Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="import">{t("dashboard.tabs.import")}</TabsTrigger>
+              <TabsTrigger
+                value="import"
+                className="h-10 rounded-lg text-sm font-semibold text-muted-foreground transition-colors hover:bg-background/80 hover:text-foreground data-[state=active]:border data-[state=active]:border-border data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+              >
+                {t("dashboard.tabs.import")}
+              </TabsTrigger>
             </TabsList>
 
             {/* --- MEMBERS TAB --- */}
@@ -708,9 +701,6 @@ export default function OwnerDashboard() {
                     <div className="flex flex-col gap-2 sm:flex-row">
                       <Button onClick={() => setCreateDialogOpen(true)} size="sm">
                         <UserPlus className="mr-2 h-4 w-4" /> {t("dashboard.members.addMember")}
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={handleExportCSV}>
-                        <Upload className="mr-2 h-4 w-4" /> {t("dashboard.members.export")}
                       </Button>
                     </div>
                   </div>
@@ -1423,11 +1413,13 @@ export default function OwnerDashboard() {
                 <Card className="px-4 py-3">
                   <h3 className="mb-3 text-sm font-semibold">{t("dashboard.dialogs.qrCode")}</h3>
                   <div className="flex justify-center py-4">
-                    <Image
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(selectedMember.qrUuid)}`}
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(selectedMember.qrUuid || selectedMember._id)}`}
                       alt={t("dashboard.dialogs.qrCode")}
                       width={200}
                       height={200}
+                      loading="lazy"
+                      className="h-[200px] w-[200px] rounded-md border border-border/40 bg-background"
                     />
                   </div>
                   <p className="text-xs text-muted-foreground text-center mt-2">
