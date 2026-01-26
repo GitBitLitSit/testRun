@@ -93,6 +93,7 @@ export default function OwnerDashboard() {
   // --- REFS ---
   const activeTabRef = useRef(activeTab)
   const checkInsPageRef = useRef(checkInsPage)
+  const importInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => { activeTabRef.current = activeTab }, [activeTab])
   useEffect(() => { checkInsPageRef.current = checkInsPage }, [checkInsPage])
@@ -351,6 +352,14 @@ export default function OwnerDashboard() {
     }
   }
 
+  function chunkArray<T>(items: T[], size: number) {
+    const chunks: T[][] = []
+    for (let i = 0; i < items.length; i += size) {
+      chunks.push(items.slice(i, i + size))
+    }
+    return chunks
+  }
+
   const handleImportExcel = async () => {
     if (!importFile || isImporting) return
     setIsImporting(true)
@@ -403,10 +412,17 @@ export default function OwnerDashboard() {
         return
       }
 
-      // Step A: ask backend which emails already exist.
+      // Step A: ask backend which emails already exist (chunked to avoid 413).
+      const chunkSize = 500
       setImportStep("checking")
-      const existingResponse = await checkExistingUsers(uniqueRows.map((row) => row.email))
-      const existingEmails = Array.isArray(existingResponse?.existingEmails) ? existingResponse.existingEmails : []
+      const existingEmails: string[] = []
+      const emailChunks = chunkArray(uniqueRows.map((row) => row.email), chunkSize)
+      for (const chunk of emailChunks) {
+        const existingResponse = await checkExistingUsers(chunk)
+        if (Array.isArray(existingResponse?.existingEmails)) {
+          existingEmails.push(...existingResponse.existingEmails)
+        }
+      }
 
       // Step B: client-side set difference to separate new vs existing.
       const existingSet = new Set(existingEmails.map((email: string) => email.toLowerCase()))
@@ -417,21 +433,28 @@ export default function OwnerDashboard() {
       let updated = 0
       let duplicates = duplicateRows
 
-      // Step C: create new members only.
+      // Step C: create new members only (chunked to avoid 413).
       if (newUsers.length > 0) {
         setImportStep("creating")
-        const bulkResult = await bulkCreateUsers(newUsers)
-        created = typeof bulkResult?.inserted === "number" ? bulkResult.inserted : newUsers.length
-        if (typeof bulkResult?.duplicates === "number") {
-          duplicates += bulkResult.duplicates
+        const createChunks = chunkArray(newUsers, chunkSize)
+        for (const chunk of createChunks) {
+          const bulkResult = await bulkCreateUsers(chunk)
+          const inserted = typeof bulkResult?.inserted === "number" ? bulkResult.inserted : chunk.length
+          created += inserted
+          if (typeof bulkResult?.duplicates === "number") {
+            duplicates += bulkResult.duplicates
+          }
         }
       }
 
-      // Step D: update existing members to match the sheet.
+      // Step D: update existing members to match the sheet (chunked to avoid 413).
       if (existingUsers.length > 0) {
         setImportStep("updating")
-        const updateResult = await bulkUpdateUsers(existingUsers)
-        updated = typeof updateResult?.matched === "number" ? updateResult.matched : existingUsers.length
+        const updateChunks = chunkArray(existingUsers, chunkSize)
+        for (const chunk of updateChunks) {
+          const updateResult = await bulkUpdateUsers(chunk)
+          updated += typeof updateResult?.matched === "number" ? updateResult.matched : chunk.length
+        }
       }
 
       setImportSummary({ created, updated, invalid: invalidRows, duplicates })
@@ -979,27 +1002,40 @@ export default function OwnerDashboard() {
                     <p className="text-xs text-muted-foreground">{t("dashboard.dialogs.importFileTypes")}</p>
                   </div>
                 </div>
-                <Input
+                <input
+                  ref={importInputRef}
                   id="import-file"
                   type="file"
                   accept=".xlsx,.xls"
-                  className="mt-3 h-11"
+                  className="sr-only"
                   onChange={(e) => setImportFile(e.target.files?.[0] || null)}
                 />
+                <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => importInputRef.current?.click()}
+                    disabled={isImporting}
+                  >
+                    {t("dashboard.dialogs.importChooseFile")}
+                  </Button>
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    <span>{importFile ? importFile.name : t("dashboard.dialogs.importNoFile")}</span>
+                    {importFile && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setImportFile(null)}
+                        disabled={isImporting}
+                      >
+                        {t("dashboard.dialogs.importRemoveFile")}
+                      </Button>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
-
-            {importFile && (
-              <div className="flex items-center justify-between rounded-md border bg-background p-3">
-                <div>
-                  <p className="text-sm font-medium">{importFile.name}</p>
-                  <p className="text-xs text-muted-foreground">{(importFile.size / 1024).toFixed(1)} KB</p>
-                </div>
-                <Button variant="ghost" size="sm" onClick={() => setImportFile(null)} disabled={isImporting}>
-                  {t("dashboard.dialogs.importRemoveFile")}
-                </Button>
-              </div>
-            )}
 
             {importError && (
               <div className="flex items-center gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
@@ -1019,7 +1055,7 @@ export default function OwnerDashboard() {
                   <span>
                     {importStep === "done"
                       ? t("dashboard.dialogs.importDone")
-                      : t(`dashboard.importSteps.${importStep}`)}
+                      : t("dashboard.dialogs.importInProgress")}
                   </span>
                 </div>
 
