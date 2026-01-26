@@ -54,17 +54,56 @@ import { useToast } from "@/hooks/use-toast"
 import * as XLSX from "xlsx"
 import { Spinner } from "@/components/ui/spinner"
 
+function getTokenExpiryMs(token: string): number | null {
+  const parts = token.split(".")
+  if (parts.length < 2) return null
+  try {
+    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/")
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=")
+    const payload = JSON.parse(atob(padded)) as { exp?: number }
+    if (typeof payload.exp === "number") {
+      return payload.exp * 1000
+    }
+  } catch {
+    return null
+  }
+  return null
+}
+
 export default function OwnerDashboard() {
   const router = useRouter()
   const { toast } = useToast()
   const { t } = useTranslation()
 
-  // Auth check
+  // Auth check + token expiry redirect
   useEffect(() => {
+    if (typeof window === "undefined") return
     const token = localStorage.getItem("token")
     if (!token) {
       router.replace("/admin")
+      return
     }
+
+    const expiresAt = getTokenExpiryMs(token)
+    if (!expiresAt) {
+      localStorage.removeItem("token")
+      router.replace("/")
+      return
+    }
+
+    const now = Date.now()
+    if (expiresAt <= now) {
+      localStorage.removeItem("token")
+      router.replace("/")
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      localStorage.removeItem("token")
+      router.replace("/")
+    }, expiresAt - now)
+
+    return () => window.clearTimeout(timeoutId)
   }, [router])
 
   // --- UI STATE ---
