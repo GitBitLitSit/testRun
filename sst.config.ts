@@ -149,7 +149,14 @@ export default $config({
         JWT_SECRET_KEY: process.env.JWT_SECRET_KEY!,
         MONGODB_URI: process.env.MONGODB_URI!,
         MONGODB_DB_NAME: process.env.MONGODB_DB_NAME!,
+        SES_SENDER_EMAIL: process.env.SES_SENDER_EMAIL!,
       },
+      permissions: [
+        {
+          actions: ["ses:SendEmail", "ses:SendRawEmail"],
+          resources: ["*"] 
+        }
+      ],
       architecture: "arm64",
       runtime: "nodejs22.x",
     });
