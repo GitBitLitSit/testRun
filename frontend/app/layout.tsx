@@ -3,7 +3,6 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import "./globals.css"
 import { Suspense } from "react"
-import { cookies } from "next/headers"
 import { ConsentAwareAnalytics } from "@/components/consent-aware-analytics"
 import { CookieConsent } from "@/components/cookie-consent"
 import { I18nProvider } from "@/components/i18n-provider"
@@ -17,15 +16,12 @@ export const metadata: Metadata = {
   generator: "v0.app",
 }
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const cookieStore = await cookies()
-  const rawLang = cookieStore.get("lang")?.value || ""
-  const base = rawLang.toLowerCase().split("-")[0]
-  const lang = base === "en" || base === "de" || base === "it" ? base : "it"
+  const lang = "it"
 
   return (
     <html lang={lang}>
