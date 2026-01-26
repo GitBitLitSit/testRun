@@ -23,7 +23,14 @@ export function Navigation() {
 
   useEffect(() => {
     const token = localStorage.getItem("token")
-    const memberData = localStorage.getItem("currentMember")
+    const sessionMember = sessionStorage.getItem("currentMember")
+    const legacyMember = localStorage.getItem("currentMember")
+    const memberData = sessionMember ?? legacyMember
+
+    if (!sessionMember && legacyMember) {
+      sessionStorage.setItem("currentMember", legacyMember)
+      localStorage.removeItem("currentMember")
+    }
 
     if (token) {
       setIsLoggedIn(true)
@@ -53,6 +60,7 @@ export function Navigation() {
 
   const handleLogout = () => {
     localStorage.removeItem("token")
+    sessionStorage.removeItem("currentMember")
     localStorage.removeItem("currentMember")
     setIsLoggedIn(false)
     setUserType(null)

@@ -39,7 +39,6 @@ export default function LoginPage() {
 
     try {
       const result = await requestVerificationCode(customerEmail)
-      console.log("[v0] Verification code requested:", result)
 
       // If backend returns code for display mode
       if (result.verificationCode) {
@@ -71,12 +70,10 @@ export default function LoginPage() {
         verificationCode,
         deliveryMethod: "display",
       })
-
-      console.log("[v0] Verification successful:", result)
-
-      // Store member data in localStorage
+      // Store member data in sessionStorage
       if (result.member) {
-        localStorage.setItem("currentMember", JSON.stringify(result.member))
+        sessionStorage.setItem("currentMember", JSON.stringify(result.member))
+        localStorage.removeItem("currentMember")
       }
 
       router.push("/customer/profile")

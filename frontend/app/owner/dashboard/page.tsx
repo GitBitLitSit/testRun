@@ -51,9 +51,11 @@ import {
   Trash2,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { escapeHtml } from "@/lib/utils"
 import * as XLSX from "xlsx"
 import { Spinner } from "@/components/ui/spinner"
 
+// Client-side expiry checks are for UX only; backend enforces auth.
 function getTokenExpiryMs(token: string): number | null {
   const parts = token.split(".")
   if (parts.length < 2) return null
@@ -186,7 +188,7 @@ export default function OwnerDashboard() {
   const [isResettingQr, setIsResettingQr] = useState(false)
 
   const [stats, setStats] = useState({ total: 0, blocked: 0, active: 0 })
-  const IMPORT_STORAGE_KEY = "importPreviewState"
+  const LEGACY_IMPORT_STORAGE_KEY = "importPreviewState"
 
   // --- CLEANUP EFFECT ---
   useEffect(() => {
@@ -198,41 +200,8 @@ export default function OwnerDashboard() {
 
   useEffect(() => {
     if (typeof window === "undefined") return
-    const raw = window.localStorage.getItem(IMPORT_STORAGE_KEY)
-    if (!raw) return
-    try {
-      const parsed = JSON.parse(raw) as {
-        importStep?: typeof importStep
-        importSummary?: typeof importSummary
-        importCounts?: typeof importCounts
-        importPreviewRows?: typeof importPreviewRows
-        importPreviewPage?: number
-        importFileName?: string | null
-      }
-
-      if (parsed.importStep) setImportStep(parsed.importStep)
-      if (parsed.importSummary) setImportSummary(parsed.importSummary)
-      if (parsed.importCounts) setImportCounts(parsed.importCounts)
-      if (Array.isArray(parsed.importPreviewRows)) setImportPreviewRows(parsed.importPreviewRows)
-      if (typeof parsed.importPreviewPage === "number") setImportPreviewPage(parsed.importPreviewPage)
-      if (typeof parsed.importFileName === "string") setImportFileName(parsed.importFileName)
-    } catch {
-      window.localStorage.removeItem(IMPORT_STORAGE_KEY)
-    }
+    window.localStorage.removeItem(LEGACY_IMPORT_STORAGE_KEY)
   }, [])
-
-  useEffect(() => {
-    if (typeof window === "undefined") return
-    const payload = {
-      importStep,
-      importSummary,
-      importCounts,
-      importPreviewRows,
-      importPreviewPage,
-      importFileName,
-    }
-    window.localStorage.setItem(IMPORT_STORAGE_KEY, JSON.stringify(payload))
-  }, [importStep, importSummary, importCounts, importPreviewRows, importPreviewPage, importFileName])
 
   useEffect(() => {
     const totalPages = Math.max(1, Math.ceil(importPreviewRows.length / importPreviewPageSize))
@@ -321,6 +290,7 @@ export default function OwnerDashboard() {
   // --- ACTION HANDLERS ---
   const handleSignOut = () => {
     localStorage.removeItem("token")
+    localStorage.removeItem(LEGACY_IMPORT_STORAGE_KEY)
     router.push("/")
   }
 
@@ -617,13 +587,16 @@ export default function OwnerDashboard() {
     if (!printWindow) return
 
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(member.qrUuid)}`
+    const safeName = `${escapeHtml(member.firstName)} ${escapeHtml(member.lastName)}`.trim()
+    const safeEmail = escapeHtml(member.email)
+    const safeId = escapeHtml(member._id)
 
     // We use translation keys even inside the HTML template
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
         <head>
-          <title>QR Code - ${member.firstName} ${member.lastName}</title>
+          <title>QR Code - ${safeName}</title>
           <style>
             body { font-family: system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; background: white; }
             .container { text-align: center; max-width: 400px; }
@@ -645,9 +618,9 @@ export default function OwnerDashboard() {
             <p class="subtitle">Associazione Sportiva</p>
             <div class="qr-code"><img src="${qrCodeUrl}" alt="QR Code" /></div>
             <div class="member-info">
-              <div class="info-row"><span class="info-label">${t("dashboard.dialogs.nameLabel")}</span><span class="info-value">${member.firstName} ${member.lastName}</span></div>
-              <div class="info-row"><span class="info-label">${t("dashboard.dialogs.emailLabel")}</span><span class="info-value">${member.email}</span></div>
-              <div class="info-row"><span class="info-label">${t("dashboard.dialogs.idLabel")}</span><span class="info-value">${member._id}</span></div>
+              <div class="info-row"><span class="info-label">${t("dashboard.dialogs.nameLabel")}</span><span class="info-value">${safeName}</span></div>
+              <div class="info-row"><span class="info-label">${t("dashboard.dialogs.emailLabel")}</span><span class="info-value">${safeEmail}</span></div>
+              <div class="info-row"><span class="info-label">${t("dashboard.dialogs.idLabel")}</span><span class="info-value">${safeId}</span></div>
             </div>
           </div>
           <script>window.onload = function() { setTimeout(function() { window.print(); }, 500); }</script>

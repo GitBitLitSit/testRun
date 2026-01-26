@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next"
 import { Maximize2, Minimize2, Printer, Download } from "lucide-react"
 import { QRCodeSVG } from "qrcode.react"
 import type { Member } from "@/lib/types"
+import { escapeHtml } from "@/lib/utils"
 
 export default function CustomerProfilePage() {
   const router = useRouter()
@@ -20,9 +21,15 @@ export default function CustomerProfilePage() {
   const membershipPassRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    const memberData = localStorage.getItem("currentMember")
+    const sessionMember = sessionStorage.getItem("currentMember")
+    const legacyMember = localStorage.getItem("currentMember")
+    const memberData = sessionMember ?? legacyMember
     if (memberData) {
       setMember(JSON.parse(memberData))
+      if (!sessionMember && legacyMember) {
+        sessionStorage.setItem("currentMember", legacyMember)
+        localStorage.removeItem("currentMember")
+      }
     } else {
       // Redirect to login if no member data found
       router.replace("/login")
@@ -30,6 +37,7 @@ export default function CustomerProfilePage() {
   }, [router])
 
   const handleSignOut = () => {
+    sessionStorage.removeItem("currentMember")
     localStorage.removeItem("currentMember")
     router.push("/")
   }
@@ -55,6 +63,9 @@ export default function CustomerProfilePage() {
     if (!printWindow) {
       return
     }
+
+    const safeName = `${escapeHtml(member.firstName)} ${escapeHtml(member.lastName)}`.trim()
+    const safeEmail = escapeHtml(member.email)
 
     printWindow.document.open()
     printWindow.document.write(`
@@ -86,8 +97,8 @@ export default function CustomerProfilePage() {
         </head>
         <body>
           <div class="meta">
-            <div style="font-size: 18px; font-weight: 700;">${member.firstName} ${member.lastName}</div>
-            <div style="font-size: 14px; color: #6b7280;">${member.email}</div>
+            <div style="font-size: 18px; font-weight: 700;">${safeName}</div>
+            <div style="font-size: 14px; color: #6b7280;">${safeEmail}</div>
           </div>
           <div class="qr">${svgMarkup}</div>
         </body>
