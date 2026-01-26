@@ -116,8 +116,11 @@ export default function OwnerDashboard() {
   const [importDialogOpen, setImportDialogOpen] = useState(false)
   const [importFile, setImportFile] = useState<File | null>(null)
   const [isImporting, setIsImporting] = useState(false)
-  const [importStep, setImportStep] = useState<"idle" | "parsing" | "checking" | "creating" | "done">("idle")
+  const [importStep, setImportStep] = useState<"idle" | "parsing" | "checking" | "review" | "creating" | "done">("idle")
   const [importSummary, setImportSummary] = useState<{ created: number; invalid: number; duplicates: number } | null>(null)
+  const [importCounts, setImportCounts] = useState<{ invalid: number; duplicates: number } | null>(null)
+  const [importPreviewRows, setImportPreviewRows] = useState<Array<{ firstName: string; lastName: string; email: string; sendEmail: boolean }>>([])
+  const [sendEmailAll, setSendEmailAll] = useState(false)
   const [importError, setImportError] = useState<string | null>(null)
   
   // Edit State
@@ -152,6 +155,9 @@ export default function OwnerDashboard() {
       setIsImporting(false)
       setImportStep("idle")
       setImportSummary(null)
+      setImportCounts(null)
+      setImportPreviewRows([])
+      setSendEmailAll(false)
       setImportError(null)
     }
   }, [importDialogOpen])
@@ -366,11 +372,83 @@ export default function OwnerDashboard() {
     }
   }
 
+  const handleImportFileChange = (file: File | null) => {
+    setImportFile(file)
+    setImportStep("idle")
+    setImportSummary(null)
+    setImportCounts(null)
+    setImportPreviewRows([])
+    setSendEmailAll(false)
+    setImportError(null)
+  }
+
+  const handleSendEmailAllToggle = (checked: boolean) => {
+    setSendEmailAll(checked)
+    setImportPreviewRows((prev) => prev.map((row) => ({ ...row, sendEmail: checked })))
+  }
+
+  const updatePreviewRow = (index: number, updates: Partial<{ firstName: string; lastName: string; sendEmail: boolean }>) => {
+    setImportPreviewRows((prev) => {
+      const next = prev.map((row, i) => (i === index ? { ...row, ...updates } : row))
+      setSendEmailAll(next.length > 0 && next.every((row) => row.sendEmail))
+      return next
+    })
+  }
+
+  const handleConfirmCreate = async () => {
+    if (isImporting || importPreviewRows.length === 0) return
+    setIsImporting(true)
+    setImportStep("creating")
+    setImportError(null)
+    try {
+      const chunkSize = 500
+      const concurrency = 3
+      let created = 0
+      let duplicates = importCounts?.duplicates ?? 0
+
+      const createChunks = chunkArray(importPreviewRows, chunkSize)
+      await runWithConcurrency(createChunks, concurrency, async (chunk) => {
+        const bulkResult = await bulkCreateUsers(chunk)
+        const inserted = typeof bulkResult?.inserted === "number" ? bulkResult.inserted : chunk.length
+        created += inserted
+        if (typeof bulkResult?.duplicates === "number") {
+          duplicates += bulkResult.duplicates
+        }
+      })
+
+      setImportSummary({
+        created,
+        invalid: importCounts?.invalid ?? 0,
+        duplicates,
+      })
+      setImportStep("done")
+      setImportPreviewRows([])
+      setSendEmailAll(false)
+
+      if (created > 0) {
+        setMembersPage(1)
+        loadMembers()
+      }
+
+      toast({
+        title: t("dashboard.toasts.importCompleteTitle"),
+        description: t("dashboard.toasts.importCompleteDesc", { created }),
+      })
+    } catch (error) {
+      setImportError(t("dashboard.toasts.failedImport"))
+      setImportStep("review")
+      toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedImport"), variant: "destructive" })
+    } finally {
+      setIsImporting(false)
+    }
+  }
+
   const handleImportExcel = async () => {
     if (!importFile || isImporting) return
     setIsImporting(true)
     setImportError(null)
     setImportSummary(null)
+    setImportCounts(null)
     setImportStep("parsing")
     try {
       const data = await importFile.arrayBuffer()
@@ -414,6 +492,7 @@ export default function OwnerDashboard() {
       if (uniqueRows.length === 0) {
         setImportSummary({ created: 0, invalid: invalidRows, duplicates: duplicateRows })
         setImportStep("done")
+        setImportCounts({ invalid: invalidRows, duplicates: duplicateRows })
         toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedImport"), variant: "destructive" })
         return
       }
@@ -436,35 +515,21 @@ export default function OwnerDashboard() {
       // Step B: client-side set difference to keep only new users.
       const newUsers = uniqueRows.filter((row) => !existingSet.has(row.email))
 
-      let created = 0
-      let duplicates = duplicateRows
+      setImportCounts({ invalid: invalidRows, duplicates: duplicateRows })
 
-      // Step C: create new members only (chunked to avoid 413).
-      if (newUsers.length > 0) {
-        setImportStep("creating")
-        const createChunks = chunkArray(newUsers, chunkSize)
-        await runWithConcurrency(createChunks, concurrency, async (chunk) => {
-          const bulkResult = await bulkCreateUsers(chunk)
-          const inserted = typeof bulkResult?.inserted === "number" ? bulkResult.inserted : chunk.length
-          created += inserted
-          if (typeof bulkResult?.duplicates === "number") {
-            duplicates += bulkResult.duplicates
-          }
+      if (newUsers.length === 0) {
+        setImportSummary({ created: 0, invalid: invalidRows, duplicates: duplicateRows })
+        setImportStep("done")
+        toast({
+          title: t("dashboard.toasts.importCompleteTitle"),
+          description: t("dashboard.toasts.importCompleteDesc", { created: 0 }),
         })
+        return
       }
 
-      setImportSummary({ created, invalid: invalidRows, duplicates })
-      setImportStep("done")
-
-      if (created > 0) {
-        setMembersPage(1)
-        loadMembers()
-      }
-
-      toast({
-        title: t("dashboard.toasts.importCompleteTitle"),
-        description: t("dashboard.toasts.importCompleteDesc", { created }),
-      })
+      setImportPreviewRows(newUsers.map((row) => ({ ...row, sendEmail: false })))
+      setSendEmailAll(false)
+      setImportStep("review")
     } catch (error) {
       setImportError(t("dashboard.toasts.failedImport"))
       setImportStep("idle")
@@ -1004,7 +1069,7 @@ export default function OwnerDashboard() {
                   type="file"
                   accept=".xlsx,.xls"
                   className="sr-only"
-                  onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+                  onChange={(e) => handleImportFileChange(e.target.files?.[0] || null)}
                 />
                 <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <Button
@@ -1022,7 +1087,7 @@ export default function OwnerDashboard() {
                         type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={() => setImportFile(null)}
+                        onClick={() => handleImportFileChange(null)}
                         disabled={isImporting}
                       >
                         {t("dashboard.dialogs.importRemoveFile")}
@@ -1051,13 +1116,15 @@ export default function OwnerDashboard() {
                   <span>
                     {importStep === "done"
                       ? t("dashboard.dialogs.importDone")
-                      : t("dashboard.dialogs.importInProgress")}
+                      : importStep === "review"
+                        ? t("dashboard.dialogs.importReview")
+                        : t("dashboard.dialogs.importInProgress")}
                   </span>
                 </div>
 
                 <div className="space-y-2">
-                  {(["parsing", "checking", "creating"] as const).map((step, index) => {
-                    const stepOrder = ["parsing", "checking", "creating"] as const
+                  {(["parsing", "checking", "review", "creating"] as const).map((step, index) => {
+                    const stepOrder = ["parsing", "checking", "review", "creating"] as const
                     const activeIndex = stepOrder.indexOf(importStep as (typeof stepOrder)[number])
                     const isDone = importStep === "done" || (activeIndex !== -1 && index < activeIndex)
                     const isActive = activeIndex !== -1 && index === activeIndex
@@ -1093,21 +1160,100 @@ export default function OwnerDashboard() {
                 )}
               </div>
             )}
+
+            {importStep === "review" && (
+              <div className="space-y-4 rounded-md border bg-background p-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-medium">
+                      {t("dashboard.dialogs.importNewMembers", { count: importPreviewRows.length })}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {t("dashboard.dialogs.importInvalid", { count: importCounts?.invalid ?? 0 })}
+                      {importCounts && importCounts.duplicates > 0 ? ` · ${t("dashboard.dialogs.importDuplicates", { count: importCounts.duplicates })}` : ""}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="send-email-all" className="text-sm font-medium">
+                      {t("dashboard.dialogs.importSendEmailAll")}
+                    </Label>
+                    <Switch
+                      id="send-email-all"
+                      checked={sendEmailAll}
+                      onCheckedChange={handleSendEmailAllToggle}
+                    />
+                  </div>
+                </div>
+
+                <div className="max-h-72 overflow-y-auto rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>{t("dashboard.dialogs.firstName")}</TableHead>
+                        <TableHead>{t("dashboard.dialogs.lastName")}</TableHead>
+                        <TableHead>{t("dashboard.dialogs.email")}</TableHead>
+                        <TableHead>{t("dashboard.dialogs.sendEmailWithQr")}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {importPreviewRows.map((row, index) => (
+                        <TableRow key={`${row.email}-${index}`}>
+                          <TableCell>
+                            <Input
+                              value={row.firstName}
+                              onChange={(e) => updatePreviewRow(index, { firstName: e.target.value })}
+                              className="h-8"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              value={row.lastName}
+                              onChange={(e) => updatePreviewRow(index, { lastName: e.target.value })}
+                              className="h-8"
+                            />
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground">{row.email}</TableCell>
+                          <TableCell>
+                            <Switch
+                              checked={row.sendEmail}
+                              onCheckedChange={(checked) => updatePreviewRow(index, { sendEmail: checked })}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setImportDialogOpen(false)} disabled={isImporting}>
               {t("common.cancel")}
             </Button>
-            <Button onClick={handleImportExcel} disabled={!importFile || isImporting}>
-              {isImporting ? (
-                <span className="inline-flex items-center gap-2">
-                  <Spinner className="h-4 w-4" />
-                  {t("dashboard.dialogs.importing")}
-                </span>
-              ) : (
-                t("dashboard.dialogs.importCta")
-              )}
-            </Button>
+            {importStep === "review" ? (
+              <Button onClick={handleConfirmCreate} disabled={isImporting || importPreviewRows.length === 0}>
+                {isImporting ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Spinner className="h-4 w-4" />
+                    {t("dashboard.dialogs.importing")}
+                  </span>
+                ) : (
+                  t("dashboard.dialogs.importCreateCta")
+                )}
+              </Button>
+            ) : (
+              <Button onClick={handleImportExcel} disabled={!importFile || isImporting}>
+                {isImporting ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Spinner className="h-4 w-4" />
+                    {t("dashboard.dialogs.importing")}
+                  </span>
+                ) : (
+                  t("dashboard.dialogs.importCta")
+                )}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

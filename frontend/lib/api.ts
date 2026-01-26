@@ -96,6 +96,7 @@ export async function bulkCreateUsers(
     firstName: string
     lastName: string
     email: string
+    sendEmail?: boolean
   }>,
 ) {
   const res = await fetch(`${API_URL}/bulk-create-users`, {

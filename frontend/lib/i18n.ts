@@ -297,11 +297,14 @@ const resources = {
           importNoFile: "Nessun file selezionato",
           importRemoveFile: "Rimuovi",
           importInProgress: "Importazione in corso",
+          importReview: "Verifica nuovi membri",
           importDone: "Importazione completata",
           importResultsTitle: "Riepilogo importazione",
           importCreated: "Creati {{count}} nuovi membri",
           importInvalid: "Ignorate {{count}} righe non valide",
           importDuplicates: "Ignorate {{count}} email duplicate",
+          importNewMembers: "Nuovi membri da creare: {{count}}",
+          importSendEmailAll: "Invia email a tutti",
           detailsTitle: "Dettagli membro",
           detailsDescription: "Visualizza e gestisci le informazioni del membro",
           personalInfo: "Informazioni personali",
@@ -325,6 +328,7 @@ const resources = {
           deleteCta: "Elimina membro",
           deleting: "Eliminazione...",
           importCta: "Importa",
+          importCreateCta: "Crea membri",
           importing: "Importazione...",
         },
         toasts: {
@@ -356,6 +360,7 @@ const resources = {
         importSteps: {
           parsing: "Lettura del file Excel",
           checking: "Verifica utenti esistenti",
+          review: "Revisione nuovi membri",
           creating: "Creazione nuovi membri",
         },
         realtime: {
@@ -689,11 +694,14 @@ const resources = {
           importNoFile: "No file selected",
           importRemoveFile: "Remove",
           importInProgress: "Import in progress",
+          importReview: "Review new members",
           importDone: "Import completed",
           importResultsTitle: "Import summary",
           importCreated: "Created {{count}} new members",
           importInvalid: "Skipped {{count}} invalid rows",
           importDuplicates: "Skipped {{count}} duplicate emails",
+          importNewMembers: "New members to create: {{count}}",
+          importSendEmailAll: "Send email to all",
           detailsTitle: "Member Details",
           detailsDescription: "View and manage member information",
           personalInfo: "Personal Information",
@@ -717,6 +725,7 @@ const resources = {
           deleteCta: "Delete Member",
           deleting: "Deleting...",
           importCta: "Import",
+          importCreateCta: "Create members",
           importing: "Importing...",
         },
         toasts: {
@@ -748,6 +757,7 @@ const resources = {
         importSteps: {
           parsing: "Parsing Excel file",
           checking: "Checking existing users",
+          review: "Reviewing new members",
           creating: "Creating new members",
         },
         realtime: {
@@ -1079,11 +1089,14 @@ const resources = {
           importNoFile: "Keine Datei ausgewählt",
           importRemoveFile: "Entfernen",
           importInProgress: "Import läuft",
+          importReview: "Neue Mitglieder prüfen",
           importDone: "Import abgeschlossen",
           importResultsTitle: "Importübersicht",
           importCreated: "{{count}} neue Mitglieder erstellt",
           importInvalid: "{{count}} ungültige Zeilen übersprungen",
           importDuplicates: "{{count}} doppelte E-Mails übersprungen",
+          importNewMembers: "Neue Mitglieder zum Erstellen: {{count}}",
+          importSendEmailAll: "E-Mail an alle senden",
           detailsTitle: "Mitgliedsdetails",
           detailsDescription: "Mitgliedsinformationen anzeigen und verwalten",
           personalInfo: "Persönliche Informationen",
@@ -1107,6 +1120,7 @@ const resources = {
           deleteCta: "Mitglied löschen",
           deleting: "Löschen...",
           importCta: "Importieren",
+          importCreateCta: "Mitglieder erstellen",
           importing: "Import läuft...",
         },
         toasts: {
@@ -1138,6 +1152,7 @@ const resources = {
         importSteps: {
           parsing: "Excel-Datei wird gelesen",
           checking: "Bestehende Benutzer werden geprüft",
+          review: "Neue Mitglieder werden geprüft",
           creating: "Neue Mitglieder werden erstellt",
         },
         realtime: {

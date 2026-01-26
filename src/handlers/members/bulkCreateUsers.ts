@@ -1,5 +1,6 @@
 import { APIGatewayProxyHandlerV2 } from "aws-lambda";
 import { connectToMongoose } from "../../adapters/mongoose";
+import { sendQrCodeEmail } from "../../adapters/email";
 import { AppError } from "../../lib/appError";
 import { errorResponse, json } from "../../lib/http";
 import { verifyJWT } from "../../lib/jwt";
@@ -9,7 +10,15 @@ type IncomingUser = {
   firstName?: unknown;
   lastName?: unknown;
   email?: unknown;
+  sendEmail?: unknown;
 };
+
+async function runWithConcurrency<T>(items: T[], limit: number, worker: (item: T) => Promise<void>) {
+  for (let i = 0; i < items.length; i += limit) {
+    const batch = items.slice(i, i + limit);
+    await Promise.all(batch.map((item) => worker(item)));
+  }
+}
 
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
   const token = event.headers.authorization?.split(" ")[1];
@@ -30,18 +39,21 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const docs = [];
     let invalid = 0;
+    const sendEmailMap = new Map<string, boolean>();
 
     // Sanitize and normalize the incoming payload before insertMany.
     for (const user of rawUsers as IncomingUser[]) {
       const firstName = String(user?.firstName ?? "").trim();
       const lastName = String(user?.lastName ?? "").trim();
       const email = String(user?.email ?? "").trim().toLowerCase();
+      const sendEmail = typeof user?.sendEmail === "boolean" ? user.sendEmail : false;
 
       if (!firstName || !lastName || !email || emailPattern.test(email) === false) {
         invalid += 1;
         continue;
       }
 
+      sendEmailMap.set(email, sendEmail);
       docs.push({
         firstName,
         lastName,
@@ -61,7 +73,36 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 
     try {
       const insertedDocs = await MemberModel.insertMany(docs, { ordered: false });
-      return json(200, { inserted: insertedDocs.length, invalid });
+
+      let emailSent = 0;
+      let emailFailed = 0;
+      const sendTargets = insertedDocs.filter((doc) => sendEmailMap.get(String(doc.email).toLowerCase()));
+
+      if (sendTargets.length > 0) {
+        const senderEmail = process.env.SES_SENDER_EMAIL;
+        if (!senderEmail) {
+          return errorResponse(event, 500, "INTERNAL_SERVER_ERROR");
+        }
+
+        await runWithConcurrency(sendTargets, 5, async (doc) => {
+          const { success } = await sendQrCodeEmail(
+            senderEmail,
+            String(doc.firstName),
+            String(doc.lastName),
+            String(doc.email),
+            String(doc.qrUuid),
+          );
+
+          if (success) {
+            emailSent += 1;
+            await MemberModel.updateOne({ _id: doc._id }, { $set: { emailValid: true } });
+          } else {
+            emailFailed += 1;
+          }
+        });
+      }
+
+      return json(200, { inserted: insertedDocs.length, invalid, emailSent, emailFailed });
     } catch (error) {
       const writeErrors = (error as { writeErrors?: Array<{ code?: number }> })?.writeErrors;
       const hasDuplicate =
