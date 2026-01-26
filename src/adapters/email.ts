@@ -25,22 +25,22 @@ export const sendQrCodeEmail = async (
     const info = await transporter.sendMail({
       from: sourceMail,
       to: email,
-      subject: "Your QR Code for Billiard Club",
+      subject: "Il tuo QR code per 15 Palle",
       html: `
         <div style="font-family: sans-serif; padding: 20px;">
-          <h2>Hello ${firstName},</h2>
-          <p>Welcome to the 15Palle Billiard Club!</p>
-          <p>Please find your personal access QR code below. You will need this to enter the facility.</p>
+          <h2>Ciao ${firstName},</h2>
+          <p>Benvenuto al club di biliardo 15 Palle!</p>
+          <p>Di seguito trovi il tuo QR code personale. Ti servira per accedere alla struttura.</p>
           
           <div style="margin: 20px 0;">
-            <img src="cid:${cid}" alt="Your QR Code" style="width: 200px; height: 200px; border: 1px solid #ccc;" />
+            <img src="cid:${cid}" alt="Il tuo QR code" style="width: 200px; height: 200px; border: 1px solid #ccc;" />
           </div>
 
-          <p>If you cannot see the image, please contact support.</p>
-          <p>Best regards,<br>The Billiard Club Team</p>
+          <p>Se non riesci a visualizzare l'immagine, contatta il supporto.</p>
+          <p>Grazie,<br>Il team di 15 Palle</p>
         </div>
       `,
-      text: `Hello ${firstName} ${lastName}, pelase find your QR code attached.`,
+      text: `Ciao ${firstName} ${lastName}, trovi in allegato il tuo QR code personale.`,
       attachments: [
         {
           filename: "qrcode.png",
@@ -81,20 +81,20 @@ export const sendVerificationEmail = async (
         const info = await transporter.sendMail({
             from: sourceMail,
             to: email,
-            subject: "Your Verification Code - Billiard Club",
+            subject: "Il tuo codice di verifica - 15 Palle",
             html: `
                 <div style="font-family: sans-serif; padding: 20px;">
-                    <h2>Hello ${firstName},</h2>
-                    <p>You requested a verification code to access your account.</p>
+                    <h2>Ciao ${firstName},</h2>
+                    <p>Hai richiesto un codice di verifica per accedere al tuo account.</p>
                     <div style="background-color: #f4f4f4; padding: 15px; font-size: 24px; letter-spacing: 5px; text-align: center; margin: 20px 0; font-weight: bold;">
                         ${verificationCode}
                     </div>
-                    <p>This code expires in 15 minutes.</p>
-                    <p>If you did not request this, please ignore this email.</p>
-                    <p>Best regards,<br>The Billiard Club Team</p>
+                    <p>Il codice scade tra 15 minuti.</p>
+                    <p>Se non hai richiesto questo codice, ignora questa email.</p>
+                    <p>Grazie,<br>Il team di 15 Palle</p>
                 </div>
             `,
-            text: `Hello ${firstName}, your verification code is: ${verificationCode}. It expires in 15 minutes.`
+            text: `Ciao ${firstName}, il tuo codice di verifica e': ${verificationCode}. Scade tra 15 minuti.`
         });
 
         const command = new SendRawEmailCommand({

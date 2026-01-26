@@ -1,6 +1,7 @@
 import { APIGatewayProxyHandlerV2 } from "aws-lambda";
 import { verifyJWT } from "../../lib/jwt";
 import { connectToMongo } from "../../adapters/database";
+import { sendQrCodeEmail } from "../../adapters/email";
 import { Member } from "../../lib/types";
 import { ObjectId } from "mongodb";
 import { AppError } from "../../lib/appError";
@@ -29,21 +30,44 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
 
         const db = await connectToMongo();
         const membersCollection = db.collection<Member>("members");
+        const memberId = ObjectId.createFromHexString(trimmedId) as any;
+        const member = await membersCollection.findOne({ _id: memberId });
+
+        if (!member) {
+            return errorResponse(event, 404, "MEMBER_NOT_FOUND");
+        }
 
         const newQrUuid = crypto.randomUUID();
 
-        const result = await membersCollection.updateOne(
-            { _id: ObjectId.createFromHexString(trimmedId) as any },
+        await membersCollection.updateOne(
+            { _id: memberId },
             { $set: { qrUuid: newQrUuid } }
-        )
+        );
 
-        if (result.matchedCount === 0) {
-            return errorResponse(event, 404, "MEMBER_NOT_FOUND");
+        let emailSent = false;
+        const senderEmail = process.env.SES_SENDER_EMAIL;
+        if (senderEmail) {
+            const { success } = await sendQrCodeEmail(
+                senderEmail,
+                member.firstName,
+                member.lastName,
+                member.email,
+                newQrUuid
+            );
+
+            if (success) {
+                emailSent = true;
+                await membersCollection.updateOne(
+                    { _id: memberId },
+                    { $set: { emailValid: true } }
+                );
+            }
         }
 
         return messageResponse(event, 200, "QR_CODE_RESET_SUCCESS", undefined, {
             success: true,
-            qrUuid: newQrUuid
+            qrUuid: newQrUuid,
+            emailSent
         });
 
     } catch (error) {

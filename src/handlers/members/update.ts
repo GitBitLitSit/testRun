@@ -1,6 +1,7 @@
 import { APIGatewayProxyHandlerV2 } from "aws-lambda";
 import { verifyJWT } from "../../lib/jwt";
 import { connectToMongo } from "../../adapters/database";
+import { sendQrCodeEmail } from "../../adapters/email";
 import { Member } from "../../lib/types";
 import { ObjectId } from "mongodb";
 import { AppError } from "../../lib/appError";
@@ -21,7 +22,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             return errorResponse(event, 400, "MEMBER_ID_REQUIRED_IN_PATH");
         }
 
-        const { firstName, lastName, email, blocked } = JSON.parse(event.body || "{}");
+        const { firstName, lastName, email, blocked, sendEmail } = JSON.parse(event.body || "{}");
 
         const db = await connectToMongo();
         const collection = db.collection<Member>("members");
@@ -33,6 +34,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         }
 
         const updateFields: Partial<Member> = {};
+        let emailChanged = false;
 
         if (email) {
             const trimmedEmail = email.trim().toLowerCase();
@@ -44,6 +46,8 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
                 }
 
                 updateFields.email = trimmedEmail;
+                updateFields.emailValid = false;
+                emailChanged = true;
             }
         }
 
@@ -63,7 +67,32 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             await collection.updateOne({ _id: new ObjectId(id) as any }, { $set: updateFields });
 
             const updatedMember = { ...member, ...updateFields };
-            return json(200, { success: true, member: updatedMember });
+            let emailSent = false;
+            const shouldSendEmail = emailChanged && sendEmail !== false;
+
+            if (shouldSendEmail) {
+                const senderEmail = process.env.SES_SENDER_EMAIL;
+                if (senderEmail) {
+                    const { success } = await sendQrCodeEmail(
+                        senderEmail,
+                        updatedMember.firstName,
+                        updatedMember.lastName,
+                        updatedMember.email,
+                        updatedMember.qrUuid
+                    );
+
+                    if (success) {
+                        emailSent = true;
+                        await collection.updateOne(
+                            { _id: new ObjectId(id) as any },
+                            { $set: { emailValid: true } }
+                        );
+                        updatedMember.emailValid = true;
+                    }
+                }
+            }
+
+            return json(200, { success: true, member: updatedMember, emailSent });
         }
 
         return json(200, { success: true, member });
