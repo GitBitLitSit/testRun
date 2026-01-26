@@ -23,6 +23,7 @@ import {
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   getMembers,
   createMember,
@@ -120,7 +121,6 @@ export default function OwnerDashboard() {
   const [importSummary, setImportSummary] = useState<{ created: number; invalid: number; duplicates: number } | null>(null)
   const [importCounts, setImportCounts] = useState<{ invalid: number; duplicates: number } | null>(null)
   const [importPreviewRows, setImportPreviewRows] = useState<Array<{ firstName: string; lastName: string; email: string; sendEmail: boolean }>>([])
-  const [sendEmailAll, setSendEmailAll] = useState(false)
   const [importError, setImportError] = useState<string | null>(null)
   
   // Edit State
@@ -157,7 +157,6 @@ export default function OwnerDashboard() {
       setImportSummary(null)
       setImportCounts(null)
       setImportPreviewRows([])
-      setSendEmailAll(false)
       setImportError(null)
     }
   }, [importDialogOpen])
@@ -378,21 +377,19 @@ export default function OwnerDashboard() {
     setImportSummary(null)
     setImportCounts(null)
     setImportPreviewRows([])
-    setSendEmailAll(false)
     setImportError(null)
   }
 
   const handleSendEmailAllToggle = (checked: boolean) => {
-    setSendEmailAll(checked)
     setImportPreviewRows((prev) => prev.map((row) => ({ ...row, sendEmail: checked })))
   }
 
   const updatePreviewRow = (index: number, updates: Partial<{ firstName: string; lastName: string; sendEmail: boolean }>) => {
-    setImportPreviewRows((prev) => {
-      const next = prev.map((row, i) => (i === index ? { ...row, ...updates } : row))
-      setSendEmailAll(next.length > 0 && next.every((row) => row.sendEmail))
-      return next
-    })
+    setImportPreviewRows((prev) => prev.map((row, i) => (i === index ? { ...row, ...updates } : row)))
+  }
+
+  const removePreviewRow = (index: number) => {
+    setImportPreviewRows((prev) => prev.filter((_, i) => i !== index))
   }
 
   const handleConfirmCreate = async () => {
@@ -423,7 +420,6 @@ export default function OwnerDashboard() {
       })
       setImportStep("done")
       setImportPreviewRows([])
-      setSendEmailAll(false)
 
       if (created > 0) {
         setMembersPage(1)
@@ -528,7 +524,6 @@ export default function OwnerDashboard() {
       }
 
       setImportPreviewRows(newUsers.map((row) => ({ ...row, sendEmail: false })))
-      setSendEmailAll(false)
       setImportStep("review")
     } catch (error) {
       setImportError(t("dashboard.toasts.failedImport"))
@@ -585,6 +580,15 @@ export default function OwnerDashboard() {
     `)
     printWindow.document.close()
   }
+
+  const sendEmailAllState =
+    importPreviewRows.length === 0
+      ? false
+      : importPreviewRows.every((row) => row.sendEmail)
+        ? true
+        : importPreviewRows.some((row) => row.sendEmail)
+          ? "indeterminate"
+          : false
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -1047,7 +1051,7 @@ export default function OwnerDashboard() {
 
       {/* Import Excel Dialog */}
       <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-6xl w-[95vw] max-h-[92vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t("dashboard.dialogs.importTitle")}</DialogTitle>
             <DialogDescription>{t("dashboard.dialogs.importDescription")}</DialogDescription>
@@ -1162,7 +1166,7 @@ export default function OwnerDashboard() {
             )}
 
             {importStep === "review" && (
-              <div className="space-y-4 rounded-md border bg-background p-4">
+              <div className="space-y-4 rounded-md border bg-background p-4 shadow-sm">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm font-medium">
@@ -1174,53 +1178,75 @@ export default function OwnerDashboard() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="send-email-all"
+                      checked={sendEmailAllState}
+                      onCheckedChange={(checked) => handleSendEmailAllToggle(checked === true)}
+                    />
                     <Label htmlFor="send-email-all" className="text-sm font-medium">
                       {t("dashboard.dialogs.importSendEmailAll")}
                     </Label>
-                    <Switch
-                      id="send-email-all"
-                      checked={sendEmailAll}
-                      onCheckedChange={handleSendEmailAllToggle}
-                    />
                   </div>
                 </div>
 
-                <div className="max-h-72 overflow-y-auto rounded-md border">
-                  <Table>
+                <div className="max-h-80 overflow-auto rounded-md border">
+                  <Table className="min-w-[900px]">
                     <TableHeader>
                       <TableRow>
-                        <TableHead>{t("dashboard.dialogs.firstName")}</TableHead>
-                        <TableHead>{t("dashboard.dialogs.lastName")}</TableHead>
-                        <TableHead>{t("dashboard.dialogs.email")}</TableHead>
-                        <TableHead>{t("dashboard.dialogs.sendEmailWithQr")}</TableHead>
+                        <TableHead className="w-[200px]">{t("dashboard.dialogs.firstName")}</TableHead>
+                        <TableHead className="w-[200px]">{t("dashboard.dialogs.lastName")}</TableHead>
+                        <TableHead className="w-[320px]">{t("dashboard.dialogs.email")}</TableHead>
+                        <TableHead className="w-[180px] text-center">{t("dashboard.dialogs.sendEmailWithQr")}</TableHead>
+                        <TableHead className="w-[80px] text-right">{t("dashboard.dialogs.actions")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {importPreviewRows.map((row, index) => (
-                        <TableRow key={`${row.email}-${index}`}>
-                          <TableCell>
-                            <Input
-                              value={row.firstName}
-                              onChange={(e) => updatePreviewRow(index, { firstName: e.target.value })}
-                              className="h-8"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Input
-                              value={row.lastName}
-                              onChange={(e) => updatePreviewRow(index, { lastName: e.target.value })}
-                              className="h-8"
-                            />
-                          </TableCell>
-                          <TableCell className="text-xs text-muted-foreground">{row.email}</TableCell>
-                          <TableCell>
-                            <Switch
-                              checked={row.sendEmail}
-                              onCheckedChange={(checked) => updatePreviewRow(index, { sendEmail: checked })}
-                            />
+                      {importPreviewRows.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={5} className="py-6 text-center text-sm text-muted-foreground">
+                            {t("dashboard.dialogs.importEmpty")}
                           </TableCell>
                         </TableRow>
-                      ))}
+                      ) : (
+                        importPreviewRows.map((row, index) => (
+                          <TableRow key={`${row.email}-${index}`}>
+                            <TableCell>
+                              <Input
+                                value={row.firstName}
+                                onChange={(e) => updatePreviewRow(index, { firstName: e.target.value })}
+                                className="h-9 min-w-[160px]"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                value={row.lastName}
+                                onChange={(e) => updatePreviewRow(index, { lastName: e.target.value })}
+                                className="h-9 min-w-[160px]"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input value={row.email} readOnly className="h-9 min-w-[260px] text-xs text-muted-foreground" />
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Checkbox
+                                checked={row.sendEmail}
+                                onCheckedChange={(checked) => updatePreviewRow(index, { sendEmail: checked === true })}
+                              />
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => removePreviewRow(index)}
+                                className="text-muted-foreground hover:text-destructive"
+                                title={t("dashboard.dialogs.remove")}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
                     </TableBody>
                   </Table>
                 </div>
