@@ -48,6 +48,7 @@ import {
   ChevronRight,
   AlertCircle,
   CheckCircle2,
+  X,
   Pencil,
   Trash2,
 } from "lucide-react"
@@ -531,7 +532,7 @@ export default function OwnerDashboard() {
         return
       }
 
-      setImportPreviewRows(newUsers.map((row) => ({ ...row, sendEmail: false })))
+      setImportPreviewRows(newUsers.map((row) => ({ ...row, sendEmail: true })))
       setImportPreviewPage(1)
       setImportStep("review")
     } catch (error) {
@@ -1011,37 +1012,39 @@ export default function OwnerDashboard() {
 
                     {importStep === "review" && (
                       <div className="space-y-4 rounded-md border bg-card/60 p-4 shadow-sm">
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                          <div>
-                            <p className="text-sm font-medium">
-                              {t("dashboard.dialogs.importNewMembers", { count: importPreviewRows.length })}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {t("dashboard.dialogs.importInvalid", { count: importCounts?.invalid ?? 0 })}
-                              {importCounts && importCounts.duplicates > 0 ? ` · ${t("dashboard.dialogs.importDuplicates", { count: importCounts.duplicates })}` : ""}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Checkbox
-                              id="send-email-all"
-                              checked={sendEmailAllState}
-                              onCheckedChange={(checked) => handleSendEmailAllToggle(checked === true)}
-                            />
-                            <Label htmlFor="send-email-all" className="text-sm font-medium">
-                              {t("dashboard.dialogs.importSendEmailAll")}
-                            </Label>
-                          </div>
+                        <div className="flex flex-col gap-2">
+                          <p className="text-sm font-medium">
+                            {t("dashboard.dialogs.importNewMembers", { count: importPreviewRows.length })}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {t("dashboard.dialogs.importInvalid", { count: importCounts?.invalid ?? 0 })}
+                            {importCounts && importCounts.duplicates > 0 ? ` · ${t("dashboard.dialogs.importDuplicates", { count: importCounts.duplicates })}` : ""}
+                          </p>
                         </div>
 
                         <div className="rounded-md border bg-background">
-                          <Table className="min-w-[900px]">
+                          <Table className="min-w-[980px]">
                             <TableHeader>
-                              <TableRow>
-                                <TableHead className="w-[200px]">{t("dashboard.dialogs.firstName")}</TableHead>
-                                <TableHead className="w-[200px]">{t("dashboard.dialogs.lastName")}</TableHead>
-                                <TableHead className="w-[320px]">{t("dashboard.dialogs.email")}</TableHead>
-                                <TableHead className="w-[180px] text-center">{t("dashboard.dialogs.sendEmailWithQr")}</TableHead>
-                                <TableHead className="w-[80px] text-right">{t("dashboard.dialogs.actions")}</TableHead>
+                              <TableRow className="bg-muted/40">
+                                <TableHead className="w-[44px] text-center" />
+                                <TableHead className="w-[240px]">{t("dashboard.dialogs.firstName")}</TableHead>
+                                <TableHead className="w-[240px]">{t("dashboard.dialogs.lastName")}</TableHead>
+                                <TableHead className="w-[360px]">{t("dashboard.dialogs.email")}</TableHead>
+                                <TableHead className="w-[220px] text-center">
+                                  <div className="flex flex-col items-center gap-1">
+                                    <span className="text-xs font-medium">{t("dashboard.dialogs.sendEmailWithQr")}</span>
+                                    <div className="flex items-center gap-2">
+                                      <Checkbox
+                                        id="send-email-all"
+                                        checked={sendEmailAllState}
+                                        onCheckedChange={(checked) => handleSendEmailAllToggle(checked === true)}
+                                      />
+                                      <span className="text-[11px] text-muted-foreground">
+                                        {t("dashboard.dialogs.importSendEmailAll")}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -1053,31 +1056,8 @@ export default function OwnerDashboard() {
                                 </TableRow>
                               ) : (
                                 previewRows.map((row, index) => (
-                                  <TableRow key={`${row.email}-${previewStart + index}`}>
-                                    <TableCell>
-                                      <Input
-                                        value={row.firstName}
-                                        onChange={(e) => updatePreviewRow(previewStart + index, { firstName: e.target.value })}
-                                        className="h-9 min-w-[160px]"
-                                      />
-                                    </TableCell>
-                                    <TableCell>
-                                      <Input
-                                        value={row.lastName}
-                                        onChange={(e) => updatePreviewRow(previewStart + index, { lastName: e.target.value })}
-                                        className="h-9 min-w-[160px]"
-                                      />
-                                    </TableCell>
-                                    <TableCell>
-                                      <Input value={row.email} readOnly className="h-9 min-w-[260px] text-xs text-muted-foreground" />
-                                    </TableCell>
+                                  <TableRow key={`${row.email}-${previewStart + index}`} className="odd:bg-muted/10">
                                     <TableCell className="text-center">
-                                      <Checkbox
-                                        checked={row.sendEmail}
-                                        onCheckedChange={(checked) => updatePreviewRow(previewStart + index, { sendEmail: checked === true })}
-                                      />
-                                    </TableCell>
-                                    <TableCell className="text-right">
                                       <Button
                                         variant="ghost"
                                         size="icon"
@@ -1085,8 +1065,33 @@ export default function OwnerDashboard() {
                                         className="text-destructive/90 hover:text-destructive hover:bg-destructive/10"
                                         title={t("dashboard.dialogs.remove")}
                                       >
-                                        <Trash2 className="h-4 w-4" />
+                                        <X className="h-4 w-4" />
                                       </Button>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Input
+                                        value={row.firstName}
+                                        onChange={(e) => updatePreviewRow(previewStart + index, { firstName: e.target.value })}
+                                        className="h-9 min-w-[200px] bg-background/80"
+                                      />
+                                    </TableCell>
+                                    <TableCell>
+                                      <Input
+                                        value={row.lastName}
+                                        onChange={(e) => updatePreviewRow(previewStart + index, { lastName: e.target.value })}
+                                        className="h-9 min-w-[200px] bg-background/80"
+                                      />
+                                    </TableCell>
+                                    <TableCell>
+                                      <div className="text-sm text-muted-foreground" title={row.email}>
+                                        {row.email}
+                                      </div>
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                      <Checkbox
+                                        checked={row.sendEmail}
+                                        onCheckedChange={(checked) => updatePreviewRow(previewStart + index, { sendEmail: checked === true })}
+                                      />
                                     </TableCell>
                                   </TableRow>
                                 ))
