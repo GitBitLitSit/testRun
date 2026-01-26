@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "export",
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -11,6 +12,7 @@ const nextConfig = {
         pathname: '/v1/**',
       },
     ],
+    unoptimized: true
   },
 }
 
