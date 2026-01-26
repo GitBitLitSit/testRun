@@ -82,6 +82,30 @@ export async function importMembersBatch(
   return handleResponse(res)
 }
 
+export async function checkExistingUsers(emails: string[]) {
+  const res = await fetch(`${API_URL}/check-existing-users`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ emails }),
+  })
+  return handleResponse(res)
+}
+
+export async function bulkCreateUsers(
+  users: Array<{
+    firstName: string
+    lastName: string
+    email: string
+  }>,
+) {
+  const res = await fetch(`${API_URL}/bulk-create-users`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ users }),
+  })
+  return handleResponse(res)
+}
+
 export async function deleteMember(memberId: string) {
   const res = await fetch(`${API_URL}/members/${memberId}`, {
     method: "DELETE",

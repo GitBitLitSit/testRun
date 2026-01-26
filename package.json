@@ -29,6 +29,7 @@
     "i18next": "^25.7.4",
     "jsonwebtoken": "^9.0.3",
     "mongodb": "^6.21.0",
+    "mongoose": "^9.1.5",
     "nodemailer": "^7.0.11",
     "qrcode": "^1.5.4"
   }

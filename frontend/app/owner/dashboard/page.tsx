@@ -23,7 +23,16 @@ import {
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { getMembers, createMember, resetQrCode, getCheckIns, updateMember, deleteMember } from "@/lib/api"
+import {
+  getMembers,
+  createMember,
+  resetQrCode,
+  getCheckIns,
+  updateMember,
+  deleteMember,
+  checkExistingUsers,
+  bulkCreateUsers,
+} from "@/lib/api"
 import { useRealtimeCheckIns } from "@/hooks/use-realtime"
 import type { Member, CheckInEvent } from "@/lib/types"
 import {
@@ -41,6 +50,7 @@ import {
   Trash2,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import * as XLSX from "xlsx"
 
 export default function OwnerDashboard() {
   const router = useRouter()
@@ -101,7 +111,8 @@ export default function OwnerDashboard() {
   
   // Import State
   const [importDialogOpen, setImportDialogOpen] = useState(false)
-  const [csvFile, setCsvFile] = useState<File | null>(null)
+  const [importFile, setImportFile] = useState<File | null>(null)
+  const [isImporting, setIsImporting] = useState(false)
   
   // Edit State
   const [editDialogOpen, setEditDialogOpen] = useState(false)
@@ -324,34 +335,72 @@ export default function OwnerDashboard() {
     }
   }
 
-  const handleImportCSV = async () => {
-    if (!csvFile) return
-    const reader = new FileReader()
-    reader.onload = async (e) => {
-      try {
-        const content = e.target?.result as string
-        const lines = content.trim().split("\n")
-        const headers = lines[0].split(",").map((h) => h.trim().toLowerCase())
-        let imported = 0
-        for (let i = 1; i < lines.length; i++) {
-          const values = lines[i].split(",").map((v) => v.trim().replace(/^"|"$/g, ""))
-          const row: Record<string, string> = {}
-          headers.forEach((header, index) => { row[header] = values[index] || "" })
-          if (row.firstname && row.lastname && row.email) {
-            await createMember({ firstName: row.firstname, lastName: row.lastname, email: row.email })
-            imported++
-          }
+  const handleImportExcel = async () => {
+    if (!importFile) return
+    setIsImporting(true)
+    try {
+      const data = await importFile.arrayBuffer()
+      const workbook = XLSX.read(data, { type: "array" })
+      const sheetName = workbook.SheetNames[0]
+      if (!sheetName) {
+        throw new Error("Missing worksheet")
+      }
+
+      const worksheet = workbook.Sheets[sheetName]
+      const rawRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet, { defval: "" })
+
+      // Normalize headers and extract firstName/lastName/email.
+      const normalizedRows = rawRows.map((row) => {
+        const normalized: Record<string, string> = {}
+        Object.entries(row).forEach(([key, value]) => {
+          const normalizedKey = String(key).trim().toLowerCase().replace(/[\s_]+/g, "")
+          normalized[normalizedKey] = String(value ?? "").trim()
+        })
+
+        return {
+          firstName: normalized.firstname || "",
+          lastName: normalized.lastname || "",
+          email: (normalized.email || "").toLowerCase(),
         }
-        toast({ title: t("dashboard.toasts.importCompleteTitle"), description: t("dashboard.toasts.importCompleteDesc", { count: imported }) })
-        setImportDialogOpen(false)
-        setCsvFile(null)
+      })
+
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      const validRows = normalizedRows.filter(
+        (row) => row.firstName && row.lastName && row.email && emailPattern.test(row.email),
+      )
+
+      if (validRows.length === 0) {
+        toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedImport"), variant: "destructive" })
+        return
+      }
+
+      // Step A: ask backend which emails already exist.
+      const allEmails = Array.from(new Set(validRows.map((row) => row.email)))
+      const existingResponse = await checkExistingUsers(allEmails)
+      const existingEmails = Array.isArray(existingResponse?.existingEmails) ? existingResponse.existingEmails : []
+
+      // Step B: client-side set difference to keep only new users.
+      const existingSet = new Set(existingEmails.map((email: string) => email.toLowerCase()))
+      const newUsers = validRows.filter((row) => !existingSet.has(row.email))
+
+      // Step C: send only new users to bulk create.
+      if (newUsers.length > 0) {
+        const bulkResult = await bulkCreateUsers(newUsers)
+        const inserted = typeof bulkResult?.inserted === "number" ? bulkResult.inserted : newUsers.length
+        toast({ title: t("dashboard.toasts.importCompleteTitle"), description: t("dashboard.toasts.importCompleteDesc", { count: inserted }) })
         setMembersPage(1)
         loadMembers()
-      } catch (error) {
-        toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedImport"), variant: "destructive" })
+      } else {
+        toast({ title: t("dashboard.toasts.importCompleteTitle"), description: t("dashboard.toasts.importCompleteDesc", { count: 0 }) })
       }
+
+      setImportDialogOpen(false)
+      setImportFile(null)
+    } catch (error) {
+      toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedImport"), variant: "destructive" })
+    } finally {
+      setIsImporting(false)
     }
-    reader.readAsText(csvFile)
   }
 
   const handleViewMember = (member: Member) => { setSelectedMember(member); setDetailsDrawerOpen(true) }
@@ -860,7 +909,7 @@ export default function OwnerDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Import CSV Dialog */}
+      {/* Import Excel Dialog */}
       <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -868,11 +917,13 @@ export default function OwnerDashboard() {
             <DialogDescription>{t("dashboard.dialogs.importDescription")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <Input type="file" accept=".csv" onChange={(e) => setCsvFile(e.target.files?.[0] || null)} />
+            <Input type="file" accept=".xlsx,.xls" onChange={(e) => setImportFile(e.target.files?.[0] || null)} />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setImportDialogOpen(false)}>{t("common.cancel")}</Button>
-            <Button onClick={handleImportCSV} disabled={!csvFile}>{t("dashboard.dialogs.importCta")}</Button>
+            <Button onClick={handleImportExcel} disabled={!importFile || isImporting}>
+              {t("dashboard.dialogs.importCta")}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
