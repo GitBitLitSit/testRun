@@ -180,6 +180,11 @@ export default function OwnerDashboard() {
   const [memberToDelete, setMemberToDelete] = useState<Member | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
+  // Reset QR State
+  const [resetQrDialogOpen, setResetQrDialogOpen] = useState(false)
+  const [memberToReset, setMemberToReset] = useState<Member | null>(null)
+  const [isResettingQr, setIsResettingQr] = useState(false)
+
   const [stats, setStats] = useState({ total: 0, blocked: 0, active: 0 })
   const IMPORT_STORAGE_KEY = "importPreviewState"
 
@@ -400,16 +405,27 @@ export default function OwnerDashboard() {
     }
   }
 
-  const handleResetQrCode = async (memberId: string) => {
+  const handleResetQrClick = (member: Member) => {
+    setMemberToReset(member)
+    setResetQrDialogOpen(true)
+  }
+
+  const handleResetQrConfirm = async () => {
+    if (!memberToReset) return
+    setIsResettingQr(true)
     try {
-      await resetQrCode(memberId)
+      await resetQrCode(memberToReset._id)
       toast({ title: t("dashboard.toasts.qrResetTitle"), description: t("dashboard.toasts.qrResetDesc") })
       loadMembers()
-      if (selectedMember && selectedMember._id === memberId) {
-          setDetailsDrawerOpen(false) 
+      if (selectedMember && selectedMember._id === memberToReset._id) {
+        setDetailsDrawerOpen(false)
       }
+      setResetQrDialogOpen(false)
+      setMemberToReset(null)
     } catch (error) {
       toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedResetQr"), variant: "destructive" })
+    } finally {
+      setIsResettingQr(false)
     }
   }
 
@@ -655,6 +671,7 @@ export default function OwnerDashboard() {
   const previewStart = (previewPage - 1) * importPreviewPageSize
   const previewEnd = Math.min(previewStart + importPreviewPageSize, importPreviewRows.length)
   const previewRows = importPreviewRows.slice(previewStart, previewEnd)
+  const resetMemberName = memberToReset ? `${memberToReset.firstName} ${memberToReset.lastName}` : ""
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -817,7 +834,7 @@ export default function OwnerDashboard() {
                                   <Button variant="ghost" size="icon" onClick={() => handlePrintQR(member)} title={t("dashboard.dialogs.printQr")}>
                                     <Printer className="h-4 w-4" />
                                   </Button>
-                                  <Button variant="ghost" size="icon" onClick={() => handleResetQrCode(member._id)} title={t("dashboard.dialogs.resetQr")}>
+                                  <Button variant="ghost" size="icon" onClick={() => handleResetQrClick(member)} title={t("dashboard.dialogs.resetQr")}>
                                     <RotateCcw className="h-4 w-4" />
                                   </Button>
                                   <Button variant="ghost" size="icon" onClick={() => handleEditClick(member)} title={t("dashboard.dialogs.editTitle")}>
@@ -1412,6 +1429,42 @@ export default function OwnerDashboard() {
         </DialogContent>
       </Dialog>
 
+      {/* Reset QR Confirmation Dialog */}
+      <Dialog
+        open={resetQrDialogOpen}
+        onOpenChange={(open) => {
+          if (isResettingQr) return
+          setResetQrDialogOpen(open)
+          if (!open) {
+            setMemberToReset(null)
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("dashboard.dialogs.resetQrConfirmTitle")}</DialogTitle>
+            <DialogDescription>
+              {t("dashboard.dialogs.resetQrConfirmDescription", { name: resetMemberName })}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setResetQrDialogOpen(false)
+                setMemberToReset(null)
+              }}
+              disabled={isResettingQr}
+            >
+              {t("common.cancel")}
+            </Button>
+            <Button variant="destructive" onClick={handleResetQrConfirm} disabled={isResettingQr}>
+              {isResettingQr ? t("dashboard.dialogs.resettingQr") : t("dashboard.dialogs.resetQr")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
 
       {/* Member Details Drawer */}
       <Sheet open={detailsDrawerOpen} onOpenChange={setDetailsDrawerOpen}>
@@ -1486,7 +1539,7 @@ export default function OwnerDashboard() {
                 <Button onClick={() => handlePrintQR(selectedMember)} className="w-full">
                   <Printer className="mr-2 h-4 w-4" /> {t("dashboard.dialogs.printQr")}
                 </Button>
-                <Button variant="outline" onClick={() => handleResetQrCode(selectedMember._id)} className="w-full">
+                <Button variant="outline" onClick={() => handleResetQrClick(selectedMember)} className="w-full">
                   <RotateCcw className="mr-2 h-4 w-4" /> {t("dashboard.dialogs.resetQr")}
                 </Button>
               </div>
