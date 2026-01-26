@@ -243,6 +243,7 @@ const resources = {
         tabs: {
           members: "Membri",
           checkins: "Check-in recenti",
+          import: "Importa",
         },
         members: {
           title: "Gestione membri",
@@ -335,6 +336,7 @@ const resources = {
           importCta: "Importa",
           importCreateCta: "Crea membri",
           importing: "Importazione...",
+          importClear: "Reset",
         },
         toasts: {
           errorTitle: "Errore",
@@ -645,6 +647,7 @@ const resources = {
         tabs: {
           members: "Members",
           checkins: "Recent Check-ins",
+          import: "Import",
         },
         members: {
           title: "Members Management",
@@ -737,6 +740,7 @@ const resources = {
           importCta: "Import",
           importCreateCta: "Create members",
           importing: "Importing...",
+          importClear: "Reset",
         },
         toasts: {
           errorTitle: "Error",
@@ -1045,6 +1049,7 @@ const resources = {
         tabs: {
           members: "Mitglieder",
           checkins: "Letzte Check-ins",
+          import: "Import",
         },
         members: {
           title: "Mitgliederverwaltung",
@@ -1137,6 +1142,7 @@ const resources = {
           importCta: "Importieren",
           importCreateCta: "Mitglieder erstellen",
           importing: "Import läuft...",
+          importClear: "Zurücksetzen",
         },
         toasts: {
           errorTitle: "Fehler",

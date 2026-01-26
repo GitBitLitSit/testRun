@@ -114,7 +114,6 @@ export default function OwnerDashboard() {
   const [createError, setCreateError] = useState<string | null>(null)
   
   // Import State
-  const [importDialogOpen, setImportDialogOpen] = useState(false)
   const [importFile, setImportFile] = useState<File | null>(null)
   const [isImporting, setIsImporting] = useState(false)
   const [importStep, setImportStep] = useState<"idle" | "parsing" | "checking" | "review" | "creating" | "done">("idle")
@@ -152,7 +151,7 @@ export default function OwnerDashboard() {
   }, [createDialogOpen])
 
   useEffect(() => {
-    if (!importDialogOpen) {
+    if (activeTab !== "import") {
       setImportFile(null)
       setIsImporting(false)
       setImportStep("idle")
@@ -162,7 +161,7 @@ export default function OwnerDashboard() {
       setImportPreviewPage(1)
       setImportError(null)
     }
-  }, [importDialogOpen])
+  }, [activeTab])
 
   useEffect(() => {
     const totalPages = Math.max(1, Math.ceil(importPreviewRows.length / importPreviewPageSize))
@@ -657,7 +656,7 @@ export default function OwnerDashboard() {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="members">{t("dashboard.tabs.members")}</TabsTrigger>
               <TabsTrigger value="checkins">
                 {t("dashboard.tabs.checkins")}
@@ -665,6 +664,7 @@ export default function OwnerDashboard() {
                   <Badge className="ml-2 bg-primary text-primary-foreground">{unreadCheckInsCount}</Badge>
                 )}
               </TabsTrigger>
+              <TabsTrigger value="import">{t("dashboard.tabs.import")}</TabsTrigger>
             </TabsList>
 
             {/* --- MEMBERS TAB --- */}
@@ -682,9 +682,6 @@ export default function OwnerDashboard() {
                       </Button>
                       <Button variant="outline" size="sm" onClick={handleExportCSV}>
                         <Upload className="mr-2 h-4 w-4" /> {t("dashboard.members.export")}
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={() => setImportDialogOpen(true)}>
-                        <Download className="mr-2 h-4 w-4" /> {t("dashboard.members.import")}
                       </Button>
                     </div>
                   </div>
@@ -893,6 +890,277 @@ export default function OwnerDashboard() {
                 </CardContent>
               </Card>
             </TabsContent>
+
+            {/* --- IMPORT TAB --- */}
+            <TabsContent value="import" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t("dashboard.dialogs.importTitle")}</CardTitle>
+                  <CardDescription>{t("dashboard.dialogs.importDescription")}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="import-file">{t("dashboard.dialogs.importFileLabel")}</Label>
+                      <div className="rounded-lg border border-dashed border-border/70 bg-card/60 p-4 shadow-sm">
+                        <div className="flex items-start gap-3">
+                          <Upload className="mt-0.5 h-5 w-5 text-muted-foreground" />
+                          <div>
+                            <p className="text-sm font-medium">{t("dashboard.dialogs.importDropHint")}</p>
+                            <p className="text-xs text-muted-foreground">{t("dashboard.dialogs.importFileTypes")}</p>
+                          </div>
+                        </div>
+                        <input
+                          ref={importInputRef}
+                          id="import-file"
+                          type="file"
+                          accept=".xlsx,.xls"
+                          className="sr-only"
+                          onChange={(e) => handleImportFileChange(e.target.files?.[0] || null)}
+                        />
+                        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => importInputRef.current?.click()}
+                            disabled={isImporting}
+                          >
+                            {t("dashboard.dialogs.importChooseFile")}
+                          </Button>
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                            <span>{importFile ? importFile.name : t("dashboard.dialogs.importNoFile")}</span>
+                            {importFile && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleImportFileChange(null)}
+                                disabled={isImporting}
+                                className="text-destructive/90 hover:text-destructive hover:bg-destructive/10"
+                              >
+                                {t("dashboard.dialogs.importRemoveFile")}
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {importError && (
+                      <div className="flex items-center gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        {importError}
+                      </div>
+                    )}
+
+                    {(importStep !== "idle" || importSummary) && (
+                      <div className="space-y-3 rounded-md border bg-card/60 p-4 shadow-sm">
+                        <div className="flex items-center gap-2 text-sm font-medium">
+                          {importStep === "done" ? (
+                            <CheckCircle2 className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <Spinner className="text-primary" />
+                          )}
+                          <span>
+                            {importStep === "done"
+                              ? t("dashboard.dialogs.importDone")
+                              : importStep === "review"
+                                ? t("dashboard.dialogs.importReview")
+                                : t("dashboard.dialogs.importInProgress")}
+                          </span>
+                        </div>
+
+                        <div className="space-y-2">
+                          {(["parsing", "checking", "review", "creating"] as const).map((step, index) => {
+                            const stepOrder = ["parsing", "checking", "review", "creating"] as const
+                            const activeIndex = stepOrder.indexOf(importStep as (typeof stepOrder)[number])
+                            const isDone = importStep === "done" || (activeIndex !== -1 && index < activeIndex)
+                            const isActive = activeIndex !== -1 && index === activeIndex
+
+                            return (
+                              <div key={step} className="flex items-center gap-2 text-sm">
+                                {isDone ? (
+                                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                ) : isActive ? (
+                                  <Spinner className="h-4 w-4 text-primary" />
+                                ) : (
+                                  <div className="h-4 w-4 rounded-full border border-muted-foreground/40" />
+                                )}
+                                <span className={isDone || isActive ? "text-foreground" : "text-muted-foreground"}>
+                                  {t(`dashboard.importSteps.${step}`)}
+                                </span>
+                              </div>
+                            )
+                          })}
+                        </div>
+
+                        {importSummary && (
+                          <div className="rounded-md bg-background p-3 text-xs text-muted-foreground">
+                            <p className="text-sm font-medium text-foreground">{t("dashboard.dialogs.importResultsTitle")}</p>
+                            <ul className="mt-2 space-y-1">
+                              <li>{t("dashboard.dialogs.importCreated", { count: importSummary.created })}</li>
+                              <li>{t("dashboard.dialogs.importInvalid", { count: importSummary.invalid })}</li>
+                              {importSummary.duplicates > 0 && (
+                                <li>{t("dashboard.dialogs.importDuplicates", { count: importSummary.duplicates })}</li>
+                              )}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {importStep === "review" && (
+                      <div className="space-y-4 rounded-md border bg-card/60 p-4 shadow-sm">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                          <div>
+                            <p className="text-sm font-medium">
+                              {t("dashboard.dialogs.importNewMembers", { count: importPreviewRows.length })}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {t("dashboard.dialogs.importInvalid", { count: importCounts?.invalid ?? 0 })}
+                              {importCounts && importCounts.duplicates > 0 ? ` · ${t("dashboard.dialogs.importDuplicates", { count: importCounts.duplicates })}` : ""}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              id="send-email-all"
+                              checked={sendEmailAllState}
+                              onCheckedChange={(checked) => handleSendEmailAllToggle(checked === true)}
+                            />
+                            <Label htmlFor="send-email-all" className="text-sm font-medium">
+                              {t("dashboard.dialogs.importSendEmailAll")}
+                            </Label>
+                          </div>
+                        </div>
+
+                        <div className="rounded-md border bg-background">
+                          <Table className="min-w-[900px]">
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead className="w-[200px]">{t("dashboard.dialogs.firstName")}</TableHead>
+                                <TableHead className="w-[200px]">{t("dashboard.dialogs.lastName")}</TableHead>
+                                <TableHead className="w-[320px]">{t("dashboard.dialogs.email")}</TableHead>
+                                <TableHead className="w-[180px] text-center">{t("dashboard.dialogs.sendEmailWithQr")}</TableHead>
+                                <TableHead className="w-[80px] text-right">{t("dashboard.dialogs.actions")}</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {importPreviewRows.length === 0 ? (
+                                <TableRow>
+                                  <TableCell colSpan={5} className="py-6 text-center text-sm text-muted-foreground">
+                                    {t("dashboard.dialogs.importEmpty")}
+                                  </TableCell>
+                                </TableRow>
+                              ) : (
+                                previewRows.map((row, index) => (
+                                  <TableRow key={`${row.email}-${previewStart + index}`}>
+                                    <TableCell>
+                                      <Input
+                                        value={row.firstName}
+                                        onChange={(e) => updatePreviewRow(previewStart + index, { firstName: e.target.value })}
+                                        className="h-9 min-w-[160px]"
+                                      />
+                                    </TableCell>
+                                    <TableCell>
+                                      <Input
+                                        value={row.lastName}
+                                        onChange={(e) => updatePreviewRow(previewStart + index, { lastName: e.target.value })}
+                                        className="h-9 min-w-[160px]"
+                                      />
+                                    </TableCell>
+                                    <TableCell>
+                                      <Input value={row.email} readOnly className="h-9 min-w-[260px] text-xs text-muted-foreground" />
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                      <Checkbox
+                                        checked={row.sendEmail}
+                                        onCheckedChange={(checked) => updatePreviewRow(previewStart + index, { sendEmail: checked === true })}
+                                      />
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => removePreviewRow(previewStart + index)}
+                                        className="text-destructive/90 hover:text-destructive hover:bg-destructive/10"
+                                        title={t("dashboard.dialogs.remove")}
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </TableCell>
+                                  </TableRow>
+                                ))
+                              )}
+                            </TableBody>
+                          </Table>
+                        </div>
+                        {importPreviewRows.length > 0 && (
+                          <div className="flex flex-col gap-3 border-t pt-3 sm:flex-row sm:items-center sm:justify-between">
+                            <p className="text-xs text-muted-foreground">
+                              {t("dashboard.dialogs.importShowing", {
+                                from: previewEnd === 0 ? 0 : previewStart + 1,
+                                to: previewEnd,
+                                total: importPreviewRows.length,
+                              })}
+                            </p>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setImportPreviewPage((page) => Math.max(1, page - 1))}
+                                disabled={previewPage === 1}
+                              >
+                                <ChevronLeft className="h-4 w-4" />
+                              </Button>
+                              <span className="text-xs text-muted-foreground">
+                                {t("dashboard.dialogs.importPage", { page: previewPage, totalPages: totalPreviewPages })}
+                              </span>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setImportPreviewPage((page) => Math.min(totalPreviewPages, page + 1))}
+                                disabled={previewPage === totalPreviewPages}
+                              >
+                                <ChevronRight className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" onClick={() => handleImportFileChange(null)} disabled={isImporting}>
+                      {t("dashboard.dialogs.importClear")}
+                    </Button>
+                    {importStep === "review" ? (
+                      <Button onClick={handleConfirmCreate} disabled={isImporting || importPreviewRows.length === 0}>
+                        {isImporting ? (
+                          <span className="inline-flex items-center gap-2">
+                            <Spinner className="h-4 w-4" />
+                            {t("dashboard.dialogs.importing")}
+                          </span>
+                        ) : (
+                          t("dashboard.dialogs.importCreateCta")
+                        )}
+                      </Button>
+                    ) : (
+                      <Button onClick={handleImportExcel} disabled={!importFile || isImporting}>
+                        {isImporting ? (
+                          <span className="inline-flex items-center gap-2">
+                            <Spinner className="h-4 w-4" />
+                            {t("dashboard.dialogs.importing")}
+                          </span>
+                        ) : (
+                          t("dashboard.dialogs.importCta")
+                        )}
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
           </Tabs>
         </div>
       </main>
@@ -1065,273 +1333,6 @@ export default function OwnerDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Import Excel Dialog */}
-      <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
-        <DialogContent className="w-[98vw] h-[95vh] max-w-none max-h-none overflow-hidden sm:w-[98vw] sm:max-w-none">
-          <DialogHeader>
-            <DialogTitle>{t("dashboard.dialogs.importTitle")}</DialogTitle>
-            <DialogDescription>{t("dashboard.dialogs.importDescription")}</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="import-file">{t("dashboard.dialogs.importFileLabel")}</Label>
-              <div className="rounded-lg border border-dashed border-border/70 bg-card/60 p-4 shadow-sm">
-                <div className="flex items-start gap-3">
-                  <Upload className="mt-0.5 h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium">{t("dashboard.dialogs.importDropHint")}</p>
-                    <p className="text-xs text-muted-foreground">{t("dashboard.dialogs.importFileTypes")}</p>
-                  </div>
-                </div>
-                <input
-                  ref={importInputRef}
-                  id="import-file"
-                  type="file"
-                  accept=".xlsx,.xls"
-                  className="sr-only"
-                  onChange={(e) => handleImportFileChange(e.target.files?.[0] || null)}
-                />
-                <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => importInputRef.current?.click()}
-                    disabled={isImporting}
-                  >
-                    {t("dashboard.dialogs.importChooseFile")}
-                  </Button>
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                    <span>{importFile ? importFile.name : t("dashboard.dialogs.importNoFile")}</span>
-                    {importFile && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleImportFileChange(null)}
-                        disabled={isImporting}
-                        className="text-destructive/90 hover:text-destructive hover:bg-destructive/10"
-                      >
-                        {t("dashboard.dialogs.importRemoveFile")}
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {importError && (
-              <div className="flex items-center gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
-                <AlertCircle className="h-4 w-4" />
-                {importError}
-              </div>
-            )}
-
-            {(importStep !== "idle" || importSummary) && (
-              <div className="space-y-3 rounded-md border bg-card/60 p-4 shadow-sm">
-                <div className="flex items-center gap-2 text-sm font-medium">
-                  {importStep === "done" ? (
-                    <CheckCircle2 className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <Spinner className="text-primary" />
-                  )}
-                  <span>
-                    {importStep === "done"
-                      ? t("dashboard.dialogs.importDone")
-                      : importStep === "review"
-                        ? t("dashboard.dialogs.importReview")
-                        : t("dashboard.dialogs.importInProgress")}
-                  </span>
-                </div>
-
-                <div className="space-y-2">
-                  {(["parsing", "checking", "review", "creating"] as const).map((step, index) => {
-                    const stepOrder = ["parsing", "checking", "review", "creating"] as const
-                    const activeIndex = stepOrder.indexOf(importStep as (typeof stepOrder)[number])
-                    const isDone = importStep === "done" || (activeIndex !== -1 && index < activeIndex)
-                    const isActive = activeIndex !== -1 && index === activeIndex
-
-                    return (
-                      <div key={step} className="flex items-center gap-2 text-sm">
-                        {isDone ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-600" />
-                        ) : isActive ? (
-                          <Spinner className="h-4 w-4 text-primary" />
-                        ) : (
-                          <div className="h-4 w-4 rounded-full border border-muted-foreground/40" />
-                        )}
-                        <span className={isDone || isActive ? "text-foreground" : "text-muted-foreground"}>
-                          {t(`dashboard.importSteps.${step}`)}
-                        </span>
-                      </div>
-                    )
-                  })}
-                </div>
-
-                {importSummary && (
-                  <div className="rounded-md bg-background p-3 text-xs text-muted-foreground">
-                    <p className="text-sm font-medium text-foreground">{t("dashboard.dialogs.importResultsTitle")}</p>
-                    <ul className="mt-2 space-y-1">
-                      <li>{t("dashboard.dialogs.importCreated", { count: importSummary.created })}</li>
-                      <li>{t("dashboard.dialogs.importInvalid", { count: importSummary.invalid })}</li>
-                      {importSummary.duplicates > 0 && (
-                        <li>{t("dashboard.dialogs.importDuplicates", { count: importSummary.duplicates })}</li>
-                      )}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {importStep === "review" && (
-              <div className="space-y-4 rounded-md border bg-card/60 p-4 shadow-sm">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm font-medium">
-                      {t("dashboard.dialogs.importNewMembers", { count: importPreviewRows.length })}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {t("dashboard.dialogs.importInvalid", { count: importCounts?.invalid ?? 0 })}
-                      {importCounts && importCounts.duplicates > 0 ? ` · ${t("dashboard.dialogs.importDuplicates", { count: importCounts.duplicates })}` : ""}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="send-email-all"
-                      checked={sendEmailAllState}
-                      onCheckedChange={(checked) => handleSendEmailAllToggle(checked === true)}
-                    />
-                    <Label htmlFor="send-email-all" className="text-sm font-medium">
-                      {t("dashboard.dialogs.importSendEmailAll")}
-                    </Label>
-                  </div>
-                </div>
-
-                <div className="rounded-md border bg-background">
-                  <Table className="min-w-[900px]">
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-[200px]">{t("dashboard.dialogs.firstName")}</TableHead>
-                        <TableHead className="w-[200px]">{t("dashboard.dialogs.lastName")}</TableHead>
-                        <TableHead className="w-[320px]">{t("dashboard.dialogs.email")}</TableHead>
-                        <TableHead className="w-[180px] text-center">{t("dashboard.dialogs.sendEmailWithQr")}</TableHead>
-                        <TableHead className="w-[80px] text-right">{t("dashboard.dialogs.actions")}</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {importPreviewRows.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={5} className="py-6 text-center text-sm text-muted-foreground">
-                            {t("dashboard.dialogs.importEmpty")}
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        previewRows.map((row, index) => (
-                          <TableRow key={`${row.email}-${previewStart + index}`}>
-                            <TableCell>
-                              <Input
-                                value={row.firstName}
-                                onChange={(e) => updatePreviewRow(previewStart + index, { firstName: e.target.value })}
-                                className="h-9 min-w-[160px]"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Input
-                                value={row.lastName}
-                                onChange={(e) => updatePreviewRow(previewStart + index, { lastName: e.target.value })}
-                                className="h-9 min-w-[160px]"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <Input value={row.email} readOnly className="h-9 min-w-[260px] text-xs text-muted-foreground" />
-                            </TableCell>
-                            <TableCell className="text-center">
-                              <Checkbox
-                                checked={row.sendEmail}
-                                onCheckedChange={(checked) => updatePreviewRow(previewStart + index, { sendEmail: checked === true })}
-                              />
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => removePreviewRow(previewStart + index)}
-                                className="text-destructive/90 hover:text-destructive hover:bg-destructive/10"
-                                title={t("dashboard.dialogs.remove")}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
-                {importPreviewRows.length > 0 && (
-                  <div className="flex flex-col gap-3 border-t pt-3 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-xs text-muted-foreground">
-                      {t("dashboard.dialogs.importShowing", {
-                        from: previewEnd === 0 ? 0 : previewStart + 1,
-                        to: previewEnd,
-                        total: importPreviewRows.length,
-                      })}
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setImportPreviewPage((page) => Math.max(1, page - 1))}
-                        disabled={previewPage === 1}
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                      </Button>
-                      <span className="text-xs text-muted-foreground">
-                        {t("dashboard.dialogs.importPage", { page: previewPage, totalPages: totalPreviewPages })}
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setImportPreviewPage((page) => Math.min(totalPreviewPages, page + 1))}
-                        disabled={previewPage === totalPreviewPages}
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setImportDialogOpen(false)} disabled={isImporting}>
-              {t("common.cancel")}
-            </Button>
-            {importStep === "review" ? (
-              <Button onClick={handleConfirmCreate} disabled={isImporting || importPreviewRows.length === 0}>
-                {isImporting ? (
-                  <span className="inline-flex items-center gap-2">
-                    <Spinner className="h-4 w-4" />
-                    {t("dashboard.dialogs.importing")}
-                  </span>
-                ) : (
-                  t("dashboard.dialogs.importCreateCta")
-                )}
-              </Button>
-            ) : (
-              <Button onClick={handleImportExcel} disabled={!importFile || isImporting}>
-                {isImporting ? (
-                  <span className="inline-flex items-center gap-2">
-                    <Spinner className="h-4 w-4" />
-                    {t("dashboard.dialogs.importing")}
-                  </span>
-                ) : (
-                  t("dashboard.dialogs.importCta")
-                )}
-              </Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Member Details Drawer */}
       <Sheet open={detailsDrawerOpen} onOpenChange={setDetailsDrawerOpen}>
