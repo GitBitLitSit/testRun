@@ -32,6 +32,7 @@ import {
   deleteMember,
   checkExistingUsers,
   bulkCreateUsers,
+  bulkUpdateUsers,
 } from "@/lib/api"
 import { useRealtimeCheckIns } from "@/hooks/use-realtime"
 import type { Member, CheckInEvent } from "@/lib/types"
@@ -46,11 +47,13 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertCircle,
+  CheckCircle2,
   Pencil,
   Trash2,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import * as XLSX from "xlsx"
+import { Spinner } from "@/components/ui/spinner"
 
 export default function OwnerDashboard() {
   const router = useRouter()
@@ -113,6 +116,9 @@ export default function OwnerDashboard() {
   const [importDialogOpen, setImportDialogOpen] = useState(false)
   const [importFile, setImportFile] = useState<File | null>(null)
   const [isImporting, setIsImporting] = useState(false)
+  const [importStep, setImportStep] = useState<"idle" | "parsing" | "checking" | "creating" | "updating" | "done">("idle")
+  const [importSummary, setImportSummary] = useState<{ created: number; updated: number; invalid: number; duplicates: number } | null>(null)
+  const [importError, setImportError] = useState<string | null>(null)
   
   // Edit State
   const [editDialogOpen, setEditDialogOpen] = useState(false)
@@ -139,6 +145,16 @@ export default function OwnerDashboard() {
       setNewMemberForm({ firstName: "", lastName: "", email: "", sendEmail: false })
     }
   }, [createDialogOpen])
+
+  useEffect(() => {
+    if (!importDialogOpen) {
+      setImportFile(null)
+      setIsImporting(false)
+      setImportStep("idle")
+      setImportSummary(null)
+      setImportError(null)
+    }
+  }, [importDialogOpen])
 
   // --- WEBSOCKET HANDLER ---
   const handleNewCheckIn = useCallback((event: CheckInEvent) => {
@@ -336,8 +352,11 @@ export default function OwnerDashboard() {
   }
 
   const handleImportExcel = async () => {
-    if (!importFile) return
+    if (!importFile || isImporting) return
     setIsImporting(true)
+    setImportError(null)
+    setImportSummary(null)
+    setImportStep("parsing")
     try {
       const data = await importFile.arrayBuffer()
       const workbook = XLSX.read(data, { type: "array" })
@@ -368,35 +387,68 @@ export default function OwnerDashboard() {
       const validRows = normalizedRows.filter(
         (row) => row.firstName && row.lastName && row.email && emailPattern.test(row.email),
       )
+      const invalidRows = Math.max(normalizedRows.length - validRows.length, 0)
 
-      if (validRows.length === 0) {
+      const uniqueByEmail = new Map<string, { firstName: string; lastName: string; email: string }>()
+      validRows.forEach((row) => {
+        uniqueByEmail.set(row.email, row)
+      })
+      const uniqueRows = Array.from(uniqueByEmail.values())
+      const duplicateRows = Math.max(validRows.length - uniqueRows.length, 0)
+
+      if (uniqueRows.length === 0) {
+        setImportSummary({ created: 0, updated: 0, invalid: invalidRows, duplicates: duplicateRows })
+        setImportStep("done")
         toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedImport"), variant: "destructive" })
         return
       }
 
       // Step A: ask backend which emails already exist.
-      const allEmails = Array.from(new Set(validRows.map((row) => row.email)))
-      const existingResponse = await checkExistingUsers(allEmails)
+      setImportStep("checking")
+      const existingResponse = await checkExistingUsers(uniqueRows.map((row) => row.email))
       const existingEmails = Array.isArray(existingResponse?.existingEmails) ? existingResponse.existingEmails : []
 
-      // Step B: client-side set difference to keep only new users.
+      // Step B: client-side set difference to separate new vs existing.
       const existingSet = new Set(existingEmails.map((email: string) => email.toLowerCase()))
-      const newUsers = validRows.filter((row) => !existingSet.has(row.email))
+      const newUsers = uniqueRows.filter((row) => !existingSet.has(row.email))
+      const existingUsers = uniqueRows.filter((row) => existingSet.has(row.email))
 
-      // Step C: send only new users to bulk create.
+      let created = 0
+      let updated = 0
+      let duplicates = duplicateRows
+
+      // Step C: create new members only.
       if (newUsers.length > 0) {
+        setImportStep("creating")
         const bulkResult = await bulkCreateUsers(newUsers)
-        const inserted = typeof bulkResult?.inserted === "number" ? bulkResult.inserted : newUsers.length
-        toast({ title: t("dashboard.toasts.importCompleteTitle"), description: t("dashboard.toasts.importCompleteDesc", { count: inserted }) })
-        setMembersPage(1)
-        loadMembers()
-      } else {
-        toast({ title: t("dashboard.toasts.importCompleteTitle"), description: t("dashboard.toasts.importCompleteDesc", { count: 0 }) })
+        created = typeof bulkResult?.inserted === "number" ? bulkResult.inserted : newUsers.length
+        if (typeof bulkResult?.duplicates === "number") {
+          duplicates += bulkResult.duplicates
+        }
       }
 
-      setImportDialogOpen(false)
-      setImportFile(null)
+      // Step D: update existing members to match the sheet.
+      if (existingUsers.length > 0) {
+        setImportStep("updating")
+        const updateResult = await bulkUpdateUsers(existingUsers)
+        updated = typeof updateResult?.matched === "number" ? updateResult.matched : existingUsers.length
+      }
+
+      setImportSummary({ created, updated, invalid: invalidRows, duplicates })
+      setImportStep("done")
+
+      if (created > 0 || updated > 0) {
+        setMembersPage(1)
+        loadMembers()
+      }
+
+      toast({
+        title: t("dashboard.toasts.importCompleteTitle"),
+        description: t("dashboard.toasts.importCompleteDesc", { created, updated }),
+      })
     } catch (error) {
+      setImportError(t("dashboard.toasts.failedImport"))
+      setImportStep("idle")
       toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedImport"), variant: "destructive" })
     } finally {
       setIsImporting(false)
@@ -917,12 +969,113 @@ export default function OwnerDashboard() {
             <DialogDescription>{t("dashboard.dialogs.importDescription")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <Input type="file" accept=".xlsx,.xls" onChange={(e) => setImportFile(e.target.files?.[0] || null)} />
+            <div className="space-y-2">
+              <Label htmlFor="import-file">{t("dashboard.dialogs.importFileLabel")}</Label>
+              <div className="rounded-lg border border-dashed border-border/70 bg-muted/30 p-4">
+                <div className="flex items-start gap-3">
+                  <Upload className="mt-0.5 h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm font-medium">{t("dashboard.dialogs.importDropHint")}</p>
+                    <p className="text-xs text-muted-foreground">{t("dashboard.dialogs.importFileTypes")}</p>
+                  </div>
+                </div>
+                <Input
+                  id="import-file"
+                  type="file"
+                  accept=".xlsx,.xls"
+                  className="mt-3 h-11"
+                  onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+                />
+              </div>
+            </div>
+
+            {importFile && (
+              <div className="flex items-center justify-between rounded-md border bg-background p-3">
+                <div>
+                  <p className="text-sm font-medium">{importFile.name}</p>
+                  <p className="text-xs text-muted-foreground">{(importFile.size / 1024).toFixed(1)} KB</p>
+                </div>
+                <Button variant="ghost" size="sm" onClick={() => setImportFile(null)} disabled={isImporting}>
+                  {t("dashboard.dialogs.importRemoveFile")}
+                </Button>
+              </div>
+            )}
+
+            {importError && (
+              <div className="flex items-center gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+                <AlertCircle className="h-4 w-4" />
+                {importError}
+              </div>
+            )}
+
+            {(importStep !== "idle" || importSummary) && (
+              <div className="space-y-3 rounded-md border bg-muted/30 p-4">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  {importStep === "done" ? (
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <Spinner className="text-primary" />
+                  )}
+                  <span>
+                    {importStep === "done"
+                      ? t("dashboard.dialogs.importDone")
+                      : t(`dashboard.importSteps.${importStep}`)}
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  {(["parsing", "checking", "creating", "updating"] as const).map((step, index) => {
+                    const stepOrder = ["parsing", "checking", "creating", "updating"] as const
+                    const activeIndex = stepOrder.indexOf(importStep as (typeof stepOrder)[number])
+                    const isDone = importStep === "done" || (activeIndex !== -1 && index < activeIndex)
+                    const isActive = activeIndex !== -1 && index === activeIndex
+
+                    return (
+                      <div key={step} className="flex items-center gap-2 text-sm">
+                        {isDone ? (
+                          <CheckCircle2 className="h-4 w-4 text-green-600" />
+                        ) : isActive ? (
+                          <Spinner className="h-4 w-4 text-primary" />
+                        ) : (
+                          <div className="h-4 w-4 rounded-full border border-muted-foreground/40" />
+                        )}
+                        <span className={isDone || isActive ? "text-foreground" : "text-muted-foreground"}>
+                          {t(`dashboard.importSteps.${step}`)}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {importSummary && (
+                  <div className="rounded-md bg-background p-3 text-xs text-muted-foreground">
+                    <p className="text-sm font-medium text-foreground">{t("dashboard.dialogs.importResultsTitle")}</p>
+                    <ul className="mt-2 space-y-1">
+                      <li>{t("dashboard.dialogs.importCreated", { count: importSummary.created })}</li>
+                      <li>{t("dashboard.dialogs.importUpdated", { count: importSummary.updated })}</li>
+                      <li>{t("dashboard.dialogs.importInvalid", { count: importSummary.invalid })}</li>
+                      {importSummary.duplicates > 0 && (
+                        <li>{t("dashboard.dialogs.importDuplicates", { count: importSummary.duplicates })}</li>
+                      )}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setImportDialogOpen(false)}>{t("common.cancel")}</Button>
+            <Button variant="outline" onClick={() => setImportDialogOpen(false)} disabled={isImporting}>
+              {t("common.cancel")}
+            </Button>
             <Button onClick={handleImportExcel} disabled={!importFile || isImporting}>
-              {t("dashboard.dialogs.importCta")}
+              {isImporting ? (
+                <span className="inline-flex items-center gap-2">
+                  <Spinner className="h-4 w-4" />
+                  {t("dashboard.dialogs.importing")}
+                </span>
+              ) : (
+                t("dashboard.dialogs.importCta")
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
