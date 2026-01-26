@@ -681,10 +681,10 @@ export default function OwnerDashboard() {
                         <UserPlus className="mr-2 h-4 w-4" /> {t("dashboard.members.addMember")}
                       </Button>
                       <Button variant="outline" size="sm" onClick={handleExportCSV}>
-                        <Download className="mr-2 h-4 w-4" /> {t("dashboard.members.export")}
+                        <Upload className="mr-2 h-4 w-4" /> {t("dashboard.members.export")}
                       </Button>
                       <Button variant="outline" size="sm" onClick={() => setImportDialogOpen(true)}>
-                        <Upload className="mr-2 h-4 w-4" /> {t("dashboard.members.import")}
+                        <Download className="mr-2 h-4 w-4" /> {t("dashboard.members.import")}
                       </Button>
                     </div>
                   </div>
@@ -1067,7 +1067,7 @@ export default function OwnerDashboard() {
 
       {/* Import Excel Dialog */}
       <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
-        <DialogContent className="max-w-6xl w-[95vw] max-h-[92vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl w-[95vw] max-h-[92vh] overflow-y-auto sm:overflow-hidden">
           <DialogHeader>
             <DialogTitle>{t("dashboard.dialogs.importTitle")}</DialogTitle>
             <DialogDescription>{t("dashboard.dialogs.importDescription")}</DialogDescription>
@@ -1075,7 +1075,7 @@ export default function OwnerDashboard() {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="import-file">{t("dashboard.dialogs.importFileLabel")}</Label>
-              <div className="rounded-lg border border-dashed border-border/70 bg-muted/30 p-4">
+              <div className="rounded-lg border border-dashed border-border/70 bg-card/60 p-4 shadow-sm">
                 <div className="flex items-start gap-3">
                   <Upload className="mt-0.5 h-5 w-5 text-muted-foreground" />
                   <div>
@@ -1109,6 +1109,7 @@ export default function OwnerDashboard() {
                         size="sm"
                         onClick={() => handleImportFileChange(null)}
                         disabled={isImporting}
+                        className="text-destructive/90 hover:text-destructive hover:bg-destructive/10"
                       >
                         {t("dashboard.dialogs.importRemoveFile")}
                       </Button>
@@ -1126,7 +1127,7 @@ export default function OwnerDashboard() {
             )}
 
             {(importStep !== "idle" || importSummary) && (
-              <div className="space-y-3 rounded-md border bg-muted/30 p-4">
+              <div className="space-y-3 rounded-md border bg-card/60 p-4 shadow-sm">
                 <div className="flex items-center gap-2 text-sm font-medium">
                   {importStep === "done" ? (
                     <CheckCircle2 className="h-4 w-4 text-green-600" />
@@ -1182,7 +1183,7 @@ export default function OwnerDashboard() {
             )}
 
             {importStep === "review" && (
-              <div className="space-y-4 rounded-md border bg-background p-4 shadow-sm">
+              <div className="space-y-4 rounded-md border bg-card/60 p-4 shadow-sm">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-sm font-medium">
