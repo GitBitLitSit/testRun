@@ -121,6 +121,8 @@ export default function OwnerDashboard() {
   const [importSummary, setImportSummary] = useState<{ created: number; invalid: number; duplicates: number } | null>(null)
   const [importCounts, setImportCounts] = useState<{ invalid: number; duplicates: number } | null>(null)
   const [importPreviewRows, setImportPreviewRows] = useState<Array<{ firstName: string; lastName: string; email: string; sendEmail: boolean }>>([])
+  const [importPreviewPage, setImportPreviewPage] = useState(1)
+  const importPreviewPageSize = 12
   const [importError, setImportError] = useState<string | null>(null)
   
   // Edit State
@@ -157,9 +159,15 @@ export default function OwnerDashboard() {
       setImportSummary(null)
       setImportCounts(null)
       setImportPreviewRows([])
+      setImportPreviewPage(1)
       setImportError(null)
     }
   }, [importDialogOpen])
+
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(importPreviewRows.length / importPreviewPageSize))
+    setImportPreviewPage((page) => Math.min(page, totalPages))
+  }, [importPreviewRows.length, importPreviewPageSize])
 
   // --- WEBSOCKET HANDLER ---
   const handleNewCheckIn = useCallback((event: CheckInEvent) => {
@@ -377,6 +385,7 @@ export default function OwnerDashboard() {
     setImportSummary(null)
     setImportCounts(null)
     setImportPreviewRows([])
+    setImportPreviewPage(1)
     setImportError(null)
   }
 
@@ -524,6 +533,7 @@ export default function OwnerDashboard() {
       }
 
       setImportPreviewRows(newUsers.map((row) => ({ ...row, sendEmail: false })))
+      setImportPreviewPage(1)
       setImportStep("review")
     } catch (error) {
       setImportError(t("dashboard.toasts.failedImport"))
@@ -589,6 +599,12 @@ export default function OwnerDashboard() {
         : importPreviewRows.some((row) => row.sendEmail)
           ? "indeterminate"
           : false
+
+  const totalPreviewPages = Math.max(1, Math.ceil(importPreviewRows.length / importPreviewPageSize))
+  const previewPage = Math.min(importPreviewPage, totalPreviewPages)
+  const previewStart = (previewPage - 1) * importPreviewPageSize
+  const previewEnd = Math.min(previewStart + importPreviewPageSize, importPreviewRows.length)
+  const previewRows = importPreviewRows.slice(previewStart, previewEnd)
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -1189,7 +1205,7 @@ export default function OwnerDashboard() {
                   </div>
                 </div>
 
-                <div className="max-h-80 overflow-auto rounded-md border">
+                <div className="rounded-md border bg-background">
                   <Table className="min-w-[900px]">
                     <TableHeader>
                       <TableRow>
@@ -1208,19 +1224,19 @@ export default function OwnerDashboard() {
                           </TableCell>
                         </TableRow>
                       ) : (
-                        importPreviewRows.map((row, index) => (
-                          <TableRow key={`${row.email}-${index}`}>
+                        previewRows.map((row, index) => (
+                          <TableRow key={`${row.email}-${previewStart + index}`}>
                             <TableCell>
                               <Input
                                 value={row.firstName}
-                                onChange={(e) => updatePreviewRow(index, { firstName: e.target.value })}
+                                onChange={(e) => updatePreviewRow(previewStart + index, { firstName: e.target.value })}
                                 className="h-9 min-w-[160px]"
                               />
                             </TableCell>
                             <TableCell>
                               <Input
                                 value={row.lastName}
-                                onChange={(e) => updatePreviewRow(index, { lastName: e.target.value })}
+                                onChange={(e) => updatePreviewRow(previewStart + index, { lastName: e.target.value })}
                                 className="h-9 min-w-[160px]"
                               />
                             </TableCell>
@@ -1230,15 +1246,15 @@ export default function OwnerDashboard() {
                             <TableCell className="text-center">
                               <Checkbox
                                 checked={row.sendEmail}
-                                onCheckedChange={(checked) => updatePreviewRow(index, { sendEmail: checked === true })}
+                                onCheckedChange={(checked) => updatePreviewRow(previewStart + index, { sendEmail: checked === true })}
                               />
                             </TableCell>
                             <TableCell className="text-right">
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => removePreviewRow(index)}
-                                className="text-muted-foreground hover:text-destructive"
+                                onClick={() => removePreviewRow(previewStart + index)}
+                                className="text-destructive/90 hover:text-destructive hover:bg-destructive/10"
                                 title={t("dashboard.dialogs.remove")}
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -1250,6 +1266,38 @@ export default function OwnerDashboard() {
                     </TableBody>
                   </Table>
                 </div>
+                {importPreviewRows.length > 0 && (
+                  <div className="flex flex-col gap-3 border-t pt-3 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-xs text-muted-foreground">
+                      {t("dashboard.dialogs.importShowing", {
+                        from: previewEnd === 0 ? 0 : previewStart + 1,
+                        to: previewEnd,
+                        total: importPreviewRows.length,
+                      })}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setImportPreviewPage((page) => Math.max(1, page - 1))}
+                        disabled={previewPage === 1}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <span className="text-xs text-muted-foreground">
+                        {t("dashboard.dialogs.importPage", { page: previewPage, totalPages: totalPreviewPages })}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setImportPreviewPage((page) => Math.min(totalPreviewPages, page + 1))}
+                        disabled={previewPage === totalPreviewPages}
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
