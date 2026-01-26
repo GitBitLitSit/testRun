@@ -1419,7 +1419,7 @@ export default function OwnerDashboard() {
                       width={200}
                       height={200}
                       loading="lazy"
-                      className="h-[200px] w-[200px] rounded-md border border-border/40 bg-background"
+                      className="h-[200px] w-[200px] border border-border/40 bg-background"
                     />
                   </div>
                   <p className="text-xs text-muted-foreground text-center mt-2">
