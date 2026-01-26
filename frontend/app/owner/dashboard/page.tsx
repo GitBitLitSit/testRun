@@ -32,7 +32,6 @@ import {
   deleteMember,
   checkExistingUsers,
   bulkCreateUsers,
-  bulkUpdateUsers,
 } from "@/lib/api"
 import { useRealtimeCheckIns } from "@/hooks/use-realtime"
 import type { Member, CheckInEvent } from "@/lib/types"
@@ -117,8 +116,8 @@ export default function OwnerDashboard() {
   const [importDialogOpen, setImportDialogOpen] = useState(false)
   const [importFile, setImportFile] = useState<File | null>(null)
   const [isImporting, setIsImporting] = useState(false)
-  const [importStep, setImportStep] = useState<"idle" | "parsing" | "checking" | "creating" | "updating" | "done">("idle")
-  const [importSummary, setImportSummary] = useState<{ created: number; updated: number; invalid: number; duplicates: number } | null>(null)
+  const [importStep, setImportStep] = useState<"idle" | "parsing" | "checking" | "creating" | "done">("idle")
+  const [importSummary, setImportSummary] = useState<{ created: number; invalid: number; duplicates: number } | null>(null)
   const [importError, setImportError] = useState<string | null>(null)
   
   // Edit State
@@ -360,6 +359,13 @@ export default function OwnerDashboard() {
     return chunks
   }
 
+  async function runWithConcurrency<T>(items: T[], limit: number, worker: (item: T) => Promise<void>) {
+    for (let i = 0; i < items.length; i += limit) {
+      const batch = items.slice(i, i + limit)
+      await Promise.all(batch.map((item) => worker(item)))
+    }
+  }
+
   const handleImportExcel = async () => {
     if (!importFile || isImporting) return
     setIsImporting(true)
@@ -406,7 +412,7 @@ export default function OwnerDashboard() {
       const duplicateRows = Math.max(validRows.length - uniqueRows.length, 0)
 
       if (uniqueRows.length === 0) {
-        setImportSummary({ created: 0, updated: 0, invalid: invalidRows, duplicates: duplicateRows })
+        setImportSummary({ created: 0, invalid: invalidRows, duplicates: duplicateRows })
         setImportStep("done")
         toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedImport"), variant: "destructive" })
         return
@@ -414,60 +420,50 @@ export default function OwnerDashboard() {
 
       // Step A: ask backend which emails already exist (chunked to avoid 413).
       const chunkSize = 500
+      const concurrency = 3
       setImportStep("checking")
-      const existingEmails: string[] = []
+      const existingSet = new Set<string>()
       const emailChunks = chunkArray(uniqueRows.map((row) => row.email), chunkSize)
-      for (const chunk of emailChunks) {
+      await runWithConcurrency(emailChunks, concurrency, async (chunk) => {
         const existingResponse = await checkExistingUsers(chunk)
         if (Array.isArray(existingResponse?.existingEmails)) {
-          existingEmails.push(...existingResponse.existingEmails)
+          existingResponse.existingEmails.forEach((email: string) => {
+            existingSet.add(String(email).toLowerCase())
+          })
         }
-      }
+      })
 
-      // Step B: client-side set difference to separate new vs existing.
-      const existingSet = new Set(existingEmails.map((email: string) => email.toLowerCase()))
+      // Step B: client-side set difference to keep only new users.
       const newUsers = uniqueRows.filter((row) => !existingSet.has(row.email))
-      const existingUsers = uniqueRows.filter((row) => existingSet.has(row.email))
 
       let created = 0
-      let updated = 0
       let duplicates = duplicateRows
 
       // Step C: create new members only (chunked to avoid 413).
       if (newUsers.length > 0) {
         setImportStep("creating")
         const createChunks = chunkArray(newUsers, chunkSize)
-        for (const chunk of createChunks) {
+        await runWithConcurrency(createChunks, concurrency, async (chunk) => {
           const bulkResult = await bulkCreateUsers(chunk)
           const inserted = typeof bulkResult?.inserted === "number" ? bulkResult.inserted : chunk.length
           created += inserted
           if (typeof bulkResult?.duplicates === "number") {
             duplicates += bulkResult.duplicates
           }
-        }
+        })
       }
 
-      // Step D: update existing members to match the sheet (chunked to avoid 413).
-      if (existingUsers.length > 0) {
-        setImportStep("updating")
-        const updateChunks = chunkArray(existingUsers, chunkSize)
-        for (const chunk of updateChunks) {
-          const updateResult = await bulkUpdateUsers(chunk)
-          updated += typeof updateResult?.matched === "number" ? updateResult.matched : chunk.length
-        }
-      }
-
-      setImportSummary({ created, updated, invalid: invalidRows, duplicates })
+      setImportSummary({ created, invalid: invalidRows, duplicates })
       setImportStep("done")
 
-      if (created > 0 || updated > 0) {
+      if (created > 0) {
         setMembersPage(1)
         loadMembers()
       }
 
       toast({
         title: t("dashboard.toasts.importCompleteTitle"),
-        description: t("dashboard.toasts.importCompleteDesc", { created, updated }),
+        description: t("dashboard.toasts.importCompleteDesc", { created }),
       })
     } catch (error) {
       setImportError(t("dashboard.toasts.failedImport"))
@@ -1060,8 +1056,8 @@ export default function OwnerDashboard() {
                 </div>
 
                 <div className="space-y-2">
-                  {(["parsing", "checking", "creating", "updating"] as const).map((step, index) => {
-                    const stepOrder = ["parsing", "checking", "creating", "updating"] as const
+                  {(["parsing", "checking", "creating"] as const).map((step, index) => {
+                    const stepOrder = ["parsing", "checking", "creating"] as const
                     const activeIndex = stepOrder.indexOf(importStep as (typeof stepOrder)[number])
                     const isDone = importStep === "done" || (activeIndex !== -1 && index < activeIndex)
                     const isActive = activeIndex !== -1 && index === activeIndex
@@ -1088,7 +1084,6 @@ export default function OwnerDashboard() {
                     <p className="text-sm font-medium text-foreground">{t("dashboard.dialogs.importResultsTitle")}</p>
                     <ul className="mt-2 space-y-1">
                       <li>{t("dashboard.dialogs.importCreated", { count: importSummary.created })}</li>
-                      <li>{t("dashboard.dialogs.importUpdated", { count: importSummary.updated })}</li>
                       <li>{t("dashboard.dialogs.importInvalid", { count: importSummary.invalid })}</li>
                       {importSummary.duplicates > 0 && (
                         <li>{t("dashboard.dialogs.importDuplicates", { count: importSummary.duplicates })}</li>

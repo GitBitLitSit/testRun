@@ -106,21 +106,6 @@ export async function bulkCreateUsers(
   return handleResponse(res)
 }
 
-export async function bulkUpdateUsers(
-  users: Array<{
-    firstName: string
-    lastName: string
-    email: string
-  }>,
-) {
-  const res = await fetch(`${API_URL}/bulk-update-users`, {
-    method: "POST",
-    headers: getAuthHeaders(),
-    body: JSON.stringify({ users }),
-  })
-  return handleResponse(res)
-}
-
 export async function deleteMember(memberId: string) {
   const res = await fetch(`${API_URL}/members/${memberId}`, {
     method: "DELETE",
