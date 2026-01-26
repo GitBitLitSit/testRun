@@ -1067,7 +1067,7 @@ export default function OwnerDashboard() {
 
       {/* Import Excel Dialog */}
       <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
-        <DialogContent className="w-[98vw] h-[95vh] max-w-none max-h-none overflow-hidden">
+        <DialogContent className="w-[98vw] h-[95vh] max-w-none max-h-none overflow-hidden sm:w-[98vw] sm:max-w-none">
           <DialogHeader>
             <DialogTitle>{t("dashboard.dialogs.importTitle")}</DialogTitle>
             <DialogDescription>{t("dashboard.dialogs.importDescription")}</DialogDescription>
