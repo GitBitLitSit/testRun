@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef, SetStateAction } from "react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import { useTranslation } from "react-i18next"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
@@ -227,12 +228,12 @@ export default function OwnerDashboard() {
         variant: event.warning ? "destructive" : "default",
       })
     }
-  }, [toast, t])
+  }, [checkInsPageSize, toast, t])
 
   const { isConnected, error: wsError } = useRealtimeCheckIns(handleNewCheckIn)
 
   // --- LOAD MEMBERS ---
-  const loadMembers = async () => {
+  const loadMembers = useCallback(async () => {
     setIsMembersLoading(true)
     try {
       const blocked = blockedFilter === "blocked" ? true : blockedFilter === "active" ? false : undefined
@@ -241,30 +242,29 @@ export default function OwnerDashboard() {
       setMembersData(result.data || [])
       setTotalMembers(result.pagination?.total || 0)
       setTotalMembersPages(result.pagination?.totalPages || 1)
-      
+
       const allData = result.data || []
       setStats({
-          total: result.pagination?.total || 0,
-          blocked: allData.filter((m: Member) => m.blocked).length,
-          active: allData.filter((m: Member) => !m.blocked).length,
+        total: result.pagination?.total || 0,
+        blocked: allData.filter((m: Member) => m.blocked).length,
+        active: allData.filter((m: Member) => !m.blocked).length,
       })
-
     } catch (error) {
       console.error(error)
       toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedLoadMembers"), variant: "destructive" })
     } finally {
       setIsMembersLoading(false)
     }
-  }
+  }, [blockedFilter, membersPage, membersPageSize, searchQuery, t, toast])
 
   useEffect(() => {
     if (activeTab === "members") {
       loadMembers()
     }
-  }, [searchQuery, blockedFilter, membersPage, activeTab])
+  }, [activeTab, loadMembers])
 
   // --- LOAD CHECK-INS ---
-  const loadCheckIns = async () => {
+  const loadCheckIns = useCallback(async () => {
     setIsCheckInsLoading(true)
     try {
       const result = await getCheckIns(checkInsPage, checkInsPageSize)
@@ -277,23 +277,17 @@ export default function OwnerDashboard() {
     } finally {
       setIsCheckInsLoading(false)
     }
-  }
+  }, [checkInsPage, checkInsPageSize, t, toast])
 
   useEffect(() => {
     if (activeTab === "checkins") {
       setUnreadCheckInsCount(0)
       loadCheckIns()
     }
-  }, [checkInsPage, activeTab])
+  }, [activeTab, loadCheckIns])
 
 
   // --- ACTION HANDLERS ---
-  const handleSignOut = () => {
-    localStorage.removeItem("token")
-    localStorage.removeItem(LEGACY_IMPORT_STORAGE_KEY)
-    router.push("/")
-  }
-
   const handleCreateMember = async () => {
     setCreateError(null)
 
@@ -347,6 +341,7 @@ export default function OwnerDashboard() {
       setEditDialogOpen(false)
       loadMembers()
     } catch (error) {
+      console.error(error)
       toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedUpdateMember"), variant: "destructive" })
     } finally {
       setIsUpdating(false)
@@ -369,6 +364,7 @@ export default function OwnerDashboard() {
       setMemberToDelete(null)
       loadMembers()
     } catch (error) {
+      console.error(error)
       toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedDeleteMember"), variant: "destructive" })
     } finally {
       setIsDeleting(false)
@@ -393,6 +389,7 @@ export default function OwnerDashboard() {
       setResetQrDialogOpen(false)
       setMemberToReset(null)
     } catch (error) {
+      console.error(error)
       toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedResetQr"), variant: "destructive" })
     } finally {
       setIsResettingQr(false)
@@ -476,6 +473,7 @@ export default function OwnerDashboard() {
         description: t("dashboard.toasts.importCompleteDesc", { created }),
       })
     } catch (error) {
+      console.error(error)
       setImportError(t("dashboard.toasts.failedImport"))
       setImportStep("review")
       toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedImport"), variant: "destructive" })
@@ -572,6 +570,7 @@ export default function OwnerDashboard() {
       setImportPreviewPage(1)
       setImportStep("review")
     } catch (error) {
+      console.error(error)
       setImportError(t("dashboard.toasts.failedImport"))
       setImportStep("idle")
       toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedImport"), variant: "destructive" })
@@ -1493,7 +1492,7 @@ export default function OwnerDashboard() {
                 <Card className="px-4 py-3">
                   <h3 className="mb-3 text-sm font-semibold">{t("dashboard.dialogs.qrCode")}</h3>
                   <div className="flex justify-center py-4">
-                    <img
+                    <Image
                       src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(selectedMember.qrUuid || selectedMember._id)}`}
                       alt={t("dashboard.dialogs.qrCode")}
                       width={200}

@@ -36,12 +36,6 @@ export default function CustomerProfilePage() {
     }
   }, [router])
 
-  const handleSignOut = () => {
-    sessionStorage.removeItem("currentMember")
-    localStorage.removeItem("currentMember")
-    router.push("/")
-  }
-
   const handlePrintQrCode = () => {
     if (!member) {
       return
