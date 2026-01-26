@@ -172,7 +172,7 @@ export async function getCheckIns(page = 1, limit = 50) {
 
 export async function updateMember(
   id: string,
-  data: { firstName: string; lastName: string; email: string; blocked: boolean },
+  data: { firstName: string; lastName: string; email: string; blocked: boolean; sendEmail?: boolean },
 ) {
   const res = await fetch(`${API_URL}/members/${id}`, {
     method: "PUT",

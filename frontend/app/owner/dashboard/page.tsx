@@ -147,7 +147,7 @@ export default function OwnerDashboard() {
     firstName: "", 
     lastName: "", 
     email: "", 
-    sendEmail: false 
+    sendEmail: true
   })
   const [createError, setCreateError] = useState<string | null>(null)
   
@@ -171,7 +171,8 @@ export default function OwnerDashboard() {
     firstName: "", 
     lastName: "", 
     email: "", 
-    blocked: false 
+    blocked: false,
+    sendEmail: true
   })
 
   // Delete State
@@ -186,7 +187,7 @@ export default function OwnerDashboard() {
   useEffect(() => {
     if (!createDialogOpen) {
       setCreateError(null)
-      setNewMemberForm({ firstName: "", lastName: "", email: "", sendEmail: false })
+      setNewMemberForm({ firstName: "", lastName: "", email: "", sendEmail: true })
     }
   }, [createDialogOpen])
 
@@ -347,7 +348,8 @@ export default function OwnerDashboard() {
       firstName: member.firstName,
       lastName: member.lastName,
       email: member.email,
-      blocked: member.blocked || false
+      blocked: member.blocked || false,
+      sendEmail: true
     })
     setEditDialogOpen(true)
   }
@@ -363,7 +365,8 @@ export default function OwnerDashboard() {
         firstName: editMemberForm.firstName,
         lastName: editMemberForm.lastName,
         email: editMemberForm.email,
-        blocked: editMemberForm.blocked
+        blocked: editMemberForm.blocked,
+        sendEmail: editMemberForm.sendEmail
       })
       toast({ title: t("dashboard.toasts.memberUpdatedTitle"), description: t("dashboard.toasts.memberUpdatedDesc") })
       setEditDialogOpen(false)
@@ -1330,6 +1333,18 @@ export default function OwnerDashboard() {
                 value={editMemberForm.email}
                 onChange={(e) => setEditMemberForm({ ...editMemberForm, email: e.target.value })}
               />
+            </div>
+
+            {/* Send Email Toggle */}
+            <div className="flex items-center space-x-2 pt-2">
+              <Switch
+                id="edit-send-email"
+                checked={editMemberForm.sendEmail}
+                onCheckedChange={(checked) => setEditMemberForm({ ...editMemberForm, sendEmail: checked })}
+              />
+              <Label htmlFor="edit-send-email" className="font-normal cursor-pointer">
+                {t("dashboard.dialogs.sendEmailWithQr")}
+              </Label>
             </div>
             
             {/* Status Radio Buttons */}
