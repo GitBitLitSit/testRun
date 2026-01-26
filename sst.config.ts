@@ -8,7 +8,7 @@ export default $config({
       name: "billiard-club",
       home: "aws",
       providers: {
-        aws: { region: "eu-west-1", profile: process.env.AWS_PROFILE },
+        aws: { region: "eu-west-1", profile: process.env.PROFILE_AWS },
       },
     };
   },
