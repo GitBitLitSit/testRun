@@ -116,6 +116,7 @@ export default function OwnerDashboard() {
   
   // Import State
   const [importFile, setImportFile] = useState<File | null>(null)
+  const [importFileName, setImportFileName] = useState<string | null>(null)
   const [isImporting, setIsImporting] = useState(false)
   const [importStep, setImportStep] = useState<"idle" | "parsing" | "checking" | "review" | "creating" | "done">("idle")
   const [importSummary, setImportSummary] = useState<{ created: number; invalid: number; duplicates: number } | null>(null)
@@ -142,6 +143,7 @@ export default function OwnerDashboard() {
   const [isDeleting, setIsDeleting] = useState(false)
 
   const [stats, setStats] = useState({ total: 0, blocked: 0, active: 0 })
+  const IMPORT_STORAGE_KEY = "importPreviewState"
 
   // --- CLEANUP EFFECT ---
   useEffect(() => {
@@ -152,17 +154,42 @@ export default function OwnerDashboard() {
   }, [createDialogOpen])
 
   useEffect(() => {
-    if (activeTab !== "import") {
-      setImportFile(null)
-      setIsImporting(false)
-      setImportStep("idle")
-      setImportSummary(null)
-      setImportCounts(null)
-      setImportPreviewRows([])
-      setImportPreviewPage(1)
-      setImportError(null)
+    if (typeof window === "undefined") return
+    const raw = window.localStorage.getItem(IMPORT_STORAGE_KEY)
+    if (!raw) return
+    try {
+      const parsed = JSON.parse(raw) as {
+        importStep?: typeof importStep
+        importSummary?: typeof importSummary
+        importCounts?: typeof importCounts
+        importPreviewRows?: typeof importPreviewRows
+        importPreviewPage?: number
+        importFileName?: string | null
+      }
+
+      if (parsed.importStep) setImportStep(parsed.importStep)
+      if (parsed.importSummary) setImportSummary(parsed.importSummary)
+      if (parsed.importCounts) setImportCounts(parsed.importCounts)
+      if (Array.isArray(parsed.importPreviewRows)) setImportPreviewRows(parsed.importPreviewRows)
+      if (typeof parsed.importPreviewPage === "number") setImportPreviewPage(parsed.importPreviewPage)
+      if (typeof parsed.importFileName === "string") setImportFileName(parsed.importFileName)
+    } catch {
+      window.localStorage.removeItem(IMPORT_STORAGE_KEY)
     }
-  }, [activeTab])
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const payload = {
+      importStep,
+      importSummary,
+      importCounts,
+      importPreviewRows,
+      importPreviewPage,
+      importFileName,
+    }
+    window.localStorage.setItem(IMPORT_STORAGE_KEY, JSON.stringify(payload))
+  }, [importStep, importSummary, importCounts, importPreviewRows, importPreviewPage, importFileName])
 
   useEffect(() => {
     const totalPages = Math.max(1, Math.ceil(importPreviewRows.length / importPreviewPageSize))
@@ -381,6 +408,7 @@ export default function OwnerDashboard() {
 
   const handleImportFileChange = (file: File | null) => {
     setImportFile(file)
+    setImportFileName(file?.name ?? null)
     setImportStep("idle")
     setImportSummary(null)
     setImportCounts(null)
@@ -929,7 +957,7 @@ export default function OwnerDashboard() {
                             {t("dashboard.dialogs.importChooseFile")}
                           </Button>
                           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                            <span>{importFile ? importFile.name : t("dashboard.dialogs.importNoFile")}</span>
+                            <span>{importFile?.name || importFileName || t("dashboard.dialogs.importNoFile")}</span>
                             {importFile && (
                               <Button
                                 type="button"
@@ -1038,6 +1066,7 @@ export default function OwnerDashboard() {
                                         id="send-email-all"
                                         checked={sendEmailAllState}
                                         onCheckedChange={(checked) => handleSendEmailAllToggle(checked === true)}
+                                        className="size-5 border-muted-foreground/70 bg-background/80 data-[state=checked]:border-primary data-[state=checked]:bg-primary"
                                       />
                                       <span className="text-[11px] text-muted-foreground">
                                         {t("dashboard.dialogs.importSendEmailAll")}
@@ -1091,6 +1120,7 @@ export default function OwnerDashboard() {
                                       <Checkbox
                                         checked={row.sendEmail}
                                         onCheckedChange={(checked) => updatePreviewRow(previewStart + index, { sendEmail: checked === true })}
+                                        className="size-5 border-muted-foreground/70 bg-background/80 data-[state=checked]:border-primary data-[state=checked]:bg-primary"
                                       />
                                     </TableCell>
                                   </TableRow>
