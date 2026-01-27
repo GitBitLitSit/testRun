@@ -239,17 +239,9 @@ export default $config({
        ]
     })
     
-    const site = new sst.aws.Nextjs("MyWeb", {
-      path: "frontend",
-      environment: {
-        NEXT_PUBLIC_API_URL: api.url,
-        NEXT_PUBLIC_WEBSOCKET_API_URL: webSocket.url,
-      },
-    });
-
     return {
       api: api.url,
-      site: site.url,
+      websocket: webSocket.url,
     };
   }
 });
