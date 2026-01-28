@@ -2,15 +2,12 @@
 /* tslint:disable */
 /* eslint-disable */
 /* deno-fmt-ignore-file */
+/* biome-ignore-all lint: auto-generated */
 
 declare module "sst" {
   export interface Resource {
     "Api": {
       "type": "sst.aws.ApiGatewayV2"
-      "url": string
-    }
-    "MyWeb": {
-      "type": "sst.aws.Nextjs"
       "url": string
     }
     "RealtimeApi": {

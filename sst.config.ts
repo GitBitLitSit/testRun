@@ -27,6 +27,7 @@ export default $config({
       },
       architecture: "arm64",
       runtime: "nodejs22.x",
+      name: "15PalleAdminLoginFunction",
     });
 
     api.route("GET /members", {
@@ -38,6 +39,7 @@ export default $config({
       },
       architecture: "arm64",
       runtime: "nodejs22.x",
+      name: "15PalleGetMembersFunction",
     })
 
     api.route("POST /members", {
@@ -55,7 +57,8 @@ export default $config({
           actions: ["ses:SendEmail", "ses:SendRawEmail"],
           resources: ["*"] 
         }
-      ]
+      ],
+      name: "15PalleCreateMemberFunction",
     });
 
     api.route("GET /members/export", {
@@ -67,6 +70,7 @@ export default $config({
       },
       architecture: "arm64",
       runtime: "nodejs22.x",
+      name: "15PalleExportMembersFunction",
     });
 
     api.route("POST /members/import", {
@@ -78,6 +82,7 @@ export default $config({
       },
       architecture: "arm64",
       runtime: "nodejs22.x",
+      name: "15PalleImportMembersFunction",
     });
 
     api.route("POST /members/import/batch", {
@@ -89,6 +94,7 @@ export default $config({
       },
       architecture: "arm64",
       runtime: "nodejs22.x",
+      name: "15PalleImportMembersBatchFunction",
     });
 
     api.route("POST /check-existing-users", {
@@ -100,6 +106,7 @@ export default $config({
       },
       architecture: "arm64",
       runtime: "nodejs22.x",
+      name: "15PalleCheckExistingUsersFunction",
     });
 
     api.route("POST /bulk-create-users", {
@@ -118,6 +125,7 @@ export default $config({
           resources: ["*"],
         },
       ],
+      name: "15PalleBulkCreateUsersFunction",
     });
 
 
@@ -130,6 +138,7 @@ export default $config({
       },
       architecture: "arm64",
       runtime: "nodejs22.x",
+      name: "15PalleUpdateMemberFunction",
     })
 
     api.route("DELETE /members/{id}", {
@@ -141,6 +150,7 @@ export default $config({
       },
       architecture: "arm64",
       runtime: "nodejs22.x",
+      name: "15PalleDeleteMemberFunction",
     })
 
     api.route("POST /members/reset-qrcode", {
@@ -159,6 +169,7 @@ export default $config({
       ],
       architecture: "arm64",
       runtime: "nodejs22.x",
+      name: "15PalleResetMemberQrCodeFunction",
     });
 
     api.route("POST /members/recover", {
@@ -173,7 +184,10 @@ export default $config({
           actions: ["ses:SendEmail", "ses:SendRawEmail"],
           resources: ["*"]
         }
-      ]
+      ],
+      architecture: "arm64",
+      runtime: "nodejs22.x",
+      name: "15PalleRecoverMemberFunction",
     });
 
     api.route("GET /auth/check-ins", {
@@ -185,6 +199,7 @@ export default $config({
       },
       architecture: "arm64",
       runtime: "nodejs22.x",
+      name: "15PalleGetCheckInsFunction",
     });
 
     api.route("POST /auth/request-verification", {
@@ -201,7 +216,8 @@ export default $config({
           actions: ["ses:SendEmail", "ses:SendRawEmail"],
           resources: ["*"] 
         }
-      ]
+      ],
+      name: "15PalleRequestVerificationFunction",
     })
 
     const webSocket = new sst.aws.ApiGatewayWebSocket("RealtimeApi");
@@ -211,7 +227,10 @@ export default $config({
       environment: {
         MONGODB_URI: process.env.MONGODB_URI!,
         MONGODB_DB_NAME: process.env.MONGODB_DB_NAME!,
-      }
+      },
+      architecture: "arm64",
+      runtime: "nodejs22.x",
+      name: "15PalleWebSocketConnectFunction",
     });
 
     webSocket.route("$disconnect", {
@@ -219,7 +238,10 @@ export default $config({
       environment: {
         MONGODB_URI: process.env.MONGODB_URI!,
         MONGODB_DB_NAME: process.env.MONGODB_DB_NAME!,
-      }
+      },
+      architecture: "arm64",
+      runtime: "nodejs22.x",
+      name: "15PalleWebSocketDisconnectFunction",
     });
 
     api.route("POST /check-in", {
@@ -236,20 +258,24 @@ export default $config({
           actions: ["execute-api:ManageConnections"],
           resources: ["*"]
         }
-       ]
+      ],
+      architecture: "arm64",
+      runtime: "nodejs22.x",
+      name: "15PalleCheckInFunction",
     })
     
-    const site = new sst.aws.Nextjs("MyWeb", {
+    /*const site = new sst.aws.Nextjs("MyWeb", {
       path: "frontend",
       environment: {
         NEXT_PUBLIC_API_URL: api.url,
         NEXT_PUBLIC_WEBSOCKET_API_URL: webSocket.url,
       },
-    });
+    });*/
 
     return {
       api: api.url,
-      site: site.url,
+      websocket: webSocket.url,
+      //site: site.url,
     };
   }
 });
