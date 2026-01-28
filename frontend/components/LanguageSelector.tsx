@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react"
+import Image from "next/image"
 import { cn } from "@/lib/utils"
 
 const languages = [
@@ -53,7 +54,13 @@ export default function LanguageSelector({ language, onLanguageChange }: Languag
         className="flex h-9 items-center justify-between gap-2 rounded-md border border-input bg-background px-3 text-sm font-medium shadow-sm ring-offset-background transition-colors hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         type="button"
       >
-        <img src={selectedLang.src} alt={selectedLang.label} className="h-3.5 w-5 object-cover" />
+        <Image
+          src={selectedLang.src}
+          alt={selectedLang.label}
+          width={20}
+          height={14}
+          className="h-3.5 w-5 object-cover"
+        />
         <span className="text-foreground">{selectedLang.label}</span>
 
         <svg
@@ -87,7 +94,13 @@ export default function LanguageSelector({ language, onLanguageChange }: Languag
                   language === lang.code && "bg-primary/10 text-primary font-medium",
                 )}
               >
-                <img src={lang.src} alt={lang.label} className="h-3.5 w-5 object-cover shadow-sm" />
+                <Image
+                  src={lang.src}
+                  alt={lang.label}
+                  width={20}
+                  height={14}
+                  className="h-3.5 w-5 object-cover shadow-sm"
+                />
                 <span>{lang.label}</span>
               </div>
             ))}
