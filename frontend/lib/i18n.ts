@@ -53,6 +53,110 @@ const resources = {
         marketingDesc: "Usati per mostrare offerte pertinenti e misurare le campagne.",
         changeHint: "Puoi modificare la scelta in qualsiasi momento nelle impostazioni del browser.",
       },
+      privacyPolicy: {
+        title: "Informativa sulla privacy",
+        lastUpdated: "Ultimo aggiornamento: {{date}}",
+        sections: {
+          introduction: {
+            title: "Introduzione",
+            body:
+              "In 15 Palle, ci impegniamo a proteggere la tua privacy e le tue informazioni personali. Questa Informativa sulla privacy spiega come raccogliamo, utilizziamo, divulghiamo e proteggiamo le tue informazioni quando visiti il nostro sito web e utilizzi i nostri servizi.",
+          },
+          infoCollect: {
+            title: "Informazioni che raccogliamo",
+            body:
+              "Raccogliamo le informazioni che ci fornisci direttamente e le informazioni che vengono raccolte automaticamente quando utilizzi i nostri servizi.",
+            personalTitle: "Informazioni personali",
+            personalItems: ["Nome", "Indirizzo email", "Informazioni di iscrizione e codici QR"],
+            usageTitle: "Dati di utilizzo",
+            usageItems: [
+              "Indirizzo IP e informazioni sul dispositivo",
+              "Tipo e versione del browser",
+              "Pagine visitate e tempo trascorso",
+              "Dati di cookie e tracciamento",
+            ],
+          },
+          useInfo: {
+            title: "Come utilizziamo le tue informazioni",
+            body: "Utilizziamo le informazioni raccolte per vari scopi:",
+            items: [
+              "Per fornire e mantenere i nostri servizi",
+              "Per comunicare con te sulla tua iscrizione e sui nostri servizi",
+              "Per migliorare e ottimizzare il nostro sito web e i nostri servizi",
+              "Per proteggere da frodi e garantire la sicurezza",
+              "Per rispettare gli obblighi legali",
+            ],
+          },
+          sharing: {
+            title: "Condivisione e divulgazione dei dati",
+            body:
+              "Non vendiamo le tue informazioni personali. Possiamo condividere le tue informazioni solo nelle seguenti circostanze:",
+            disclosure:
+              "Possiamo condividere le tue informazioni personali con fornitori di servizi fidati che ci assistono nella gestione del sito web e nello svolgimento della nostra attività, soggetti a rigorosi accordi di riservatezza. Utilizziamo AWS SES (Amazon Simple Email Service) per l'invio delle email, conforme agli standard di sicurezza e privacy di AWS.",
+            items: [
+              "Con fornitori di servizi che svolgono servizi per nostro conto (incluso AWS SES per l'invio delle email)",
+              "Quando richiesto dalla legge o per proteggere i nostri diritti",
+              "In relazione a un trasferimento aziendale o a una fusione",
+            ],
+          },
+          cookies: {
+            title: "Cookie e tecnologie di tracciamento",
+            body: "Utilizziamo cookie e tecnologie di tracciamento simili per monitorare l'attività sul nostro sito web.",
+            controls:
+              "Puoi controllare i cookie tramite le impostazioni del browser. Tuttavia, disabilitare i cookie potrebbe limitare la tua capacità di utilizzare alcune funzionalità del sito.",
+            necessaryTitle: "Cookie necessari",
+            necessaryBody: "Questi cookie sono essenziali per il funzionamento del sito e non possono essere disabilitati.",
+            analyticsTitle: "Cookie analitici",
+            analyticsBody:
+              "Questi cookie ci aiutano a capire come i visitatori interagiscono con il nostro sito raccogliendo e riportando informazioni in forma anonima.",
+          },
+          security: {
+            title: "Sicurezza dei dati",
+            body:
+              "Implementiamo misure di sicurezza tecniche e organizzative adeguate per proteggere le tue informazioni personali da accessi non autorizzati, alterazioni, divulgazioni o distruzioni. Tuttavia, nessun metodo di trasmissione su Internet è sicuro al 100%.",
+            awsTitle: "Conformità AWS SES",
+            awsBody:
+              "Utilizziamo Amazon Simple Email Service (AWS SES) per inviare email di verifica e comunicazioni relative alla membership. AWS SES è conforme a rigorosi standard di sicurezza e privacy, tra cui SOC 1, SOC 2, ISO 27001 e PCI DSS. Le tue informazioni email sono protette secondo gli standard di sicurezza AWS.",
+          },
+          rights: {
+            title: "I tuoi diritti sulla privacy",
+            body:
+              "A seconda della tua posizione, potresti avere i seguenti diritti riguardo alle tue informazioni personali:",
+            items: [
+              "Diritto di accesso ai tuoi dati personali",
+              "Diritto di correggere dati inesatti",
+              "Diritto di richiedere la cancellazione dei tuoi dati",
+              "Diritto di opporti al trattamento dei tuoi dati",
+              "Diritto alla portabilità dei dati",
+              "Diritto di revocare il consenso in qualsiasi momento",
+            ],
+          },
+          retention: {
+            title: "Conservazione dei dati",
+            body:
+              "Conserviamo le tue informazioni personali solo per il tempo necessario a soddisfare le finalità descritte in questa Informativa sulla privacy, salvo che un periodo di conservazione più lungo sia richiesto o consentito dalla legge.",
+          },
+          children: {
+            title: "Privacy dei minori",
+            body:
+              "I nostri servizi non sono destinati a persone di età inferiore ai 18 anni. Non raccogliamo consapevolmente informazioni personali da minori. Se ritieni che abbiamo raccolto informazioni da un minore, contattaci immediatamente.",
+          },
+          changes: {
+            title: "Modifiche a questa Informativa sulla privacy",
+            body:
+              "Potremmo aggiornare la nostra Informativa sulla privacy di tanto in tanto. Ti informeremo di eventuali modifiche pubblicando la nuova Informativa sulla privacy su questa pagina e aggiornando la data di \"Ultimo aggiornamento\".",
+          },
+          contact: {
+            title: "Contattaci",
+            body:
+              "Se hai domande su questa Informativa sulla privacy o desideri esercitare i tuoi diritti sulla privacy, contattaci:",
+            addressLabel: "Indirizzo:",
+            addressValue: "Via Bruno Buozzi, 12, 39100 Bolzano BZ, Italy",
+            emailLabel: "Email:",
+            emailValue: "info@15palle.com",
+          },
+        },
+      },
       home: {
         headline: {
           line1: "Dove ogni",
@@ -461,6 +565,109 @@ const resources = {
         marketingDesc: "Used to show relevant offers and measure campaign performance.",
         changeHint: "You can change your choice anytime in your browser settings.",
       },
+      privacyPolicy: {
+        title: "Privacy Policy",
+        lastUpdated: "Last Updated: {{date}}",
+        sections: {
+          introduction: {
+            title: "Introduction",
+            body:
+              "At 15 Palle, we are committed to protecting your privacy and personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our services.",
+          },
+          infoCollect: {
+            title: "Information We Collect",
+            body:
+              "We collect information that you provide directly to us and information that is automatically collected when you use our services.",
+            personalTitle: "Personal Information",
+            personalItems: ["Name", "Email address", "Membership information and QR codes"],
+            usageTitle: "Usage Data",
+            usageItems: [
+              "IP address and device information",
+              "Browser type and version",
+              "Pages visited and time spent",
+              "Cookie and tracking data",
+            ],
+          },
+          useInfo: {
+            title: "How We Use Your Information",
+            body: "We use the collected information for various purposes:",
+            items: [
+              "To provide and maintain our services",
+              "To communicate with you about your membership and our services",
+              "To improve and optimize our website and services",
+              "To protect against fraud and ensure security",
+              "To comply with legal obligations",
+            ],
+          },
+          sharing: {
+            title: "Data Sharing and Disclosure",
+            body:
+              "We do not sell your personal information. We may share your information only in the following circumstances:",
+            disclosure:
+              "We may share your personal information with trusted service providers who assist us in operating our website and conducting our business, subject to strict confidentiality agreements. We use AWS SES (Amazon Simple Email Service) for email delivery, which is compliant with AWS security and privacy standards.",
+            items: [
+              "With service providers who perform services on our behalf (including AWS SES for email delivery)",
+              "When required by law or to protect our rights",
+              "In connection with a business transfer or merger",
+            ],
+          },
+          cookies: {
+            title: "Cookies and Tracking Technologies",
+            body: "We use cookies and similar tracking technologies to track activity on our website.",
+            controls:
+              "You can control cookies through your browser settings. However, disabling cookies may limit your ability to use certain features of our website.",
+            necessaryTitle: "Necessary Cookies",
+            necessaryBody: "These cookies are essential for the website to function properly and cannot be disabled.",
+            analyticsTitle: "Analytics Cookies",
+            analyticsBody:
+              "These cookies help us understand how visitors interact with our website by collecting and reporting information anonymously.",
+          },
+          security: {
+            title: "Data Security",
+            body:
+              "We implement appropriate technical and organizational security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction. However, no method of transmission over the Internet is 100% secure.",
+            awsTitle: "AWS SES Compliance",
+            awsBody:
+              "We use Amazon Simple Email Service (AWS SES) to send verification emails and membership-related communications. AWS SES is compliant with rigorous security and privacy standards, including SOC 1, SOC 2, ISO 27001, and PCI DSS. Your email information is protected according to AWS security standards.",
+          },
+          rights: {
+            title: "Your Privacy Rights",
+            body: "Depending on your location, you may have the following rights regarding your personal information:",
+            items: [
+              "Right to access your personal data",
+              "Right to correct inaccurate data",
+              "Right to request deletion of your data",
+              "Right to object to processing of your data",
+              "Right to data portability",
+              "Right to withdraw consent at any time",
+            ],
+          },
+          retention: {
+            title: "Data Retention",
+            body:
+              "We retain your personal information only for as long as necessary to fulfill the purposes outlined in this Privacy Policy, unless a longer retention period is required or permitted by law.",
+          },
+          children: {
+            title: "Children's Privacy",
+            body:
+              "Our services are not intended for individuals under the age of 18. We do not knowingly collect personal information from children. If you believe we have collected information from a child, please contact us immediately.",
+          },
+          changes: {
+            title: "Changes to This Privacy Policy",
+            body:
+              "We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the \"Last Updated\" date.",
+          },
+          contact: {
+            title: "Contact Us",
+            body:
+              "If you have any questions about this Privacy Policy or wish to exercise your privacy rights, please contact us:",
+            addressLabel: "Address:",
+            addressValue: "Via Bruno Buozzi, 12, 39100 Bolzano BZ, Italy",
+            emailLabel: "Email:",
+            emailValue: "info@15palle.com",
+          },
+        },
+      },
       home: {
         headline: {
           line1: "Where Every",
@@ -868,6 +1075,111 @@ const resources = {
         marketingTitle: "Marketing-Cookies",
         marketingDesc: "Werden verwendet, um relevante Angebote zu zeigen und Kampagnen zu messen.",
         changeHint: "Sie können Ihre Auswahl jederzeit in den Browser-Einstellungen ändern.",
+      },
+      privacyPolicy: {
+        title: "Datenschutzerklärung",
+        lastUpdated: "Zuletzt aktualisiert: {{date}}",
+        sections: {
+          introduction: {
+            title: "Einleitung",
+            body:
+              "Bei 15 Palle setzen wir uns dafür ein, Ihre Privatsphäre und Ihre persönlichen Daten zu schützen. Diese Datenschutzerklärung erläutert, wie wir Ihre Informationen erfassen, verwenden, offenlegen und schützen, wenn Sie unsere Website besuchen und unsere Dienste nutzen.",
+          },
+          infoCollect: {
+            title: "Welche Informationen wir erfassen",
+            body:
+              "Wir erfassen Informationen, die Sie uns direkt zur Verfügung stellen, sowie Informationen, die automatisch erfasst werden, wenn Sie unsere Dienste nutzen.",
+            personalTitle: "Persönliche Informationen",
+            personalItems: ["Name", "E-Mail-Adresse", "Mitgliedschaftsinformationen und QR-Codes"],
+            usageTitle: "Nutzungsdaten",
+            usageItems: [
+              "IP-Adresse und Geräteinformationen",
+              "Browsertyp und -version",
+              "Besuchte Seiten und Verweildauer",
+              "Cookie- und Tracking-Daten",
+            ],
+          },
+          useInfo: {
+            title: "Wie wir Ihre Informationen verwenden",
+            body: "Wir verwenden die erfassten Informationen für verschiedene Zwecke:",
+            items: [
+              "Um unsere Dienste bereitzustellen und aufrechtzuerhalten",
+              "Um mit Ihnen über Ihre Mitgliedschaft und unsere Dienste zu kommunizieren",
+              "Um unsere Website und Dienste zu verbessern und zu optimieren",
+              "Um Betrug zu verhindern und die Sicherheit zu gewährleisten",
+              "Um gesetzlichen Verpflichtungen nachzukommen",
+            ],
+          },
+          sharing: {
+            title: "Datenweitergabe und Offenlegung",
+            body:
+              "Wir verkaufen Ihre personenbezogenen Daten nicht. Wir geben Ihre Informationen nur in den folgenden Fällen weiter:",
+            disclosure:
+              "Wir können Ihre personenbezogenen Daten mit vertrauenswürdigen Dienstleistern teilen, die uns beim Betrieb unserer Website und unseres Geschäfts unterstützen, unter strengen Vertraulichkeitsvereinbarungen. Wir verwenden AWS SES (Amazon Simple Email Service) für den E-Mail-Versand, der den Sicherheits- und Datenschutzstandards von AWS entspricht.",
+            items: [
+              "Mit Dienstleistern, die Leistungen in unserem Auftrag erbringen (einschließlich AWS SES für den E-Mail-Versand)",
+              "Wenn gesetzlich erforderlich oder zum Schutz unserer Rechte",
+              "Im Zusammenhang mit einer Unternehmensübertragung oder Fusion",
+            ],
+          },
+          cookies: {
+            title: "Cookies und Tracking-Technologien",
+            body: "Wir verwenden Cookies und ähnliche Tracking-Technologien, um Aktivitäten auf unserer Website zu verfolgen.",
+            controls:
+              "Sie können Cookies über Ihre Browsereinstellungen steuern. Das Deaktivieren von Cookies kann jedoch Ihre Möglichkeit einschränken, bestimmte Funktionen unserer Website zu nutzen.",
+            necessaryTitle: "Notwendige Cookies",
+            necessaryBody:
+              "Diese Cookies sind für das ordnungsgemäße Funktionieren der Website erforderlich und können nicht deaktiviert werden.",
+            analyticsTitle: "Analyse-Cookies",
+            analyticsBody:
+              "Diese Cookies helfen uns zu verstehen, wie Besucher mit unserer Website interagieren, indem sie Informationen anonym sammeln und berichten.",
+          },
+          security: {
+            title: "Datensicherheit",
+            body:
+              "Wir implementieren angemessene technische und organisatorische Sicherheitsmaßnahmen, um Ihre personenbezogenen Daten vor unbefugtem Zugriff, Veränderung, Offenlegung oder Zerstörung zu schützen. Allerdings ist keine Methode der Übertragung über das Internet zu 100% sicher.",
+            awsTitle: "AWS SES Compliance",
+            awsBody:
+              "Wir verwenden Amazon Simple Email Service (AWS SES), um Verifizierungs-E-Mails und mitgliedschaftsbezogene Mitteilungen zu senden. AWS SES entspricht strengen Sicherheits- und Datenschutzstandards, darunter SOC 1, SOC 2, ISO 27001 und PCI DSS. Ihre E-Mail-Informationen werden gemäß den AWS-Sicherheitsstandards geschützt.",
+          },
+          rights: {
+            title: "Ihre Datenschutzrechte",
+            body:
+              "Je nach Ihrem Standort haben Sie möglicherweise folgende Rechte bezüglich Ihrer personenbezogenen Daten:",
+            items: [
+              "Recht auf Zugang zu Ihren personenbezogenen Daten",
+              "Recht auf Berichtigung unrichtiger Daten",
+              "Recht auf Löschung Ihrer Daten",
+              "Recht auf Widerspruch gegen die Verarbeitung Ihrer Daten",
+              "Recht auf Datenübertragbarkeit",
+              "Recht, die Einwilligung jederzeit zu widerrufen",
+            ],
+          },
+          retention: {
+            title: "Aufbewahrung der Daten",
+            body:
+              "Wir speichern Ihre personenbezogenen Daten nur so lange, wie es erforderlich ist, um die in dieser Datenschutzerklärung beschriebenen Zwecke zu erfüllen, es sei denn, ein längerer Aufbewahrungszeitraum ist gesetzlich vorgeschrieben oder zulässig.",
+          },
+          children: {
+            title: "Datenschutz von Kindern",
+            body:
+              "Unsere Dienste richten sich nicht an Personen unter 18 Jahren. Wir sammeln wissentlich keine personenbezogenen Daten von Kindern. Wenn Sie glauben, dass wir Informationen von einem Kind gesammelt haben, kontaktieren Sie uns bitte umgehend.",
+          },
+          changes: {
+            title: "Änderungen an dieser Datenschutzerklärung",
+            body:
+              "Wir können unsere Datenschutzerklärung von Zeit zu Zeit aktualisieren. Wir informieren Sie über Änderungen, indem wir die neue Datenschutzerklärung auf dieser Seite veröffentlichen und das Datum \"Zuletzt aktualisiert\" aktualisieren.",
+          },
+          contact: {
+            title: "Kontaktieren Sie uns",
+            body:
+              "Wenn Sie Fragen zu dieser Datenschutzerklärung haben oder Ihre Datenschutzrechte ausüben möchten, kontaktieren Sie uns bitte:",
+            addressLabel: "Adresse:",
+            addressValue: "Via Bruno Buozzi, 12, 39100 Bolzano BZ, Italy",
+            emailLabel: "E-Mail:",
+            emailValue: "info@15palle.com",
+          },
+        },
       },
       home: {
         headline: {
