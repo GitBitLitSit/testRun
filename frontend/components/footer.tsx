@@ -91,6 +91,9 @@ export function Footer() {
               <Link href="/login" className="block text-muted-foreground transition-colors hover:text-primary">
                 {t("nav.login")}
               </Link>
+              <Link href="/privacy-policy" className="block text-muted-foreground transition-colors hover:text-primary">
+                {t("footer.privacyPolicy")}
+              </Link>
             </div>
           </div>
         </div>
