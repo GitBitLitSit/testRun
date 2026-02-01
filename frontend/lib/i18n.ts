@@ -23,7 +23,7 @@ const resources = {
         contact: "Contatti",
         openingHours: "Orari di apertura",
         quickLinks: "Link rapidi",
-        privacyPolicy: "Privacy Policy",
+        privacyPolicy: "Informativa sulla privacy",
         rights: "Tutti i diritti riservati.",
         home: "Home",
         openingTimes: "Orari",
