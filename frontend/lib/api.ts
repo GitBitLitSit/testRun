@@ -207,7 +207,11 @@ async function handleResponse(res: Response) {
       errorData.messageText ||
       errorData.message ||
       (errorData.error ? i18n.t(`errors.${String(errorData.error)}`, errorData.params || {}) : null)
-    throw new Error(localized || errorData.error || `HTTP Error: ${res.status}`)
+    const fallbackMessage =
+      typeof errorData.error === "string" && errorData.error.trim()
+        ? errorData.error
+        : `HTTP Error: ${res.status}`
+    throw new Error(localized || fallbackMessage)
   }
 
   return res.json()
