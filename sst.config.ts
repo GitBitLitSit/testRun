@@ -1,7 +1,5 @@
 /// <reference path="./.sst/platform/config.d.ts" />
 
-import { env } from "./.sst/platform/src/components";
-
 export default $config({
   app(input) {
     return {
@@ -49,15 +47,10 @@ export default $config({
         MONGODB_URI: process.env.MONGODB_URI!,
         MONGODB_DB_NAME: process.env.MONGODB_DB_NAME!,
         SES_SENDER_EMAIL: process.env.SES_SENDER_EMAIL!,
+        MAIL_API_KEY: process.env.MAIL_API_KEY!,
       },
       architecture: "arm64",
       runtime: "nodejs22.x",
-      permissions: [
-        {
-          actions: ["ses:SendEmail", "ses:SendRawEmail"],
-          resources: ["*"] 
-        }
-      ],
       name: "15PalleCreateMemberFunction",
     });
 
@@ -116,15 +109,10 @@ export default $config({
         MONGODB_URI: process.env.MONGODB_URI!,
         MONGODB_DB_NAME: process.env.MONGODB_DB_NAME!,
         SES_SENDER_EMAIL: process.env.SES_SENDER_EMAIL!,
+        MAIL_API_KEY: process.env.MAIL_API_KEY!,
       },
       architecture: "arm64",
       runtime: "nodejs22.x",
-      permissions: [
-        {
-          actions: ["ses:SendEmail", "ses:SendRawEmail"],
-          resources: ["*"],
-        },
-      ],
       name: "15PalleBulkCreateUsersFunction",
     });
 
@@ -135,6 +123,8 @@ export default $config({
         JWT_SECRET_KEY: process.env.JWT_SECRET_KEY!,
         MONGODB_URI: process.env.MONGODB_URI!,
         MONGODB_DB_NAME: process.env.MONGODB_DB_NAME!,
+        SES_SENDER_EMAIL: process.env.SES_SENDER_EMAIL!,
+        MAIL_API_KEY: process.env.MAIL_API_KEY!,
       },
       architecture: "arm64",
       runtime: "nodejs22.x",
@@ -160,13 +150,8 @@ export default $config({
         MONGODB_URI: process.env.MONGODB_URI!,
         MONGODB_DB_NAME: process.env.MONGODB_DB_NAME!,
         SES_SENDER_EMAIL: process.env.SES_SENDER_EMAIL!,
+        MAIL_API_KEY: process.env.MAIL_API_KEY!,
       },
-      permissions: [
-        {
-          actions: ["ses:SendEmail", "ses:SendRawEmail"],
-          resources: ["*"] 
-        }
-      ],
       architecture: "arm64",
       runtime: "nodejs22.x",
       name: "15PalleResetMemberQrCodeFunction",
@@ -178,13 +163,8 @@ export default $config({
         MONGODB_URI: process.env.MONGODB_URI!,
         MONGODB_DB_NAME: process.env.MONGODB_DB_NAME!,
         SES_SENDER_EMAIL: process.env.SES_SENDER_EMAIL!,
+        MAIL_API_KEY: process.env.MAIL_API_KEY!,
       },
-      permissions: [
-        {
-          actions: ["ses:SendEmail", "ses:SendRawEmail"],
-          resources: ["*"]
-        }
-      ],
       architecture: "arm64",
       runtime: "nodejs22.x",
       name: "15PalleRecoverMemberFunction",
@@ -208,15 +188,10 @@ export default $config({
         MONGODB_URI: process.env.MONGODB_URI!,
         MONGODB_DB_NAME: process.env.MONGODB_DB_NAME!,
         SES_SENDER_EMAIL: process.env.SES_SENDER_EMAIL!,
+        MAIL_API_KEY: process.env.MAIL_API_KEY!,
       },
       architecture: "arm64",
       runtime: "nodejs22.x",
-      permissions: [
-        {
-          actions: ["ses:SendEmail", "ses:SendRawEmail"],
-          resources: ["*"] 
-        }
-      ],
       name: "15PalleRequestVerificationFunction",
     })
 

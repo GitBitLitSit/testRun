@@ -1,8 +1,26 @@
 import QRCode from "qrcode";
 import * as nodemailer from "nodemailer";
-import { SESClient, SendRawEmailCommand } from "@aws-sdk/client-ses";
 
-const ses = new SESClient({ region: "eu-west-1" });
+const ZEPTO_SMTP_HOST = "smtp.zeptomail.eu";
+const ZEPTO_SMTP_PORT = 587;
+const ZEPTO_SMTP_USER = "emailapikey";
+
+const getZeptoTransporter = () => {
+  const mailApiKey = process.env.MAIL_API_KEY;
+  if (!mailApiKey) {
+    throw new Error("MAIL_API_KEY is not set");
+  }
+
+  return nodemailer.createTransport({
+    host: ZEPTO_SMTP_HOST,
+    port: ZEPTO_SMTP_PORT,
+    secure: false,
+    auth: {
+      user: ZEPTO_SMTP_USER,
+      pass: mailApiKey,
+    },
+  });
+};
 
 export const sendQrCodeEmail = async (
   sourceMail: string,
@@ -14,11 +32,7 @@ export const sendQrCodeEmail = async (
   try {
     const qrCodeDataUrl = await QRCode.toDataURL(qrUuid);
 
-    const transporter = nodemailer.createTransport({
-      streamTransport: true,
-      buffer: true,
-      newline: 'windows'
-    });
+    const transporter = getZeptoTransporter();
 
     const cid = qrUuid;
 
@@ -50,16 +64,7 @@ export const sendQrCodeEmail = async (
       ],
     });
 
-    const command = new SendRawEmailCommand({
-      Source: sourceMail,
-      Destinations: [email],
-      RawMessage: {
-        Data: info.message as unknown as Uint8Array
-      }
-    });
-
-    const result = await ses.send(command);
-    return { success: true, data: result };
+    return { success: true, data: info };
   } catch (error) {
     return { success: false, error };
   }
@@ -72,11 +77,7 @@ export const sendVerificationEmail = async (
     firstName: string
 ) => {
     try {
-        const transporter = nodemailer.createTransport({
-            streamTransport: true,
-            buffer: true,
-            newline: 'windows'
-        });
+        const transporter = getZeptoTransporter();
 
         const info = await transporter.sendMail({
             from: sourceMail,
@@ -97,16 +98,7 @@ export const sendVerificationEmail = async (
             text: `Ciao ${firstName}, il tuo codice di verifica e': ${verificationCode}. Scade tra 15 minuti.`
         });
 
-        const command = new SendRawEmailCommand({
-            Source: sourceMail,
-            Destinations: [email],
-            RawMessage: {
-                Data: info.message as unknown as Uint8Array
-            }
-        });
-
-        const result = await ses.send(command);
-        return { success: true, data: result };
+        return { success: true, data: info };
 
     } catch (error) {
         console.error("Failed to send verification email:", error);

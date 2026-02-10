@@ -1,11 +1,8 @@
-import { SESClient } from "@aws-sdk/client-ses";
 import { connectToMongo } from "../../adapters/database";
 import { Member, EmailVerification } from "../../lib/types";
 import { sendVerificationEmail } from "../../adapters/email";
 import { APIGatewayProxyHandlerV2 } from "aws-lambda";
 import { errorResponse, messageResponse } from "../../lib/http";
-
-const ses = new SESClient({ region: "eu-west-1" });
 
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
     const SAFE_RESPONSE = messageResponse(event, 200, "IF_ACCOUNT_EXISTS");
