@@ -1,12 +1,14 @@
 import { APIGatewayProxyHandlerV2 } from "aws-lambda";
-import { ApiGatewayManagementApiClient, PostToConnectionCommand } from "@aws-sdk/client-apigatewaymanagementapi";
 import { connectToMongo } from "../../adapters/database";
 import { verifyJWT } from "../../lib/jwt";
 import { Member, CheckIn } from "../../lib/types";
 import { broadcastToDashboard } from "../../adapters/notification";
 import { Collection, ObjectId } from "mongodb";
 import { AppError } from "../../lib/appError";
-import { errorResponse, messageResponse } from "../../lib/http";
+import { errorResponse, getRequestLanguage, messageResponse } from "../../lib/http";
+import { t } from "../../lib/i18n";
+
+type CheckInWarningCode = "INVALID_QR" | "MEMBER_BLOCKED" | "PASSBACK_WARNING";
 
 async function recordAndBroadcast(
     checkinsCollection: Collection<CheckIn>,
@@ -15,6 +17,8 @@ async function recordAndBroadcast(
         memberId: ObjectId | null;
         source: CheckIn["source"];
         warning: string | null;
+        warningCode?: CheckInWarningCode | null;
+        warningParams?: Record<string, unknown>;
         qrUuid?: string;
         broadcastMember: Member;
     }
@@ -24,7 +28,9 @@ async function recordAndBroadcast(
         checkInTime: now,
         source: params.source,
         warning: params.warning,
-        qrUuid: params.qrUuid 
+        warningCode: params.warningCode ?? null,
+        warningParams: params.warningParams,
+        qrUuid: params.qrUuid
     } as any);
 
     try {
@@ -32,6 +38,8 @@ async function recordAndBroadcast(
             type: "NEW_CHECKIN",
             member: params.broadcastMember,
             warning: params.warning,
+            warningCode: params.warningCode ?? null,
+            warningParams: params.warningParams,
             timestamp: now
         });
     } catch (wsError) {
@@ -65,6 +73,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             return errorResponse(event, 401, "NO_VALID_CREDENTIALS", undefined, { success: false });
         }
 
+        const requestLanguage = getRequestLanguage(event);
         let { qrUuid } = JSON.parse(event.body || "{}");
         const trimmedQrCode = qrUuid?.trim() ?? "";
         const now = new Date();
@@ -80,12 +89,14 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         const member = await membersCollection.findOne({ qrUuid: trimmedQrCode });
 
         if (!member) {
-            const warningMsg = "Access Denied: Invalid QR / Member not found";
+            const warningCode: CheckInWarningCode = "INVALID_QR";
+            const warningMsg = t(requestLanguage, `warnings.${warningCode}`);
 
             await recordAndBroadcast(checkinsCollection, now, {
                 memberId: null,
                 source: authSource,
                 warning: warningMsg,
+                warningCode,
                 qrUuid: trimmedQrCode,
                 broadcastMember: {
                     _id: "unknown",
@@ -103,12 +114,14 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         }
 
         if (member.blocked) {
-            const warningMsg = "Access Denied: Member is blocked";
+            const warningCode: CheckInWarningCode = "MEMBER_BLOCKED";
+            const warningMsg = t(requestLanguage, `warnings.${warningCode}`);
 
             await recordAndBroadcast(checkinsCollection, now, {
                 memberId: new ObjectId(member._id),
                 source: authSource,
                 warning: warningMsg,
+                warningCode,
                 broadcastMember: { ...member, _id: member._id }
             });
 
@@ -121,14 +134,19 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
         );
 
         const COOLDOWN_MINUTES = 5;
-        let warning = null;
+        let warning: string | null = null;
+        let warningCode: CheckInWarningCode | null = null;
+        let warningParams: Record<string, unknown> | undefined;
 
         if (lastCheckin) {
             const diffMs = now.getTime() - new Date(lastCheckin.checkInTime).getTime();
             const diffMinutes = diffMs / 1000 / 60;
 
             if (diffMinutes < COOLDOWN_MINUTES) {
-                warning = `Last scan was ${Math.round(diffMinutes)} minutes ago.`;
+                const roundedMinutes = Math.max(1, Math.round(diffMinutes));
+                warningCode = "PASSBACK_WARNING";
+                warningParams = { minutes: roundedMinutes };
+                warning = t(requestLanguage, `warnings.${warningCode}`, warningParams);
             }
         }
 
@@ -136,12 +154,16 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             memberId: new ObjectId(member._id),
             source: authSource,
             warning: warning,
+            warningCode,
+            warningParams,
             broadcastMember: { ...member, _id: member._id }
         });
 
         return messageResponse(event, 200, "ACCESS_GRANTED", undefined, {
             success: true,
             warning: warning,
+            warningCode,
+            warningParams,
             member: {
                 firstName: member.firstName,
                 lastName: member.lastName,

@@ -72,10 +72,70 @@ function getTokenExpiryMs(token: string): number | null {
   return null
 }
 
+type CheckInWarningCode = "INVALID_QR" | "MEMBER_BLOCKED" | "PASSBACK_WARNING"
+
+const PASSBACK_WARNING_REGEX = /last scan was\s+(\d+)\s+minutes?\s+ago\.?/i
+
+function resolveWarningCode(checkIn: CheckInEvent): CheckInWarningCode | null {
+  const explicitCode = (checkIn.warningCode || "").toUpperCase()
+  if (explicitCode === "INVALID_QR" || explicitCode === "MEMBER_BLOCKED" || explicitCode === "PASSBACK_WARNING") {
+    return explicitCode
+  }
+
+  const warningText = (checkIn.warning || "").trim().toLowerCase()
+  if (!warningText) return null
+
+  if (warningText.includes("invalid qr") || warningText.includes("member not found")) {
+    return "INVALID_QR"
+  }
+  if (warningText.includes("member is blocked") || warningText.includes("member blocked")) {
+    return "MEMBER_BLOCKED"
+  }
+  if (PASSBACK_WARNING_REGEX.test(warningText)) {
+    return "PASSBACK_WARNING"
+  }
+  return null
+}
+
+function resolveWarningMinutes(checkIn: CheckInEvent): number | null {
+  const minutesFromParams =
+    checkIn.warningParams && typeof checkIn.warningParams === "object"
+      ? (checkIn.warningParams as { minutes?: unknown }).minutes
+      : undefined
+
+  if (typeof minutesFromParams === "number" && Number.isFinite(minutesFromParams)) {
+    return Math.max(1, Math.round(minutesFromParams))
+  }
+
+  if (typeof minutesFromParams === "string") {
+    const parsed = Number(minutesFromParams)
+    if (Number.isFinite(parsed)) {
+      return Math.max(1, Math.round(parsed))
+    }
+  }
+
+  const warningText = checkIn.warning || ""
+  const match = warningText.match(PASSBACK_WARNING_REGEX)
+  if (!match?.[1]) return null
+
+  const parsed = Number(match[1])
+  if (!Number.isFinite(parsed)) return null
+  return Math.max(1, Math.round(parsed))
+}
+
+function resolveCheckInDate(checkIn: CheckInEvent): Date | null {
+  const rawTimestamp = checkIn.timestamp || checkIn.checkInTime
+  if (!rawTimestamp) return null
+
+  const parsed = new Date(rawTimestamp)
+  if (Number.isNaN(parsed.getTime())) return null
+  return parsed
+}
+
 export default function OwnerDashboard() {
   const router = useRouter()
   const { toast } = useToast()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   // Auth check + token expiry redirect
   useEffect(() => {
@@ -134,9 +194,87 @@ export default function OwnerDashboard() {
   const activeTabRef = useRef(activeTab)
   const checkInsPageRef = useRef(checkInsPage)
   const importInputRef = useRef<HTMLInputElement | null>(null)
+  const audioContextRef = useRef<AudioContext | null>(null)
+
+  const playFeedbackSound = useCallback((variant: "positive" | "negative") => {
+    if (typeof window === "undefined" || typeof window.AudioContext === "undefined") return
+
+    if (!audioContextRef.current) {
+      audioContextRef.current = new window.AudioContext()
+    }
+    const audioContext = audioContextRef.current
+
+    const playSequence = () => {
+      const startAt = audioContext.currentTime + 0.01
+      const scheduleTone = (
+        frequency: number,
+        duration: number,
+        offset: number,
+        oscillatorType: OscillatorType,
+        peakGain: number,
+      ) => {
+        const oscillator = audioContext.createOscillator()
+        const gainNode = audioContext.createGain()
+
+        const toneStart = startAt + offset
+        oscillator.type = oscillatorType
+        oscillator.frequency.setValueAtTime(frequency, toneStart)
+        gainNode.gain.setValueAtTime(0.0001, toneStart)
+        gainNode.gain.exponentialRampToValueAtTime(peakGain, toneStart + 0.01)
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, toneStart + duration)
+
+        oscillator.connect(gainNode)
+        gainNode.connect(audioContext.destination)
+        oscillator.start(toneStart)
+        oscillator.stop(toneStart + duration + 0.02)
+      }
+
+      if (variant === "positive") {
+        scheduleTone(880, 0.09, 0, "sine", 0.06)
+        scheduleTone(1320, 0.12, 0.1, "triangle", 0.05)
+        return
+      }
+
+      scheduleTone(220, 0.16, 0, "sawtooth", 0.06)
+      scheduleTone(160, 0.2, 0.14, "square", 0.05)
+    }
+
+    if (audioContext.state === "suspended") {
+      void audioContext.resume().then(playSequence).catch(() => undefined)
+      return
+    }
+    playSequence()
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (audioContextRef.current) {
+        void audioContextRef.current.close().catch(() => undefined)
+        audioContextRef.current = null
+      }
+    }
+  }, [])
 
   useEffect(() => { activeTabRef.current = activeTab }, [activeTab])
   useEffect(() => { checkInsPageRef.current = checkInsPage }, [checkInsPage])
+
+  const getLocalizedWarningMessage = useCallback(
+    (checkIn: CheckInEvent): string | null => {
+      const warningCode = resolveWarningCode(checkIn)
+      if (!warningCode) return checkIn.warning || null
+
+      if (warningCode === "INVALID_QR") {
+        return t("dashboard.checkins.warnings.invalidQr")
+      }
+      if (warningCode === "MEMBER_BLOCKED") {
+        return t("dashboard.checkins.warnings.memberBlocked")
+      }
+
+      const minutes = resolveWarningMinutes(checkIn) ?? 1
+      return t("dashboard.checkins.warnings.passback", { minutes })
+    },
+    [t],
+  )
 
   // --- DIALOGS & FORMS ---
   const [selectedMember, setSelectedMember] = useState<Member | null>(null)
@@ -210,6 +348,17 @@ export default function OwnerDashboard() {
 
   // --- WEBSOCKET HANDLER ---
   const handleNewCheckIn = useCallback((event: CheckInEvent) => {
+    const warningCode = resolveWarningCode(event)
+    const localizedWarning = getLocalizedWarningMessage(event)
+    const isAccessDenied = warningCode === "INVALID_QR" || warningCode === "MEMBER_BLOCKED"
+    const isPassbackWarning = warningCode === "PASSBACK_WARNING"
+
+    if (isAccessDenied) {
+      playFeedbackSound("negative")
+    } else {
+      playFeedbackSound("positive")
+    }
+
     setCheckInsData((prev) => {
       if (checkInsPageRef.current === 1) {
         const newList = [event, ...prev]
@@ -221,13 +370,28 @@ export default function OwnerDashboard() {
 
     if (activeTabRef.current !== "checkins") {
       setUnreadCheckInsCount((prev) => prev + 1)
+      const memberName = event.member
+        ? `${event.member.firstName} ${event.member.lastName}`
+        : t("dashboard.checkins.unknownMember")
+      const description = isAccessDenied
+        ? (localizedWarning || t("dashboard.checkins.warnings.invalidQr"))
+        : isPassbackWarning
+          ? `${memberName} - ${localizedWarning || ""}`.trim()
+          : t("dashboard.realtime.memberCheckedIn", {
+              firstName: event.member?.firstName || t("dashboard.checkins.unknownMember"),
+              lastName: event.member?.lastName || "",
+            })
       toast({
-        title: event.warning ? t("dashboard.realtime.passbackWarning") : t("dashboard.realtime.newCheckin"),
-        description: t("dashboard.realtime.memberCheckedIn", { firstName: event.member.firstName, lastName: event.member.lastName }),
-        variant: event.warning ? "destructive" : "default",
+        title: isAccessDenied
+          ? t("dashboard.realtime.accessDenied")
+          : isPassbackWarning
+            ? t("dashboard.realtime.passbackWarning")
+            : t("dashboard.realtime.newCheckin"),
+        description,
+        variant: isAccessDenied || isPassbackWarning ? "destructive" : "default",
       })
     }
-  }, [toast, t])
+  }, [getLocalizedWarningMessage, playFeedbackSound, t, toast])
 
   const { isConnected, error: wsError } = useRealtimeCheckIns(handleNewCheckIn)
 
@@ -656,7 +820,12 @@ export default function OwnerDashboard() {
             <div>
               <h1 className="mb-2 text-3xl font-bold">{t("dashboard.title")}</h1>
               <p className="text-muted-foreground">{t("dashboard.subtitle")}</p>
-              {wsError && <p className="text-sm text-destructive mt-1">{t("dashboard.websocketPrefix")} {wsError}</p>}
+              {wsError && (
+                <p className="text-sm text-destructive mt-1">
+                  {t("dashboard.websocketPrefix")}{" "}
+                  {t(`dashboard.realtimeErrors.${wsError}`, { defaultValue: wsError })}
+                </p>
+              )}
               {isConnected && <p className="text-sm text-green-600 mt-1">{t("dashboard.realtimeConnected")}</p>}
             </div>
           </div>
@@ -870,7 +1039,9 @@ export default function OwnerDashboard() {
                   ) : (
                     <div className="space-y-4">
                       {checkInsData.map((checkIn: CheckInEvent, index) => {
-                        const hasWarning = checkIn.warning;
+                        const warningMessage = getLocalizedWarningMessage(checkIn)
+                        const hasWarning = Boolean(warningMessage)
+                        const checkInDate = resolveCheckInDate(checkIn)
                         return (
                           <div
                             key={index}
@@ -895,17 +1066,25 @@ export default function OwnerDashboard() {
                                 </p>
                                 {hasWarning && (
                                   <p className="text-sm text-destructive font-medium mt-1 flex items-center gap-1">
-                                    {hasWarning}
+                                    {warningMessage}
                                   </p>
                                 )}
                               </div>
                             </div>
                             <div className="text-right">
                               <p className="text-sm font-medium">
-                                {new Date(checkIn.timestamp|| Date.now()).toLocaleTimeString()}
+                                {checkInDate
+                                  ? checkInDate.toLocaleTimeString(i18n.language || undefined, {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                      second: "2-digit",
+                                    })
+                                  : "—"}
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                {new Date(checkIn.timestamp || Date.now()).toLocaleDateString()}
+                                {checkInDate
+                                  ? checkInDate.toLocaleDateString(i18n.language || undefined)
+                                  : "—"}
                               </p>
                             </div>
                           </div>

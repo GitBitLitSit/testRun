@@ -386,6 +386,11 @@ const resources = {
           unknownMember: "Membro sconosciuto",
           noEmail: "Nessuna email",
           pagination: "Pagina {{page}} di {{totalPages}} ({{total}} check-in)",
+          warnings: {
+            invalidQr: "Accesso negato: QR non valido / membro non trovato.",
+            memberBlocked: "Accesso negato: il membro è bloccato.",
+            passback: "Ultima scansione {{minutes}} minuti fa.",
+          },
         },
         dialogs: {
           createTitle: "Crea nuovo membro",
@@ -480,6 +485,7 @@ const resources = {
         },
         realtime: {
           passbackWarning: "⚠️ Avviso passback",
+          accessDenied: "⛔ Accesso negato",
           newCheckin: "✓ Nuovo check-in",
           memberCheckedIn: "{{firstName}} {{lastName}} ha effettuato il check-in",
         },
@@ -897,6 +903,11 @@ const resources = {
           unknownMember: "Unknown Member",
           noEmail: "No email",
           pagination: "Page {{page}} of {{totalPages}} ({{total}} check ins)",
+          warnings: {
+            invalidQr: "Access denied: invalid QR / member not found.",
+            memberBlocked: "Access denied: member is blocked.",
+            passback: "Last scan was {{minutes}} minutes ago.",
+          },
         },
         dialogs: {
           createTitle: "Create New Member",
@@ -991,6 +1002,7 @@ const resources = {
         },
         realtime: {
           passbackWarning: "⚠️ Passback Warning",
+          accessDenied: "⛔ Access denied",
           newCheckin: "✓ New Check-in",
           memberCheckedIn: "{{firstName}} {{lastName}} checked in",
         },
@@ -1408,6 +1420,11 @@ const resources = {
           unknownMember: "Unbekanntes Mitglied",
           noEmail: "Keine E-Mail",
           pagination: "Seite {{page}} von {{totalPages}} ({{total}} Check-ins)",
+          warnings: {
+            invalidQr: "Zugriff verweigert: Ungültiger QR / Mitglied nicht gefunden.",
+            memberBlocked: "Zugriff verweigert: Mitglied ist gesperrt.",
+            passback: "Letzter Scan war vor {{minutes}} Minuten.",
+          },
         },
         dialogs: {
           createTitle: "Neues Mitglied anlegen",
@@ -1502,6 +1519,7 @@ const resources = {
         },
         realtime: {
           passbackWarning: "⚠️ Passback-Warnung",
+          accessDenied: "⛔ Zugriff verweigert",
           newCheckin: "✓ Neuer Check-in",
           memberCheckedIn: "{{firstName}} {{lastName}} hat eingecheckt",
         },

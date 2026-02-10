@@ -11,10 +11,13 @@ export interface Member {
 
 export interface CheckIn {
     _id?: string;
-    memberId: string;
+    memberId: string | null;
     checkInTime: Date;
     source: "raspberry_pi" | "admin" | "unknown";
     warning?: string | null;
+    warningCode?: "INVALID_QR" | "MEMBER_BLOCKED" | "PASSBACK_WARNING" | null;
+    warningParams?: Record<string, unknown>;
+    qrUuid?: string;
 }
 
 export interface WebSocketConnection {

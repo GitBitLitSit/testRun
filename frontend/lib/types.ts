@@ -11,9 +11,12 @@ export interface Member {
 
 export interface CheckInEvent {
   type: "NEW_CHECKIN"
-  member: Member
+  member: Member | null
   warning?: string | null // e.g., "Passback Warning"
-  timestamp: string
+  warningCode?: "INVALID_QR" | "MEMBER_BLOCKED" | "PASSBACK_WARNING" | null
+  warningParams?: Record<string, unknown>
+  timestamp?: string
+  checkInTime?: string
 }
 
 export interface DashboardStats {

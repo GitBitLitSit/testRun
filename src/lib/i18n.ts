@@ -46,6 +46,11 @@ const resources = {
         QR_CODE_SEND_TO_EMAIL: "QR code inviato via email.",
         CODE_VERIFIED_SUCCESSFULLY: "Codice verificato con successo.",
       },
+      warnings: {
+        INVALID_QR: "Accesso negato: QR non valido / membro non trovato.",
+        MEMBER_BLOCKED: "Accesso negato: il membro è bloccato.",
+        PASSBACK_WARNING: "Ultima scansione {{minutes}} minuti fa.",
+      },
     },
   },
   en: {
@@ -90,6 +95,11 @@ const resources = {
         QR_CODE_SEND_TO_EMAIL: "QR code sent to email.",
         CODE_VERIFIED_SUCCESSFULLY: "Code verified successfully.",
       },
+      warnings: {
+        INVALID_QR: "Access denied: invalid QR / member not found.",
+        MEMBER_BLOCKED: "Access denied: member is blocked.",
+        PASSBACK_WARNING: "Last scan was {{minutes}} minutes ago.",
+      },
     },
   },
   de: {
@@ -133,6 +143,11 @@ const resources = {
         QR_CODE_RESET_SUCCESS: "QR-Code erfolgreich zurückgesetzt.",
         QR_CODE_SEND_TO_EMAIL: "QR-Code per E-Mail gesendet.",
         CODE_VERIFIED_SUCCESSFULLY: "Code erfolgreich bestätigt.",
+      },
+      warnings: {
+        INVALID_QR: "Zugriff verweigert: Ungültiger QR / Mitglied nicht gefunden.",
+        MEMBER_BLOCKED: "Zugriff verweigert: Mitglied ist gesperrt.",
+        PASSBACK_WARNING: "Letzter Scan war vor {{minutes}} Minuten.",
       },
     },
   },
