@@ -212,43 +212,31 @@ export default function OwnerDashboard() {
         offset: number,
         oscillatorType: OscillatorType,
         peakGain: number,
-        endFrequency?: number,
       ) => {
         const oscillator = audioContext.createOscillator()
-        const filterNode = audioContext.createBiquadFilter()
         const gainNode = audioContext.createGain()
 
         const toneStart = startAt + offset
         oscillator.type = oscillatorType
         oscillator.frequency.setValueAtTime(frequency, toneStart)
-        if (typeof endFrequency === "number") {
-          oscillator.frequency.linearRampToValueAtTime(endFrequency, toneStart + duration)
-        }
-        filterNode.type = "lowpass"
-        filterNode.frequency.setValueAtTime(2800, toneStart)
-        filterNode.Q.setValueAtTime(0.7, toneStart)
         gainNode.gain.setValueAtTime(0.0001, toneStart)
-        gainNode.gain.exponentialRampToValueAtTime(peakGain, toneStart + 0.03)
+        gainNode.gain.exponentialRampToValueAtTime(peakGain, toneStart + 0.01)
         gainNode.gain.exponentialRampToValueAtTime(0.0001, toneStart + duration)
 
-        oscillator.connect(filterNode)
-        filterNode.connect(gainNode)
+        oscillator.connect(gainNode)
         gainNode.connect(audioContext.destination)
         oscillator.start(toneStart)
         oscillator.stop(toneStart + duration + 0.02)
       }
 
       if (variant === "positive") {
-        // Soft ascending major chord (pleasant "success" chime).
-        scheduleTone(523.25, 0.26, 0, "sine", 0.19) // C5
-        scheduleTone(659.25, 0.3, 0.12, "sine", 0.18) // E5
-        scheduleTone(783.99, 0.34, 0.24, "triangle", 0.16) // G5
+        scheduleTone(880, 0.09, 0, "sine", 0.06)
+        scheduleTone(1320, 0.12, 0.1, "triangle", 0.05)
         return
       }
 
-      // Gentle descending tones for invalid scans (clear but less harsh).
-      scheduleTone(392, 0.28, 0, "sine", 0.2, 369.99) // G4 -> F#4
-      scheduleTone(311.13, 0.34, 0.2, "triangle", 0.18, 293.66) // Eb4 -> D4
+      scheduleTone(220, 0.16, 0, "sawtooth", 0.06)
+      scheduleTone(160, 0.2, 0.14, "square", 0.05)
     }
 
     if (audioContext.state === "suspended") {
