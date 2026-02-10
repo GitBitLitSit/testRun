@@ -11,7 +11,7 @@ const nextConfig = {
         pathname: '/v1/**',
       },
     ],
-    unoptimized: true
+    formats: ['image/avif', 'image/webp'],
   },
 }
 
