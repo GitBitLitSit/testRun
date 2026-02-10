@@ -560,12 +560,27 @@ export default function OwnerDashboard() {
     if (!memberToReset) return
     setIsResettingQr(true)
     try {
-      await resetQrCode(memberToReset._id)
+      const result = await resetQrCode(memberToReset._id)
+      const nextQrUuid = typeof result?.qrUuid === "string" ? result.qrUuid : null
+      const emailSent = result?.emailSent === true
+
+      if (nextQrUuid) {
+        setMembersData((prev) =>
+          prev.map((member) =>
+            member._id === memberToReset._id
+              ? { ...member, qrUuid: nextQrUuid, emailValid: emailSent ? true : member.emailValid }
+              : member,
+          ),
+        )
+        setSelectedMember((prev) =>
+          prev && prev._id === memberToReset._id
+            ? { ...prev, qrUuid: nextQrUuid, emailValid: emailSent ? true : prev.emailValid }
+            : prev,
+        )
+      }
+
       toast({ title: t("dashboard.toasts.qrResetTitle"), description: t("dashboard.toasts.qrResetDesc") })
       loadMembers()
-      if (selectedMember && selectedMember._id === memberToReset._id) {
-        setDetailsDrawerOpen(false)
-      }
       setResetQrDialogOpen(false)
       setMemberToReset(null)
     } catch (error) {

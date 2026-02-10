@@ -75,6 +75,10 @@ export default function LoginPage() {
         sessionStorage.setItem("currentMember", JSON.stringify(result.member))
         localStorage.removeItem("currentMember")
       }
+      if (result.memberSessionToken) {
+        sessionStorage.setItem("memberSessionToken", result.memberSessionToken)
+        localStorage.removeItem("memberSessionToken")
+      }
 
       router.push("/customer/profile")
     } catch (err) {

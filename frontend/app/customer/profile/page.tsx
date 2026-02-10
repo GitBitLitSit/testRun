@@ -7,38 +7,101 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useTranslation } from "react-i18next"
-import { Maximize2, Minimize2, Printer, Download } from "lucide-react"
+import { Printer, Download } from "lucide-react"
 import { QRCodeSVG } from "qrcode.react"
 import type { Member } from "@/lib/types"
 import { escapeHtml } from "@/lib/utils"
+import { getMemberProfile } from "@/lib/api"
 
 export default function CustomerProfilePage() {
   const router = useRouter()
   const { t } = useTranslation()
   const [member, setMember] = useState<Member | null>(null)
-  const [isFullscreen, setIsFullscreen] = useState(false)
   const qrCodeRef = useRef<HTMLDivElement | null>(null)
   const membershipPassRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const sessionMember = sessionStorage.getItem("currentMember")
     const legacyMember = localStorage.getItem("currentMember")
+    const sessionToken = sessionStorage.getItem("memberSessionToken")
+    const legacyToken = localStorage.getItem("memberSessionToken")
+    const memberSessionToken = sessionToken ?? legacyToken
     const memberData = sessionMember ?? legacyMember
-    if (memberData) {
-      setMember(JSON.parse(memberData))
-      if (!sessionMember && legacyMember) {
-        sessionStorage.setItem("currentMember", legacyMember)
-        localStorage.removeItem("currentMember")
-      }
-    } else {
+    if (!memberData) {
       // Redirect to login if no member data found
       router.replace("/login")
+      return
+    }
+
+    let mounted = true
+    let parsedMember: Member
+    try {
+      parsedMember = JSON.parse(memberData) as Member
+    } catch {
+      sessionStorage.removeItem("currentMember")
+      localStorage.removeItem("currentMember")
+      sessionStorage.removeItem("memberSessionToken")
+      localStorage.removeItem("memberSessionToken")
+      router.replace("/login")
+      return
+    }
+
+    setMember(parsedMember)
+    if (!sessionMember && legacyMember) {
+      sessionStorage.setItem("currentMember", legacyMember)
+      localStorage.removeItem("currentMember")
+    }
+    if (!sessionToken && legacyToken) {
+      sessionStorage.setItem("memberSessionToken", legacyToken)
+      localStorage.removeItem("memberSessionToken")
+    }
+
+    if (!memberSessionToken) {
+      return () => {
+        mounted = false
+      }
+    }
+
+    const syncMemberProfile = async () => {
+      try {
+        const result = await getMemberProfile(memberSessionToken)
+        const freshMember = result?.data as Member | undefined
+        if (!freshMember || !mounted) {
+          return
+        }
+
+        setMember(freshMember)
+        sessionStorage.setItem("currentMember", JSON.stringify(freshMember))
+        localStorage.removeItem("currentMember")
+      } catch (error) {
+        console.error("Failed to refresh member profile", error)
+      }
+    }
+
+    void syncMemberProfile()
+    const refreshOnFocus = () => {
+      void syncMemberProfile()
+    }
+    const refreshOnVisible = () => {
+      if (document.visibilityState === "visible") {
+        void syncMemberProfile()
+      }
+    }
+    window.addEventListener("focus", refreshOnFocus)
+    document.addEventListener("visibilitychange", refreshOnVisible)
+
+    return () => {
+      mounted = false
+      window.removeEventListener("focus", refreshOnFocus)
+      document.removeEventListener("visibilitychange", refreshOnVisible)
     }
   }, [router])
 
   const handleSignOut = () => {
     sessionStorage.removeItem("currentMember")
     localStorage.removeItem("currentMember")
+    sessionStorage.removeItem("memberSessionToken")
+    localStorage.removeItem("memberSessionToken")
     router.push("/")
   }
 
@@ -351,9 +414,7 @@ export default function CustomerProfilePage() {
               <div className="pointer-events-none absolute inset-x-0 top-1/2 -z-10 h-72 -translate-y-1/2 bg-primary/20 blur-[140px]" />
               <div className="mx-auto flex justify-center">
                 <Card
-                  className={`group relative w-full max-w-3xl overflow-hidden border-muted/40 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
-                    isFullscreen ? "fixed inset-0 z-50 rounded-none" : ""
-                  }`}
+                  className="group relative w-full max-w-3xl overflow-hidden border-muted/40 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
                 >
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent" />
                   <CardHeader className="relative z-10">
@@ -362,24 +423,12 @@ export default function CustomerProfilePage() {
                         <CardTitle>{t("profile.yourQrCode")}</CardTitle>
                         <CardDescription>{t("profile.presentToScan")}</CardDescription>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setIsFullscreen(!isFullscreen)}
-                        className="shrink-0"
-                      >
-                        {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-                      </Button>
                     </div>
                   </CardHeader>
-                  <CardContent
-                    className={`relative z-10 ${isFullscreen ? "flex flex-col items-center justify-center h-[calc(100vh-8rem)]" : ""}`}
-                  >
+                  <CardContent className="relative z-10">
                     <div
                       ref={membershipPassRef}
-                      className={`relative mx-auto w-full max-w-lg rounded-2xl border border-muted/50 bg-gradient-to-br from-primary/10 via-background to-background p-6 text-center shadow-sm lg:max-w-xl ${
-                        isFullscreen ? "scale-150" : ""
-                      }`}
+                      className="relative mx-auto w-full max-w-lg rounded-2xl border border-muted/50 bg-gradient-to-br from-primary/10 via-background to-background p-6 text-center shadow-sm lg:max-w-xl"
                     >
                       <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-b from-white/10 via-transparent to-transparent" />
                       <div className="relative space-y-6">
@@ -387,10 +436,10 @@ export default function CustomerProfilePage() {
                           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                             {t("profile.membershipPass")}
                           </p>
-                          <p className={`font-bold ${isFullscreen ? "text-4xl" : "text-2xl"}`}>
+                          <p className="text-2xl font-bold">
                             {member.firstName} {member.lastName}
                           </p>
-                          <p className={`text-muted-foreground ${isFullscreen ? "text-2xl" : "text-base"}`}>
+                          <p className="text-base text-muted-foreground">
                             {member.email}
                           </p>
                           <p className="text-xs uppercase tracking-widest text-muted-foreground">
@@ -418,7 +467,7 @@ export default function CustomerProfilePage() {
                             ref={qrCodeRef}
                             className="rounded-lg border bg-white p-4 shadow-sm transition-transform duration-300 group-hover:scale-[1.02]"
                           >
-                            <QRCodeSVG value={member.qrUuid} size={isFullscreen ? 256 : 220} level="H" />
+                            <QRCodeSVG value={member.qrUuid} size={220} level="H" />
                           </div>
                         </div>
 

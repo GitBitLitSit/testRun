@@ -161,6 +161,17 @@ export async function verifyAndRecover(data: {
   return handleResponse(res)
 }
 
+export async function getMemberProfile(memberSessionToken: string) {
+  const res = await fetch(`${API_URL}/members/profile`, {
+    method: "GET",
+    headers: {
+      "Accept-Language": getApiLanguage(),
+      Authorization: `Bearer ${memberSessionToken}`,
+    },
+  })
+  return handleResponse(res)
+}
+
 export async function getCheckIns(page = 1, limit = 50) {
   const res = await fetch(`${API_URL}/auth/check-ins?page=${page}&limit=${limit}`, {
     method: "GET",

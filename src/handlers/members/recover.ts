@@ -4,6 +4,7 @@ import { Member, EmailVerification } from "../../lib/types";
 import { sendQrCodeEmail } from "../../adapters/email";
 import QRCode from "qrcode";
 import { errorResponse, messageResponse } from "../../lib/http";
+import { createMemberSessionToken } from "../../lib/memberSession";
 
 
 export const handler: APIGatewayProxyHandlerV2 = async (event) => {
@@ -52,10 +53,16 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
             return messageResponse(event, 200, "QR_CODE_SEND_TO_EMAIL", undefined, { success: true });
         } else {
             const qrImage = await QRCode.toDataURL(memberRecord.qrUuid);
+            const memberSessionToken = createMemberSessionToken(String(memberRecord._id), memberRecord.email);
+            const updatedMember: Member = {
+                ...memberRecord,
+                emailValid: true,
+            };
             return messageResponse(event, 200, "CODE_VERIFIED_SUCCESSFULLY", undefined, {
                 success: true,
                 qrImage: qrImage,
-                member: memberRecord
+                member: updatedMember,
+                memberSessionToken,
             });
         }
     } catch (error) {
