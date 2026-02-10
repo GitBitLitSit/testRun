@@ -4,7 +4,7 @@ import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { BilliardBall } from "@/components/billiard-ball"
 import { Button } from "@/components/ui/button"
-import { Clock, ChevronDown, ArrowRight, MapPin, Navigation2, Phone, Trophy, Star } from "lucide-react"
+import { Clock, ChevronDown, ArrowRight, MapPin, Navigation2, Phone, Trophy } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { useEffect, useState } from "react"
@@ -15,10 +15,10 @@ export default function HomePage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
   const images = [
-    { src: "/tableUpscale.jpg", alt: "Professional billiard table" },
-    { src: "/aura.png", alt: "Billiard game action" },
-    { src: "/aura2 expernded.png", alt: "Players enjoying" },
-    { src: "/anotherOne.png", alt: "Lounge area" },
+    { src: "/tableUpscale.webp", alt: "Professional billiard table" },
+    { src: "/aura.webp", alt: "Billiard game action" },
+    { src: "/aura2-expanded.webp", alt: "Players enjoying" },
+    { src: "/anotherOne.webp", alt: "Lounge area" },
   ]
 
   useEffect(() => {
@@ -64,7 +64,16 @@ export default function HomePage() {
                 }`}
               >
                 <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/40 to-background z-10" />
-                <img src={image.src || "/placeholder.svg"} alt={image.alt} className="h-full w-full object-cover" />
+                <Image
+                  src={image.src || "/placeholder.svg"}
+                  alt={image.alt}
+                  fill
+                  sizes="100vw"
+                  quality={80}
+                  priority={index === 0}
+                  loading={index === 0 ? "eager" : "lazy"}
+                  className="h-full w-full object-cover"
+                />
               </div>
             ))}
           </div>
@@ -75,7 +84,7 @@ export default function HomePage() {
                 <div className="relative">
                   <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl animate-pulse"></div>
                   <Image
-                    src="/logo.png"
+                    src="/logo.webp"
                     alt="15 Palle"
                     width={200}
                     height={200}
@@ -251,9 +260,12 @@ export default function HomePage() {
               {/* Main Feature Image (Mano.jpg) */}
               <div className="group relative col-span-1 md:col-span-2 md:row-span-2 rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-[#0a0a0a]">
                 <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-70 transition-opacity duration-500"/>
-                <img
-                  src="/2xfisb.png"
+                <Image
+                  src="/2xfisb.webp"
                   alt="Racking the balls"
+                  fill
+                  sizes="(min-width: 768px) 50vw, 100vw"
+                  quality={80}
                   className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105 will-change-transform"
                 />
                 
@@ -269,9 +281,12 @@ export default function HomePage() {
               {/* Top Right: Bar (Wide) */}
               <div className="group relative col-span-1 md:col-span-2 rounded-3xl overflow-hidden border border-white/10 bg-[#0a0a0a]">
                  <div className="absolute inset-0 z-10 bg-black/40 group-hover:bg-black/20 transition-colors duration-500"/>
-                <img
-                  src="/2xbar.png"
+                <Image
+                  src="/2xbar.webp"
                   alt={t("home.galleryLabels.bar")}
+                  fill
+                  sizes="(min-width: 768px) 50vw, 100vw"
+                  quality={80}
                   className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
                 <div className="absolute bottom-4 left-4 z-20">
@@ -284,9 +299,12 @@ export default function HomePage() {
               {/* Bottom Right 1: Lounge (Square) */}
               <div className="group relative rounded-3xl overflow-hidden border border-white/10 bg-[#0a0a0a]">
                  <div className="absolute inset-0 z-10 bg-black/40 group-hover:bg-black/20 transition-colors duration-500"/>
-                <img
-                  src="/lounge.jpg"
+                <Image
+                  src="/lounge.webp"
                   alt={t("home.galleryLabels.lounge")}
+                  fill
+                  sizes="(min-width: 768px) 25vw, 100vw"
+                  quality={80}
                   className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
                 <div className="absolute bottom-4 left-4 z-20">
@@ -294,14 +312,17 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Bottom Right 2: Membership (Square CTA) - UPDATED with mano.jpg */}
+              {/* Bottom Right 2: Membership (Square CTA) */}
               <div className="group relative rounded-3xl overflow-hidden border border-white/10 bg-[#0a0a0a]">
                 <div className="absolute inset-0 z-10 bg-black/40 group-hover:bg-black/20 transition-colors duration-500"/>
                 {/* Background Image */}
-                <img 
-                    src="/mano.jpg" 
-                    alt="Join Club"
-                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                <Image
+                  src="/mano.webp"
+                  alt="Join Club"
+                  fill
+                  sizes="(min-width: 768px) 25vw, 100vw"
+                  quality={80}
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
                 <div className="absolute bottom-4 left-4 z-20">
                    <p className="text-white font-medium text-sm drop-shadow-md bg-black/50 px-3 py-1 rounded-full backdrop-blur-sm">{t("home.galleryLabels.premiumGear")}</p>

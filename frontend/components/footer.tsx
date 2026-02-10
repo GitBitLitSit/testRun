@@ -19,7 +19,7 @@ export function Footer() {
           <div className="lg:col-span-1">
             <div className="flex items-center gap-3 mb-4">
               <Image
-                src="/logo.png"
+                src="/logo.webp"
                 alt="15 Palle"
                 width={40}
                 height={40}
