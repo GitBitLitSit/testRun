@@ -57,6 +57,9 @@ export default function CustomerProfilePage() {
     }
 
     if (!memberSessionToken) {
+      sessionStorage.removeItem("currentMember")
+      localStorage.removeItem("currentMember")
+      router.replace("/login")
       return () => {
         mounted = false
       }
