@@ -230,13 +230,13 @@ export default function OwnerDashboard() {
       }
 
       if (variant === "positive") {
-        scheduleTone(880, 0.09, 0, "sine", 0.24)
-        scheduleTone(1320, 0.12, 0.1, "triangle", 0.2)
+        scheduleTone(880, 0.2, 0, "sine", 0.24)
+        scheduleTone(1320, 0.26, 0.22, "triangle", 0.2)
         return
       }
 
-      scheduleTone(220, 0.16, 0, "sawtooth", 0.24)
-      scheduleTone(160, 0.2, 0.14, "square", 0.2)
+      scheduleTone(220, 0.3, 0, "sawtooth", 0.24)
+      scheduleTone(160, 0.36, 0.28, "square", 0.2)
     }
 
     if (audioContext.state === "suspended") {
