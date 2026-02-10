@@ -6,6 +6,22 @@ if (!API_URL) {
   console.error("API URL is missing! Check your .env or SST output.")
 }
 
+export class ApiError extends Error {
+  status: number
+  code?: string
+
+  constructor(message: string, status: number, code?: string) {
+    super(message)
+    this.name = "ApiError"
+    this.status = status
+    this.code = code
+  }
+}
+
+export function isUnauthorizedError(error: unknown): error is ApiError {
+  return error instanceof ApiError && error.status === 401
+}
+
 function getAuthHeaders() {
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
   return {
@@ -203,15 +219,16 @@ async function handleResponse(res: Response) {
 
   if (!res.ok) {
     const errorData: ErrorData = await res.json().catch(() => ({}))
+    const errorCode = typeof errorData.error === "string" && errorData.error.trim() ? errorData.error : undefined
     const localized =
       errorData.messageText ||
       errorData.message ||
-      (errorData.error ? i18n.t(`errors.${String(errorData.error)}`, errorData.params || {}) : null)
+      (errorCode ? i18n.t(`errors.${errorCode}`, errorData.params || {}) : null)
     const fallbackMessage =
-      typeof errorData.error === "string" && errorData.error.trim()
-        ? errorData.error
+      errorCode
+        ? errorCode
         : `HTTP Error: ${res.status}`
-    throw new Error(localized || fallbackMessage)
+    throw new ApiError(localized || fallbackMessage, res.status, errorCode)
   }
 
   return res.json()

@@ -11,7 +11,30 @@ import { Printer, Download } from "lucide-react"
 import { QRCodeSVG } from "qrcode.react"
 import type { Member } from "@/lib/types"
 import { escapeHtml } from "@/lib/utils"
-import { getMemberProfile } from "@/lib/api"
+import { getMemberProfile, isUnauthorizedError } from "@/lib/api"
+
+function getTokenExpiryMs(token: string): number | null {
+  const parts = token.split(".")
+  if (parts.length < 2) return null
+  try {
+    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/")
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), "=")
+    const payload = JSON.parse(atob(padded)) as { exp?: number }
+    if (typeof payload.exp === "number") {
+      return payload.exp * 1000
+    }
+  } catch {
+    return null
+  }
+  return null
+}
+
+function clearCustomerSessionStorage() {
+  sessionStorage.removeItem("currentMember")
+  localStorage.removeItem("currentMember")
+  sessionStorage.removeItem("memberSessionToken")
+  localStorage.removeItem("memberSessionToken")
+}
 
 export default function CustomerProfilePage() {
   const router = useRouter()
@@ -21,32 +44,38 @@ export default function CustomerProfilePage() {
   const membershipPassRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
+    const clearAndRedirectToLogin = () => {
+      clearCustomerSessionStorage()
+      router.replace("/login")
+    }
+
     const sessionMember = sessionStorage.getItem("currentMember")
     const legacyMember = localStorage.getItem("currentMember")
     const sessionToken = sessionStorage.getItem("memberSessionToken")
     const legacyToken = localStorage.getItem("memberSessionToken")
     const memberSessionToken = sessionToken ?? legacyToken
     const memberData = sessionMember ?? legacyMember
-    if (!memberData) {
-      // Redirect to login if no member data found
-      router.replace("/login")
+    if (!memberData || !memberSessionToken) {
+      clearAndRedirectToLogin()
       return
     }
 
     let mounted = true
+    let expiryTimeoutId: number | null = null
     let parsedMember: Member
     try {
       parsedMember = JSON.parse(memberData) as Member
     } catch {
-      sessionStorage.removeItem("currentMember")
-      localStorage.removeItem("currentMember")
-      sessionStorage.removeItem("memberSessionToken")
-      localStorage.removeItem("memberSessionToken")
-      router.replace("/login")
+      clearAndRedirectToLogin()
       return
     }
 
-    setMember(parsedMember)
+    const expiresAt = getTokenExpiryMs(memberSessionToken)
+    if (!expiresAt || expiresAt <= Date.now()) {
+      clearAndRedirectToLogin()
+      return
+    }
+
     if (!sessionMember && legacyMember) {
       sessionStorage.setItem("currentMember", legacyMember)
       localStorage.removeItem("currentMember")
@@ -56,14 +85,10 @@ export default function CustomerProfilePage() {
       localStorage.removeItem("memberSessionToken")
     }
 
-    if (!memberSessionToken) {
-      sessionStorage.removeItem("currentMember")
-      localStorage.removeItem("currentMember")
-      router.replace("/login")
-      return () => {
-        mounted = false
-      }
-    }
+    setMember(parsedMember)
+    expiryTimeoutId = window.setTimeout(() => {
+      clearAndRedirectToLogin()
+    }, Math.max(0, expiresAt - Date.now()))
 
     const syncMemberProfile = async () => {
       try {
@@ -77,6 +102,10 @@ export default function CustomerProfilePage() {
         sessionStorage.setItem("currentMember", JSON.stringify(freshMember))
         localStorage.removeItem("currentMember")
       } catch (error) {
+        if (isUnauthorizedError(error)) {
+          clearAndRedirectToLogin()
+          return
+        }
         console.error("Failed to refresh member profile", error)
       }
     }
@@ -95,16 +124,16 @@ export default function CustomerProfilePage() {
 
     return () => {
       mounted = false
+      if (expiryTimeoutId !== null) {
+        window.clearTimeout(expiryTimeoutId)
+      }
       window.removeEventListener("focus", refreshOnFocus)
       document.removeEventListener("visibilitychange", refreshOnVisible)
     }
   }, [router])
 
   const handleSignOut = () => {
-    sessionStorage.removeItem("currentMember")
-    localStorage.removeItem("currentMember")
-    sessionStorage.removeItem("memberSessionToken")
-    localStorage.removeItem("memberSessionToken")
+    clearCustomerSessionStorage()
     router.push("/")
   }
 

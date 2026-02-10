@@ -32,6 +32,7 @@ import {
   deleteMember,
   checkExistingUsers,
   bulkCreateUsers,
+  isUnauthorizedError,
 } from "@/lib/api"
 import { useRealtimeCheckIns } from "@/hooks/use-realtime"
 import type { Member, CheckInEvent } from "@/lib/types"
@@ -75,6 +76,7 @@ function getTokenExpiryMs(token: string): number | null {
 type CheckInWarningCode = "INVALID_QR" | "MEMBER_BLOCKED" | "PASSBACK_WARNING"
 
 const PASSBACK_WARNING_REGEX = /last scan was\s+(\d+)\s+minutes?\s+ago\.?/i
+const LEGACY_IMPORT_STORAGE_KEY = "importPreviewState"
 
 function resolveWarningCode(checkIn: CheckInEvent): CheckInWarningCode | null {
   const explicitCode = (checkIn.warningCode || "").toUpperCase()
@@ -149,20 +151,20 @@ export default function OwnerDashboard() {
     const expiresAt = getTokenExpiryMs(token)
     if (!expiresAt) {
       localStorage.removeItem("token")
-      router.replace("/")
+      router.replace("/admin")
       return
     }
 
     const now = Date.now()
     if (expiresAt <= now) {
       localStorage.removeItem("token")
-      router.replace("/")
+      router.replace("/admin")
       return
     }
 
     const timeoutId = window.setTimeout(() => {
       localStorage.removeItem("token")
-      router.replace("/")
+      router.replace("/admin")
     }, expiresAt - now)
 
     return () => window.clearTimeout(timeoutId)
@@ -338,7 +340,23 @@ export default function OwnerDashboard() {
   const [isResettingQr, setIsResettingQr] = useState(false)
 
   const [stats, setStats] = useState({ total: 0, blocked: 0, active: 0 })
-  const LEGACY_IMPORT_STORAGE_KEY = "importPreviewState"
+
+  const redirectToOwnerLogin = useCallback(() => {
+    localStorage.removeItem("token")
+    localStorage.removeItem(LEGACY_IMPORT_STORAGE_KEY)
+    router.replace("/admin")
+  }, [router])
+
+  const handleUnauthorizedOwnerError = useCallback(
+    (error: unknown): boolean => {
+      if (!isUnauthorizedError(error)) {
+        return false
+      }
+      redirectToOwnerLogin()
+      return true
+    },
+    [redirectToOwnerLogin],
+  )
 
   // --- CLEANUP EFFECT ---
   useEffect(() => {
@@ -426,6 +444,7 @@ export default function OwnerDashboard() {
       })
 
     } catch (error) {
+      if (handleUnauthorizedOwnerError(error)) return
       console.error(error)
       toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedLoadMembers"), variant: "destructive" })
     } finally {
@@ -448,6 +467,7 @@ export default function OwnerDashboard() {
       setTotalCheckIns(result.pagination?.total || 0)
       setTotalCheckInsPages(result.pagination?.totalPages || 1)
     } catch (error) {
+      if (handleUnauthorizedOwnerError(error)) return
       console.error(error)
       toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedLoadCheckins"), variant: "destructive" })
     } finally {
@@ -486,6 +506,7 @@ export default function OwnerDashboard() {
       setMembersPage(1)
       loadMembers()
     } catch (error) {
+      if (handleUnauthorizedOwnerError(error)) return
       const errorMessage = error instanceof Error ? error.message : t("dashboard.toasts.failedCreateMember")
       setCreateError(errorMessage) 
     } finally {
@@ -523,6 +544,7 @@ export default function OwnerDashboard() {
       setEditDialogOpen(false)
       loadMembers()
     } catch (error) {
+      if (handleUnauthorizedOwnerError(error)) return
       toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedUpdateMember"), variant: "destructive" })
     } finally {
       setIsUpdating(false)
@@ -545,6 +567,7 @@ export default function OwnerDashboard() {
       setMemberToDelete(null)
       loadMembers()
     } catch (error) {
+      if (handleUnauthorizedOwnerError(error)) return
       toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedDeleteMember"), variant: "destructive" })
     } finally {
       setIsDeleting(false)
@@ -584,6 +607,7 @@ export default function OwnerDashboard() {
       setResetQrDialogOpen(false)
       setMemberToReset(null)
     } catch (error) {
+      if (handleUnauthorizedOwnerError(error)) return
       toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedResetQr"), variant: "destructive" })
     } finally {
       setIsResettingQr(false)
@@ -667,6 +691,7 @@ export default function OwnerDashboard() {
         description: t("dashboard.toasts.importCompleteDesc", { created }),
       })
     } catch (error) {
+      if (handleUnauthorizedOwnerError(error)) return
       setImportError(t("dashboard.toasts.failedImport"))
       setImportStep("review")
       toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedImport"), variant: "destructive" })
@@ -763,6 +788,7 @@ export default function OwnerDashboard() {
       setImportPreviewPage(1)
       setImportStep("review")
     } catch (error) {
+      if (handleUnauthorizedOwnerError(error)) return
       setImportError(t("dashboard.toasts.failedImport"))
       setImportStep("idle")
       toast({ title: t("dashboard.toasts.errorTitle"), description: t("dashboard.toasts.failedImport"), variant: "destructive" })
