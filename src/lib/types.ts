@@ -32,4 +32,8 @@ export interface EmailVerification {
     verificationCode: string;
     expiresAt: Date;
     createdAt: Date;
+    requestCount?: number;
+    requestWindowStartedAt?: Date;
+    lastSentAt?: Date;
+    cooldownUntil?: Date;
 }
