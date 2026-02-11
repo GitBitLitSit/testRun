@@ -8,7 +8,11 @@ import { CookieConsent } from "@/components/cookie-consent"
 import { I18nProvider } from "@/components/i18n-provider"
 
 const geistSans = Geist({ subsets: ["latin"], variable: "--font-geist-sans" })
-const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" })
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
+  preload: false,
+})
 
 export const metadata: Metadata = {
   title: "15 Palle - Billiard Club & Bar",
